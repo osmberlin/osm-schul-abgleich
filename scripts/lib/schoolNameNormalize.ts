@@ -6,11 +6,7 @@ export function normalizeSchoolNameForMatch(name: string | null | undefined): st
   if (name == null || typeof name !== 'string') return ''
   let s = name.replace(/\([^)]*\)/g, ' ')
   s = s.trim().toLowerCase()
-  s = s
-    .replace(/ä/g, 'ae')
-    .replace(/ö/g, 'oe')
-    .replace(/ü/g, 'ue')
-    .replace(/ß/g, 'ss')
+  s = s.replace(/ä/g, 'ae').replace(/ö/g, 'oe').replace(/ü/g, 'ue').replace(/ß/g, 'ss')
   try {
     s = s.normalize('NFD').replace(/\p{M}/gu, '')
   } catch {

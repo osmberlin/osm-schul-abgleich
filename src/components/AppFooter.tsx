@@ -28,11 +28,21 @@ export function AppFooter() {
           <HeartIcon aria-hidden className="mt-0.5 size-4 shrink-0 text-inherit" />
           <span>
             {f.geoDataLine}
-            <a href={f.osmLinkHref} className={bodyFooterLinkClass} target="_blank" rel="noreferrer">
+            <a
+              href={f.osmLinkHref}
+              className={bodyFooterLinkClass}
+              target="_blank"
+              rel="noreferrer"
+            >
               {f.osmLinkLabel}
             </a>
             {f.geoDataBetween}
-            <a href={jedeschule.href} className={bodyFooterLinkClass} target="_blank" rel="noreferrer">
+            <a
+              href={jedeschule.href}
+              className={bodyFooterLinkClass}
+              target="_blank"
+              rel="noreferrer"
+            >
               {jedeschule.label}
             </a>
             .
@@ -46,7 +56,12 @@ export function AppFooter() {
             {f.openSourceThanks.map((item, i) => (
               <span key={item.href}>
                 {i > 0 ? ', ' : null}
-                <a href={item.href} className={bodyFooterLinkClass} target="_blank" rel="noreferrer">
+                <a
+                  href={item.href}
+                  className={bodyFooterLinkClass}
+                  target="_blank"
+                  rel="noreferrer"
+                >
                   {item.name}
                 </a>
               </span>

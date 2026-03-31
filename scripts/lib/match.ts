@@ -4,12 +4,52 @@ import { point } from '@turf/helpers'
 import type { Feature, FeatureCollection, Geometry, MultiPolygon, Polygon } from 'geojson'
 
 import { MATCH_RADIUS_KM } from '../../src/lib/matchRadius'
+import { OSM_SCHOOL_NAME_TAGS_IN_ORDER, type OsmNameMatchTag } from '../../src/lib/osmNameMatchTags'
 import type { LandCode } from '../../src/lib/stateConfig'
 import { landCodeFromSchoolId } from '../../src/lib/stateConfig'
 import { normalizeSchoolNameForMatch } from './schoolNameNormalize'
 
 export { MATCH_RADIUS_KM }
 export { normalizeSchoolNameForMatch } from './schoolNameNormalize'
+
+export type { OsmNameMatchTag }
+
+/**
+ * Normalized comparison keys from `name`, `name:de`, and `official_name`.
+ * If two tags normalize to the same key, the earlier in {@link OSM_SCHOOL_NAME_TAGS_IN_ORDER} wins.
+ */
+export function normalizedOsmNameVariantMap(
+  tags: Record<string, string>,
+): Map<string, OsmNameMatchTag> {
+  const out = new Map<string, OsmNameMatchTag>()
+  for (const tag of OSM_SCHOOL_NAME_TAGS_IN_ORDER) {
+    const raw = tags[tag]
+    if (raw == null || String(raw).trim() === '') continue
+    const key = normalizeSchoolNameForMatch(raw)
+    if (!key) continue
+    if (!out.has(key)) out.set(key, tag)
+  }
+  return out
+}
+
+/**
+ * Non-empty trimmed values, one entry per present tag, in {@link OSM_SCHOOL_NAME_TAGS_IN_ORDER}.
+ * Matching still uses {@link normalizedOsmNameVariantMap} (all tags, normalized); this is only for UI strings.
+ */
+export function osmDisplayNameCandidatesFromTags(tags: Record<string, string>): string[] {
+  const out: string[] = []
+  for (const tag of OSM_SCHOOL_NAME_TAGS_IN_ORDER) {
+    const raw = tags[tag]?.trim()
+    if (raw) out.push(raw)
+  }
+  return out
+}
+
+/** First entry of {@link osmDisplayNameCandidatesFromTags} for `OsmSchoolInput.name` / row `osmName` (lists, map). */
+export function primaryOsmDisplayNameFromTags(tags: Record<string, string>): string | null {
+  const c = osmDisplayNameCandidatesFromTags(tags)
+  return c[0] ?? null
+}
 
 export type OfficialInput = {
   id: string
@@ -52,8 +92,10 @@ export type MatchRowOut = {
   osmTags: Record<string, string> | null
   ambiguousOfficialIds?: string[]
   ambiguousOfficialSnapshots?: AmbiguousOfficialSnapshot[]
-  /** Set when `matched` was chosen by multi-candidate name equality (normalized key). */
-  matchedByNameNormalized?: string
+  /** Normalized string used for OSM↔official name equality (see pipeline). */
+  matchedByOsmNameNormalized?: string
+  /** OSM tag whose value aligned with `matchedByOsmNameNormalized` for name-based matches. */
+  matchedByOsmNameTag?: OsmNameMatchTag
   /** Federal state code for national pipeline split (optional). */
   pipelineLand?: string
 }
@@ -92,11 +134,11 @@ function officialsNearOsm(
   })
 }
 
-/** Exactly one official in `officials` matches normalized OSM name; otherwise null. */
+/** Exactly one official in `officials` matches any normalized OSM name tag; otherwise null. */
 function uniqueNameOfficialIn(officials: OfficialInput[], o: OsmSchoolInput): OfficialInput | null {
-  const nameKey = normalizeSchoolNameForMatch(o.name)
-  if (!nameKey) return null
-  const matches = officials.filter((x) => normalizeSchoolNameForMatch(x.name) === nameKey)
+  const variantMap = normalizedOsmNameVariantMap(o.tags)
+  if (variantMap.size === 0) return null
+  const matches = officials.filter((x) => variantMap.has(normalizeSchoolNameForMatch(x.name)))
   if (matches.length !== 1) return null
   return matches[0]
 }
@@ -152,7 +194,7 @@ export function buildOsmSchoolsFromGeoJson(fc: FeatureCollection): OsmSchoolInpu
       if (k.startsWith('_pipeline')) continue
       tags[k] = String(v)
     }
-    const name = tags.name ?? tags['name:de'] ?? null
+    const name = primaryOsmDisplayNameFromTags(tags)
     const c = centroidFromOsmGeometry(f.geometry)
     if (!c) continue
     if (!osmId && p.id != null) osmId = String(p.id)
@@ -208,6 +250,7 @@ export function matchSchools(
     winner: OfficialInput
     distKm: number
     nameKey: string
+    osmNameTag: OsmNameMatchTag | undefined
   }
   const phase1Proposals: Phase1Proposal[] = []
   for (const o of osmSchools) {
@@ -220,17 +263,18 @@ export function matchSchools(
     const distKm = distance(point([winner.lon, winner.lat]), point([lon, lat]), {
       units: 'kilometers',
     })
+    const winnerNorm = normalizeSchoolNameForMatch(winner.name)!
+    const variantMap = normalizedOsmNameVariantMap(o.tags)
     phase1Proposals.push({
       landKey,
       o,
       winner,
       distKm,
-      nameKey: normalizeSchoolNameForMatch(o.name)!,
+      nameKey: winnerNorm,
+      osmNameTag: variantMap.get(winnerNorm),
     })
   }
-  phase1Proposals.sort(
-    (a, b) => a.distKm - b.distKm || a.landKey.localeCompare(b.landKey, 'en'),
-  )
+  phase1Proposals.sort((a, b) => a.distKm - b.distKm || a.landKey.localeCompare(b.landKey, 'en'))
   const phase1RowByLandKey = new Map<string, MatchRowOut>()
   const consumedOsmInPhase1 = new Set<string>()
   for (const p of phase1Proposals) {
@@ -254,7 +298,8 @@ export function matchSchools(
       distanceMeters: Math.round(dM),
       osmName: p.o.name,
       osmTags: p.o.tags,
-      matchedByNameNormalized: p.nameKey,
+      matchedByOsmNameNormalized: p.nameKey,
+      matchedByOsmNameTag: p.osmNameTag,
     })
   }
 
@@ -343,6 +388,8 @@ export function matchSchools(
           continue
         }
         reserved.add(off.id)
+        const offNorm = normalizeSchoolNameForMatch(off.name)!
+        const variantMapSingle = normalizedOsmNameVariantMap(o.tags)
         rows.push({
           key: `match-${off.id}`,
           category: 'matched',
@@ -357,7 +404,8 @@ export function matchSchools(
           distanceMeters: Math.round(dM),
           osmName: o.name,
           osmTags: o.tags,
-          matchedByNameNormalized: normalizeSchoolNameForMatch(o.name),
+          matchedByOsmNameNormalized: offNorm,
+          matchedByOsmNameTag: variantMapSingle.get(offNorm),
         })
         continue
       }
@@ -404,16 +452,17 @@ export function matchSchools(
     withDist.sort((a, b) => a.distKm - b.distKm)
     const closestKm = withDist[0].distKm
 
-    const nameKey = normalizeSchoolNameForMatch(o.name)
-    if (nameKey) {
-      const nameMatches = withDist.filter(
-        (x) => normalizeSchoolNameForMatch(x.off.name) === nameKey,
+    const variantMapMulti = normalizedOsmNameVariantMap(o.tags)
+    if (variantMapMulti.size > 0) {
+      const nameMatches = withDist.filter((x) =>
+        variantMapMulti.has(normalizeSchoolNameForMatch(x.off.name)),
       )
       if (nameMatches.length === 1) {
         const win = nameMatches[0]
         const winner = win.off
         reserved.add(winner.id)
         const dM = win.distKm * 1000
+        const offNorm = normalizeSchoolNameForMatch(winner.name)!
         rows.push({
           key: `match-${winner.id}`,
           category: 'matched',
@@ -428,7 +477,8 @@ export function matchSchools(
           distanceMeters: Math.round(dM),
           osmName: o.name,
           osmTags: o.tags,
-          matchedByNameNormalized: nameKey,
+          matchedByOsmNameNormalized: offNorm,
+          matchedByOsmNameTag: variantMapMulti.get(offNorm),
         })
         continue
       }
@@ -487,11 +537,19 @@ export function matchSchools(
   for (let idx = 0; idx < rows.length; idx++) {
     const row = rows[idx]
     if (row.category !== 'osm_only') continue
-    const key = normalizeSchoolNameForMatch(row.osmName)
-    if (!key) continue
-    const arr = osmOnlyByName.get(key)
-    if (arr) arr.push(idx)
-    else osmOnlyByName.set(key, [idx])
+    const tags = row.osmTags
+    const keys =
+      tags && Object.keys(tags).length > 0
+        ? [...normalizedOsmNameVariantMap(tags).keys()]
+        : (() => {
+            const k = normalizeSchoolNameForMatch(row.osmName)
+            return k ? [k] : []
+          })()
+    for (const normKey of keys) {
+      const arr = osmOnlyByName.get(normKey)
+      if (arr) arr.push(idx)
+      else osmOnlyByName.set(normKey, [idx])
+    }
   }
 
   const noCoordMatched = new Set<string>()
@@ -511,6 +569,7 @@ export function matchSchools(
     if (officialsWithName.length === 1) {
       const off = officialsWithName[0]
       if (noCoordMatched.has(off.id)) continue
+      const noCoordVariantMap = normalizedOsmNameVariantMap(base.osmTags ?? {})
       rows[targetIdx] = {
         ...base,
         key: `match-${off.id}`,
@@ -519,7 +578,8 @@ export function matchSchools(
         officialId: off.id,
         officialName: off.name,
         officialProperties: off.properties,
-        matchedByNameNormalized: key,
+        matchedByOsmNameNormalized: key,
+        matchedByOsmNameTag: noCoordVariantMap.get(key),
       }
       noCoordMatched.add(off.id)
       continue
@@ -528,6 +588,7 @@ export function matchSchools(
     if (ids.length <= 1) continue
     const byId = new Map(officialsWithName.map((off) => [off.id, off] as const))
     const snapOffs = ids.map((id) => byId.get(id)).filter((x): x is OfficialInput => x != null)
+    const ambNoCoordVariantMap = normalizedOsmNameVariantMap(base.osmTags ?? {})
     rows[targetIdx] = {
       ...base,
       key: `ambig-${base.osmType ?? 'way'}-${base.osmId ?? 'unknown'}`,
@@ -539,7 +600,8 @@ export function matchSchools(
       distanceMeters: null,
       ambiguousOfficialIds: ids,
       ambiguousOfficialSnapshots: snapshotsFromOfficials(snapOffs),
-      matchedByNameNormalized: key,
+      matchedByOsmNameNormalized: key,
+      matchedByOsmNameTag: ambNoCoordVariantMap.get(key),
     }
   }
 

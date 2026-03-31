@@ -1,4 +1,5 @@
 import { z } from 'zod'
+import { OSM_SCHOOL_NAME_TAGS_IN_ORDER } from './osmNameMatchTags'
 
 export const jedeschuleSchoolSchema = z.object({
   id: z.string(),
@@ -49,8 +50,8 @@ export const schoolsMatchRowSchema = z.object({
   ambiguousOfficialIds: z.array(z.string()).optional(),
   /** Amtliche Stammdaten der Kandidaten zum Match-Zeitpunkt (für Detailseite ohne Bundesland-GeoJSON). */
   ambiguousOfficialSnapshots: z.array(ambiguousOfficialSnapshotSchema).optional(),
-  /** Normalisierter Namensvergleich, nur bei Mehrfach-Treffer im Radius eindeutig gelöst. */
-  matchedByNameNormalized: z.string().optional(),
+  matchedByOsmNameNormalized: z.string().optional(),
+  matchedByOsmNameTag: z.enum(OSM_SCHOOL_NAME_TAGS_IN_ORDER).optional(),
   pipelineLand: z.string().optional(),
 })
 

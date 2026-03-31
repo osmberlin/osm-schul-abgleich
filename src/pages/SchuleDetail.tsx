@@ -1,8 +1,4 @@
-import {
-  ChevronRightIcon,
-  InformationCircleIcon,
-  MapPinIcon,
-} from '@heroicons/react/20/solid'
+import { ChevronRightIcon, InformationCircleIcon, MapPinIcon } from '@heroicons/react/20/solid'
 import { useQuery } from '@tanstack/react-query'
 import { Link, useNavigate, useParams } from '@tanstack/react-router'
 import bbox from '@turf/bbox'
@@ -10,7 +6,13 @@ import circle from '@turf/circle'
 import distance from '@turf/distance'
 import { point } from '@turf/helpers'
 import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
-import MapGL, { Layer, type MapLayerMouseEvent, type MapRef, Popup, Source } from 'react-map-gl/maplibre'
+import MapGL, {
+  Layer,
+  type MapLayerMouseEvent,
+  type MapRef,
+  Popup,
+  Source,
+} from 'react-map-gl/maplibre'
 import 'maplibre-gl/dist/maplibre-gl.css'
 import type { Feature, FeatureCollection } from 'geojson'
 import { CategoryLegendSwatch } from '../components/CategoryLegendSwatch'
@@ -20,7 +22,12 @@ import { buildIdUrl, buildJosmLoadObject, buildOsmBrowseUrl } from '../lib/edito
 import { fetchLandSchoolsBundle } from '../lib/fetchLandSchoolsBundle'
 import { formatDeInteger } from '../lib/formatNumber'
 import { miniMarkdownNodes } from '../lib/miniMarkdown'
-import { DETAIL_MAP_OFFICIAL, DETAIL_MAP_OSM, paintMatchCatCore, paintMatchCatHalo } from '../lib/matchCategoryTheme'
+import {
+  DETAIL_MAP_OFFICIAL,
+  DETAIL_MAP_OSM,
+  paintMatchCatCore,
+  paintMatchCatHalo,
+} from '../lib/matchCategoryTheme'
 import { MATCH_RADIUS_KM, MATCH_RADIUS_M } from '../lib/matchRadius'
 import {
   applyFlatMapRotationLocks,
@@ -274,12 +281,15 @@ export function SchuleDetail() {
   }, [q.data, row])
 
   const ambiguousCandidates = useMemo(() => {
-    if (!q.data || !row || !row.ambiguousOfficialIds?.length || row.category !== 'match_ambiguous') {
+    if (
+      !q.data ||
+      !row ||
+      !row.ambiguousOfficialIds?.length ||
+      row.category !== 'match_ambiguous'
+    ) {
       return []
     }
-    const snapById = new Map(
-      (row.ambiguousOfficialSnapshots ?? []).map((s) => [s.id, s] as const),
-    )
+    const snapById = new Map((row.ambiguousOfficialSnapshots ?? []).map((s) => [s.id, s] as const))
     return row.ambiguousOfficialIds.map((oid) => {
       const fLocal = findOfficialSchoolFeature(q.data.official, oid)
       const snap = snapById.get(oid)
@@ -289,8 +299,7 @@ export function SchuleDetail() {
           ? ([fLocal.geometry.coordinates[0], fLocal.geometry.coordinates[1]] as const)
           : parseJedeschuleLonLatFromRecord(props)
       /** Namens-Uneindeutigkeit nutzt keine Distanz. */
-      const showDistance =
-        row.matchMode !== 'name' && mapOsmCentroid && officialLonLat
+      const showDistance = row.matchMode !== 'name' && mapOsmCentroid && officialLonLat
       let distM: number | null = null
       if (showDistance) {
         const [clon, clat] = mapOsmCentroid
@@ -304,7 +313,7 @@ export function SchuleDetail() {
           ? props.name
           : typeof props.id === 'string'
             ? props.id
-            : snap?.name ?? oid
+            : (snap?.name ?? oid)
       return {
         id: oid,
         name,
@@ -431,23 +440,30 @@ export function SchuleDetail() {
   }, [detailMapBounds])
 
   const mapRef = useRef<MapRef>(null)
-  useEffect(function fitDetailMapToComputedBounds() {
-    const m = mapRef.current?.getMap()
-    if (!m || !detailMapBounds) return
-    const run = () => {
-      m.resize()
-      m.fitBounds(detailMapBounds, {
-        padding: DETAIL_MAP_PADDING,
-        duration: 0,
-        maxZoom: DETAIL_MAP_MAX_ZOOM,
-      })
-      setDetailMapBbox(boundsToBboxParam(m.getBounds()))
-    }
-    if (m.loaded()) run()
-    else m.once('load', run)
-  }, [detailMapBounds])
+  useEffect(
+    function fitDetailMapToComputedBounds() {
+      const m = mapRef.current?.getMap()
+      if (!m || !detailMapBounds) return
+      const run = () => {
+        m.resize()
+        m.fitBounds(detailMapBounds, {
+          padding: DETAIL_MAP_PADDING,
+          duration: 0,
+          maxZoom: DETAIL_MAP_MAX_ZOOM,
+        })
+        setDetailMapBbox(boundsToBboxParam(m.getBounds()))
+      }
+      if (m.loaded()) run()
+      else m.once('load', run)
+    },
+    [detailMapBounds],
+  )
 
-  const handleDetailMapMove = (e: { target: { getBounds(): { getWest(): number; getSouth(): number; getEast(): number; getNorth(): number } } }) => {
+  const handleDetailMapMove = (e: {
+    target: {
+      getBounds(): { getWest(): number; getSouth(): number; getEast(): number; getNorth(): number }
+    }
+  }) => {
     setDetailMapBbox(boundsToBboxParam(e.target.getBounds()))
   }
 
@@ -790,14 +806,17 @@ export function SchuleDetail() {
         <p className="mb-6 text-sm leading-relaxed text-zinc-600 dark:text-zinc-400">
           {row.matchMode === 'distance' ? (
             de.detail.matchExplanationDistance
-          ) : row.matchedByNameNormalized ? (
+          ) : row.matchedByOsmNameNormalized ? (
             <>
               {row.matchMode === 'distance_and_name'
                 ? de.detail.matchExplanationDistanceAndName
                 : de.detail.matchExplanationName}{' '}
               <code className="rounded bg-zinc-100 px-1.5 py-0.5 font-mono text-[0.9em] text-zinc-800 dark:bg-zinc-800 dark:text-zinc-200">
-                {row.matchedByNameNormalized}
+                {row.matchedByOsmNameNormalized}
               </code>
+              {row.matchedByOsmNameTag != null && (
+                <> {de.detail.matchMatchedByOsmTag[row.matchedByOsmNameTag]}</>
+              )}
             </>
           ) : (
             de.detail.matchExplanationDistance
@@ -805,32 +824,36 @@ export function SchuleDetail() {
         </p>
       )}
 
-      {row.category === 'match_ambiguous' && row.matchMode === 'name' && ambiguousCandidates.length > 0 && (
-        <section
-          className="mb-6 rounded-md bg-amber-50 p-4 dark:bg-amber-500/10 dark:outline dark:outline-amber-500/20"
-          aria-labelledby="schule-detail-ambiguous-name-alert-title"
-        >
-          <div className="flex">
-            <div className="shrink-0">
-              <InformationCircleIcon
-                aria-hidden
-                className="size-5 text-amber-500 dark:text-amber-400"
-              />
-            </div>
-            <div className="ml-3 min-w-0">
-              <h3
-                id="schule-detail-ambiguous-name-alert-title"
-                className="text-sm font-medium text-amber-900 dark:text-amber-100"
-              >
-                {de.detail.ambiguousNameNoGeoAlertTitle}
-              </h3>
-              <div className="mt-2 text-sm text-amber-800 dark:text-amber-100/85">
-                <p className="leading-relaxed">{miniMarkdownNodes(de.detail.ambiguousNameNoGeoAlertText)}</p>
+      {row.category === 'match_ambiguous' &&
+        row.matchMode === 'name' &&
+        ambiguousCandidates.length > 0 && (
+          <section
+            className="mb-6 rounded-md bg-amber-50 p-4 dark:bg-amber-500/10 dark:outline dark:outline-amber-500/20"
+            aria-labelledby="schule-detail-ambiguous-name-alert-title"
+          >
+            <div className="flex">
+              <div className="shrink-0">
+                <InformationCircleIcon
+                  aria-hidden
+                  className="size-5 text-amber-500 dark:text-amber-400"
+                />
+              </div>
+              <div className="ml-3 min-w-0">
+                <h3
+                  id="schule-detail-ambiguous-name-alert-title"
+                  className="text-sm font-medium text-amber-900 dark:text-amber-100"
+                >
+                  {de.detail.ambiguousNameNoGeoAlertTitle}
+                </h3>
+                <div className="mt-2 text-sm text-amber-800 dark:text-amber-100/85">
+                  <p className="leading-relaxed">
+                    {miniMarkdownNodes(de.detail.ambiguousNameNoGeoAlertText)}
+                  </p>
+                </div>
               </div>
             </div>
-          </div>
-        </section>
-      )}
+          </section>
+        )}
 
       {row.category === 'match_ambiguous' && ambiguousNoLocalGeoFeature && (
         <section
@@ -852,7 +875,9 @@ export function SchuleDetail() {
                 {de.detail.ambiguousNoLocalGeoTitle}
               </h3>
               <div className="mt-2 text-sm text-amber-800 dark:text-amber-100/85">
-                <p className="leading-relaxed">{miniMarkdownNodes(de.detail.ambiguousNoLocalGeoText)}</p>
+                <p className="leading-relaxed">
+                  {miniMarkdownNodes(de.detail.ambiguousNoLocalGeoText)}
+                </p>
               </div>
             </div>
           </div>
@@ -944,10 +969,7 @@ export function SchuleDetail() {
                           {summaryMiddle}
                         </>
                       )}
-                      <span
-                        aria-hidden
-                        className="select-none text-zinc-400 dark:text-zinc-500"
-                      >
+                      <span aria-hidden className="select-none text-zinc-400 dark:text-zinc-500">
                         {'\u00B7'}
                       </span>
                       <a

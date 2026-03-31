@@ -167,7 +167,8 @@ function rowsToJson(rows: MatchRowOut[]) {
     osmTags: r.osmTags,
     ambiguousOfficialIds: r.ambiguousOfficialIds,
     ambiguousOfficialSnapshots: r.ambiguousOfficialSnapshots,
-    matchedByNameNormalized: r.matchedByNameNormalized,
+    matchedByOsmNameNormalized: r.matchedByOsmNameNormalized,
+    matchedByOsmNameTag: r.matchedByOsmNameTag,
     pipelineLand: r.pipelineLand,
   }))
 }

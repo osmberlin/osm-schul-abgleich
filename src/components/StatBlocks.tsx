@@ -109,10 +109,7 @@ export function ReadOnlyStatBlock({
     <div className="flex flex-col-reverse gap-y-2">
       <dt className="min-w-0 text-base/7 text-zinc-600 dark:text-zinc-400">
         <span className="flex min-w-0 flex-nowrap items-center gap-1 text-sm leading-snug">
-          <span
-            className="min-w-0 overflow-hidden text-ellipsis whitespace-nowrap"
-            title={label}
-          >
+          <span className="min-w-0 overflow-hidden text-ellipsis whitespace-nowrap" title={label}>
             {label}
           </span>
           {labelAddon ? <span className="shrink-0">{labelAddon}</span> : null}

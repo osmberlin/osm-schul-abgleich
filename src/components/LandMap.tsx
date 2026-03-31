@@ -140,7 +140,8 @@ export function LandMap({
 
   const hasUrlBbox = urlBbox != null
   const bboxToolbarEnabled = onApplyUrlBbox != null && onClearUrlBbox != null
-  const toolbarVisible = bboxToolbarEnabled && (hasUrlBbox || bboxChanged(baselineBbox, currentBbox))
+  const toolbarVisible =
+    bboxToolbarEnabled && (hasUrlBbox || bboxChanged(baselineBbox, currentBbox))
 
   const catFilter = useMemo(() => matchCategoryFilter(enabledCategories), [enabledCategories])
 
@@ -166,33 +167,39 @@ export function LandMap({
     setCurrentBbox(boundsToBboxParam(m.getBounds()))
   }, [])
 
-  useEffect(function initializeMapStateFromExistingInstance() {
-    if (mapReady) return
-    const m = mapRef.current?.getMap()
-    if (!m) return
-    const b = boundsToBboxParam(m.getBounds())
-    setMapReady(true)
-    setCurrentBbox(b)
-    setBaselineBbox((prev) => prev ?? b)
-  }, [mapReady])
+  useEffect(
+    function initializeMapStateFromExistingInstance() {
+      if (mapReady) return
+      const m = mapRef.current?.getMap()
+      if (!m) return
+      const b = boundsToBboxParam(m.getBounds())
+      setMapReady(true)
+      setCurrentBbox(b)
+      setBaselineBbox((prev) => prev ?? b)
+    },
+    [mapReady],
+  )
 
-  useEffect(function fitMapToTargetBounds() {
-    const m = mapRef.current?.getMap()
-    if (!m || !fitTargetBounds) return
+  useEffect(
+    function fitMapToTargetBounds() {
+      const m = mapRef.current?.getMap()
+      if (!m || !fitTargetBounds) return
 
-    const run = () => {
-      m.resize()
-      pendingBaselineRef.current = true
-      m.fitBounds(fitTargetBounds, {
-        padding: FIT_PADDING,
-        duration: 0,
-        maxZoom: FIT_MAX_ZOOM,
-      })
-    }
+      const run = () => {
+        m.resize()
+        pendingBaselineRef.current = true
+        m.fitBounds(fitTargetBounds, {
+          padding: FIT_PADDING,
+          duration: 0,
+          maxZoom: FIT_MAX_ZOOM,
+        })
+      }
 
-    if (m.loaded()) run()
-    else m.once('load', run)
-  }, [fitTargetBounds])
+      if (m.loaded()) run()
+      else m.once('load', run)
+    },
+    [fitTargetBounds],
+  )
 
   const handleApply = useCallback(
     (b: LandMapBbox) => {

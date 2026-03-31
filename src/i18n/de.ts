@@ -25,8 +25,7 @@ export const de = {
     },
     loading: 'Lade Zusammenfassung…',
     error: 'Zusammenfassung konnte nicht geladen werden.',
-    empty:
-      'Noch keine Daten…',
+    empty: 'Noch keine Daten…',
     toLand: 'Zum Bundesland',
     globalKpiAria: 'Deutschland — Kennzahlen (Summe aller Bundesländer)',
     historyHeading: 'Deutschland — Entwicklung über Pipeline-Läufe',
@@ -117,6 +116,11 @@ export const de = {
       distance: 'Distanz',
       distance_and_name: 'Distanz + Name',
       name: 'Name',
+    },
+    matchMatchedByOsmTag: {
+      name: 'Abgleich über das OSM-Tag `name`.',
+      'name:de': 'Abgleich über das OSM-Tag `name:de`.',
+      official_name: 'Abgleich über das OSM-Tag `official_name`.',
     },
   },
   status: {
