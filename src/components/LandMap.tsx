@@ -2,7 +2,7 @@ import type { CircleLayerSpecification } from '@maplibre/maplibre-gl-style-spec'
 import bbox from '@turf/bbox'
 import type { FilterSpecification } from 'maplibre-gl'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
-import MapGL, { Layer, type MapRef, Source, type ViewStateChangeEvent } from 'react-map-gl/maplibre'
+import MapGL, { Layer, type MapRef, Source } from 'react-map-gl/maplibre'
 import 'maplibre-gl/dist/maplibre-gl.css'
 import type { Feature, FeatureCollection, MultiPolygon, Polygon } from 'geojson'
 import {
@@ -19,12 +19,13 @@ import {
 import { type LandCode, STATE_BOUNDS, STATE_MAP_CENTER } from '../lib/stateConfig'
 import { ALL_LAND_MATCH_CATEGORIES, type LandMatchCategory } from '../lib/useLandCategoryFilter'
 import type { LandMapBbox } from '../lib/useLandMapBbox'
+import { boundsToBboxParam } from '../lib/mapBounds'
 import { LandMapBboxToolbar } from './LandMapBboxToolbar'
 
 const FIT_PADDING = 48
 const FIT_MAX_ZOOM = 16
 const LAND_MAP_ID = 'land-map'
-const ZOOM_MARGIN = 0.35
+const BBOX_EPSILON = 0.0001
 
 function lngLatBoundsFromTurfBbox(
   b: [number, number, number, number],
@@ -33,6 +34,11 @@ function lngLatBoundsFromTurfBbox(
     [b[0], b[1]],
     [b[2], b[3]],
   ]
+}
+
+function bboxChanged(a: LandMapBbox | null, b: LandMapBbox | null): boolean {
+  if (!a || !b) return false
+  return a.some((v, i) => Math.abs(v - b[i]) > BBOX_EPSILON)
 }
 
 const landMapCircleHaloPaint = {
@@ -129,15 +135,12 @@ export function LandMap({
   const mapRef = useRef<MapRef>(null)
   const pendingBaselineRef = useRef(false)
   const [mapReady, setMapReady] = useState(false)
-  const [mapZoom, setMapZoom] = useState<number | null>(null)
-  const [baselineZoom, setBaselineZoom] = useState<number | null>(null)
+  const [currentBbox, setCurrentBbox] = useState<LandMapBbox | null>(null)
+  const [baselineBbox, setBaselineBbox] = useState<LandMapBbox | null>(null)
 
   const hasUrlBbox = urlBbox != null
   const bboxToolbarEnabled = onApplyUrlBbox != null && onClearUrlBbox != null
-  const toolbarVisible =
-    bboxToolbarEnabled &&
-    (hasUrlBbox ||
-      (baselineZoom != null && mapZoom != null && mapZoom > baselineZoom + ZOOM_MARGIN))
+  const toolbarVisible = bboxToolbarEnabled && (hasUrlBbox || bboxChanged(baselineBbox, currentBbox))
 
   const catFilter = useMemo(() => matchCategoryFilter(enabledCategories), [enabledCategories])
 
@@ -147,31 +150,41 @@ export function LandMap({
     return ['all', geom, catFilter] as FilterSpecification
   }, [catFilter])
 
-  const handleMoveEnd = useCallback((e: ViewStateChangeEvent) => {
-    setMapZoom(e.viewState.zoom)
+  const handleMove = useCallback(() => {
+    const m = mapRef.current?.getMap()
+    if (!m) return
+    setCurrentBbox(boundsToBboxParam(m.getBounds()))
   }, [])
 
   useEffect(() => {
-    if (!mapReady) return
     const m = mapRef.current?.getMap()
     if (!m) return
 
     const onIdle = () => {
       if (!pendingBaselineRef.current) return
       pendingBaselineRef.current = false
-      const z = m.getZoom()
-      setBaselineZoom(z)
-      setMapZoom(z)
+      const b = boundsToBboxParam(m.getBounds())
+      setBaselineBbox(b)
+      setCurrentBbox(b)
     }
 
     m.on('idle', onIdle)
     return () => {
       m.off('idle', onIdle)
     }
-  }, [mapReady])
+  }, [])
 
   useEffect(() => {
-    if (!mapReady) return
+    if (mapReady) return
+    const m = mapRef.current?.getMap()
+    if (!m) return
+    const b = boundsToBboxParam(m.getBounds())
+    setMapReady(true)
+    setCurrentBbox(b)
+    setBaselineBbox((prev) => prev ?? b)
+  }, [mapReady, fitTargetBounds, landCode])
+
+  useEffect(() => {
     const m = mapRef.current?.getMap()
     if (!m || !fitTargetBounds) return
 
@@ -187,7 +200,7 @@ export function LandMap({
 
     if (m.loaded()) run()
     else m.once('load', run)
-  }, [mapReady, fitTargetBounds])
+  }, [fitTargetBounds])
 
   const handleApply = useCallback(
     (b: LandMapBbox) => {
@@ -212,9 +225,12 @@ export function LandMap({
           const map = e.target
           applyFlatMapRotationLocks(map)
           hideVectorBasemapBuildings(map)
+          const b = boundsToBboxParam(map.getBounds())
+          setCurrentBbox(b)
+          setBaselineBbox((prev) => prev ?? b)
           setMapReady(true)
         }}
-        onMoveEnd={handleMoveEnd}
+        onMove={handleMove}
       >
         {landBoundary && (
           <Source id="land-boundary-outline" type="geojson" data={landBoundary}>

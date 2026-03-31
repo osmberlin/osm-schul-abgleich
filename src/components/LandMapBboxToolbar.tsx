@@ -1,20 +1,7 @@
 import { useMap } from 'react-map-gl/maplibre'
 import { de } from '../i18n/de'
+import { boundsToBboxParam } from '../lib/mapBounds'
 import type { LandMapBbox } from '../lib/useLandMapBbox'
-
-function boundsToBboxParam(b: {
-  getWest(): number
-  getSouth(): number
-  getEast(): number
-  getNorth(): number
-}): LandMapBbox {
-  return [
-    Number(b.getWest().toFixed(4)),
-    Number(b.getSouth().toFixed(4)),
-    Number(b.getEast().toFixed(4)),
-    Number(b.getNorth().toFixed(4)),
-  ]
-}
 
 const btnBase =
   'pointer-events-auto relative inline-flex items-center bg-white px-3 py-2 text-sm font-medium text-zinc-900 ring-1 ring-zinc-300 ring-inset hover:bg-zinc-50 focus:z-10 disabled:cursor-not-allowed disabled:opacity-50 dark:bg-zinc-800 dark:text-zinc-100 dark:ring-zinc-600 dark:hover:bg-zinc-700/80'
