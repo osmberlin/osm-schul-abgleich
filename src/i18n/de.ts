@@ -10,9 +10,9 @@ export const de = {
 
   home: {
     heading: 'OpenStreetMap und offizielle Schuldaten',
-    leadIntro: 'Diese Anwendung vergleicht pro Bundesland die öffentlichen Schuldaten (',
-    leadBetween: ') mit OSM-Flächen (',
-    leadOutro: '). Ziel ist bessere Datenqualität: Fehlen, Dubletten und Attribute prüfen.',
+    leadIntro: 'Diese Anwendung vergleicht pro Bundesland die öffentlichen Schuldaten von ',
+    leadBetween: ' mit OSM-Daten (',
+    leadOutro: '). Das Ziel ist eine bessere Datenqualität.',
     links: {
       jedeschule: {
         href: 'https://jedeschule.codefor.de/ueber/',
@@ -26,7 +26,7 @@ export const de = {
     loading: 'Lade Zusammenfassung…',
     error: 'Zusammenfassung konnte nicht geladen werden.',
     empty:
-      'Noch keine Daten — komplette Pipeline: bun run pipeline (Download bundesweit → Abgleich → Split pro Land). Ohne Download nur neu abgleichen: bun run pipeline:rebuild.',
+      'Noch keine Daten…',
     toLand: 'Zum Bundesland',
     globalKpiAria: 'Deutschland — Kennzahlen (Summe aller Bundesländer)',
     historyHeading: 'Deutschland — Entwicklung über Pipeline-Läufe',

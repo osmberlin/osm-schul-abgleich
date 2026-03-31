@@ -310,15 +310,6 @@ export function HomePage() {
           </div>
         </section>
       )}
-
-      <div className="mt-8">
-        <Link
-          to="/status"
-          className="inline-block text-sm font-medium text-emerald-800 hover:underline dark:text-emerald-300"
-        >
-          {de.navStatus}
-        </Link>
-      </div>
     </div>
   )
 }
