@@ -153,12 +153,12 @@ const AMBIGUOUS_COMPARE_SUMMARY_LAYOUT =
   'flex min-w-0 flex-1 flex-col gap-2 md:flex-row md:items-start md:gap-4'
 
 const AMBIGUOUS_COMPARE_META_WRAP =
-  'w-full min-w-0 overflow-x-auto text-sm text-zinc-400 md:w-auto md:shrink-0 md:overflow-visible md:text-right'
+  'w-full min-w-0 overflow-x-auto text-sm text-zinc-400 md:min-w-0 md:max-w-[min(100%,28rem)] md:overflow-visible md:text-right'
 
 const AMBIGUOUS_COMPARE_META_ROW =
-  'inline-flex min-w-max flex-row flex-nowrap items-center gap-x-2 md:ml-auto'
+  'flex min-w-0 w-full flex-nowrap items-center gap-x-2 md:ml-auto'
 
-const AMBIGUOUS_COMPARE_META_DOT = 'select-none text-zinc-500'
+const AMBIGUOUS_COMPARE_META_DOT = 'shrink-0 select-none text-zinc-500'
 
 function AmbiguousCompareSummaryMeta({
   officialId,
@@ -172,13 +172,15 @@ function AmbiguousCompareSummaryMeta({
   return (
     <div className={AMBIGUOUS_COMPARE_META_WRAP}>
       <div className={AMBIGUOUS_COMPARE_META_ROW}>
-        <span className="whitespace-nowrap font-mono">{officialId}</span>
+        <span className="min-w-0 flex-1 truncate font-mono" title={officialId}>
+          {officialId}
+        </span>
         {summaryMiddle != null && (
           <>
             <span aria-hidden className={AMBIGUOUS_COMPARE_META_DOT}>
               {'\u00B7'}
             </span>
-            {summaryMiddle}
+            <span className="shrink-0">{summaryMiddle}</span>
           </>
         )}
         <span aria-hidden className={AMBIGUOUS_COMPARE_META_DOT}>
@@ -188,7 +190,7 @@ function AmbiguousCompareSummaryMeta({
           href={`https://jedeschule.codefor.de/schools/${encodeURIComponent(officialId)}`}
           target="_blank"
           rel="noreferrer"
-          className="whitespace-nowrap text-emerald-300 underline"
+          className="shrink-0 whitespace-nowrap text-emerald-300 underline"
           onClick={(e) => e.stopPropagation()}
         >
           {jedeschuleLabel}
