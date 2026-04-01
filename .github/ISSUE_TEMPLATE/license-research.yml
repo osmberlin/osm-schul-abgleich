@@ -1,0 +1,68 @@
+name: Amtliche Lizenz recherchieren
+description: Bundesland, Quelle, Lizenztext und OSM-Kompatibilität dokumentieren
+labels:
+  - data-license
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Bitte die **amtliche Quelle** und deren **Nutzungsbedingungen** prüfen. Nach Merge eines PRs mit Aktualisierung von `src/lib/bundeslandOfficialSources.ts` tragen Maintainer `lastCheckedAt` und `lastCheckedByGithub` (GitHub-Name der recherchierenden Person) ein.
+  - type: dropdown
+    id: land
+    attributes:
+      label: Bundesland (ISO-Code)
+      options:
+        - BW
+        - BY
+        - BE
+        - BB
+        - HB
+        - HH
+        - HE
+        - MV
+        - NI
+        - NW
+        - RP
+        - SL
+        - SN
+        - ST
+        - SH
+        - TH
+    validations:
+      required: true
+  - type: input
+    id: source_url
+    attributes:
+      label: URL der amtlichen Quelle (wie auf der Seite nachweisbar)
+    validations:
+      required: true
+  - type: textarea
+    id: official_license
+    attributes:
+      label: Amtlicher Lizenz- oder Nutzungshinweis
+      description: Zitat oder Link zur konkreten Stelle (Portal, Impressum, Datenlizenz).
+    validations:
+      required: true
+  - type: dropdown
+    id: osm_compatible
+    attributes:
+      label: Vorschlag für OSM-Kompatibilität (Feld `osmCompatible`)
+      options:
+        - unknown
+        - 'no'
+        - yes_licence
+        - yes_waiver
+    validations:
+      required: true
+  - type: textarea
+    id: reasoning
+    attributes:
+      label: Kurze Begründung
+      description: Optional — warum diese Einordnung?
+  - type: input
+    id: github_username
+    attributes:
+      label: Dein GitHub-Benutzername
+      description: Für die spätere Eintragung bei `lastCheckedByGithub` nach PR-Merge.
+    validations:
+      required: true

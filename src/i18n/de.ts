@@ -35,6 +35,30 @@ export const de = {
       'Noch kein vollständiger Lauf mit Kategorien in der Statusdatei. Nach einem bundesweiten Abgleich erscheint hier ein Diagramm.',
     historyLoading: 'Lade Verlauf…',
     historyError: 'Verlauf konnte nicht geladen werden.',
+    officialSources: {
+      heading: 'Amtliche Schuldaten — Quellen und Lizenzen',
+      lead: 'Die App nutzt die aggregierten Daten von jedeschule.codefor.de, wo amtliche Ursprungsquellen aggregiert und aufbereitet werden. Bitte helft mit und ergänze die Tabelle mit den aktuellen Lizenzen.',
+      disclaimer:
+        'Die Tabelle wird in Github gepflegt. Du kannst einen Issue erstellen oder die Tabelle direkt auf GitHub bearbeiten.',
+      ctaIssue: 'Lizenz recherchieren (GitHub-Issue)',
+      ctaEditFile: 'Tabelle auf GitHub bearbeiten',
+      colLand: 'Bundesland',
+      colOfficialLicense: 'Amtliche Lizenz',
+      colOsmCompatible: 'OSM-kompatibel',
+      colChecked: 'Zuletzt geprüft',
+      unknownLicense: 'unbekannt',
+      sourceLinkLabel: 'Link',
+      checkedDateLine: 'Zuletzt geprüft am {date}',
+      checkedGithubLine: '@{user}',
+      checkedDateOnly: 'Datum {date}',
+      osmCompatibleLabel: {
+        unknown: 'Unbekannt',
+        no: 'Nein',
+        yes_licence: 'Ja (Lizenz)',
+        yes_waiver: 'Ja (Freigabe)',
+      },
+      osmCompatibilityRefLink: 'Nachweis (OSM-Wiki, PDF)',
+    },
   },
   land: {
     /** Bundesland-Übersicht — ein Kopfzeilentext statt getrenntem Titel und Code. */

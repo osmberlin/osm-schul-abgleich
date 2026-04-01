@@ -4,6 +4,7 @@ import { HomeGermanyStats } from '../components/home/HomeGermanyStats'
 import { HomeHeader } from '../components/home/HomeHeader'
 import { HomeHistorySection } from '../components/home/HomeHistorySection'
 import { HomeLandList } from '../components/home/HomeLandList'
+import { HomeOfficialSourcesSection } from '../components/home/HomeOfficialSourcesSection'
 import { de } from '../i18n/de'
 import { germanyHistoryFromRuns } from '../lib/matchHistoryFromRuns'
 import { runsJsonUrl, summaryJsonUrl } from '../lib/paths'
@@ -74,6 +75,8 @@ export function HomePage() {
       {q.isSuccess && q.data.lands.length > 0 && <HomeLandList byCode={byCode} />}
 
       {runsQ.isSuccess && <HomeHistorySection points={germanyHistoryPoints} />}
+
+      <HomeOfficialSourcesSection />
     </div>
   )
 }
