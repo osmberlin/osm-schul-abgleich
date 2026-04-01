@@ -3,8 +3,9 @@ import { useQuery } from '@tanstack/react-query'
 import { Link, useNavigate, useParams } from '@tanstack/react-router'
 import bbox from '@turf/bbox'
 import circle from '@turf/circle'
+import difference from '@turf/difference'
 import distance from '@turf/distance'
-import { point } from '@turf/helpers'
+import { featureCollection, point } from '@turf/helpers'
 import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
 import MapGL, {
   Layer,
@@ -14,19 +15,13 @@ import MapGL, {
   Source,
 } from 'react-map-gl/maplibre'
 import 'maplibre-gl/dist/maplibre-gl.css'
-import type { Feature, FeatureCollection } from 'geojson'
-import { CategoryLegendSwatch } from '../components/CategoryLegendSwatch'
+import type { Feature, FeatureCollection, MultiPolygon, Polygon } from 'geojson'
 import { de } from '../i18n/de'
 import { buildIdUrl, buildJosmLoadObject, buildOsmBrowseUrl } from '../lib/editorLinks'
 import { fetchLandSchoolsBundle } from '../lib/fetchLandSchoolsBundle'
 import { formatDeInteger } from '../lib/formatNumber'
 import { boundsToBboxParam } from '../lib/mapBounds'
-import {
-  DETAIL_MAP_OFFICIAL,
-  DETAIL_MAP_OSM,
-  paintMatchCatCore,
-  paintMatchCatHalo,
-} from '../lib/matchCategoryTheme'
+import { DETAIL_MAP_OFFICIAL, DETAIL_MAP_OSM } from '../lib/matchCategoryTheme'
 import { MATCH_RADIUS_KM, MATCH_RADIUS_M } from '../lib/matchRadius'
 import { miniMarkdownNodes } from '../lib/miniMarkdown'
 import {
@@ -37,7 +32,8 @@ import {
 import { findOsmFeature } from '../lib/osmFeatureLookup'
 import { osmGeometryCentroidLonLat } from '../lib/osmGeometryCentroid'
 import { comparePropertySections, normalizeAddressCompareString } from '../lib/propertyCompare'
-import { useDetailShowOtherData } from '../lib/useDetailShowOtherData'
+import { useDetailMapMask } from '../lib/useDetailMapMask'
+import type { LandMatchCategory } from '../lib/useLandCategoryFilter'
 import type { LandMapBbox } from '../lib/useLandMapBbox'
 import { parseJedeschuleLonLatFromRecord, parseMatchRowOsmCentroidLonLat } from '../lib/zodGeo'
 
@@ -47,20 +43,104 @@ const DETAIL_MAP_MAX_ZOOM = 17
 const OTHER_SCHOOLS_LAYER_HALO = 'other-schools-halo'
 const OTHER_SCHOOLS_LAYER_CORE = 'other-schools-core'
 
-type HoveredOtherSchool = {
-  matchKey: string
-  name: string
-  lon: number
-  lat: number
+const DETAIL_MAP_LAYER_CENTROID_CORE = 'c-centroid-core'
+const DETAIL_MAP_LAYER_CENTROID_HALO = 'c-centroid-halo'
+const DETAIL_MAP_LAYER_OFFICIAL_CORE = 'c-official-core'
+const DETAIL_MAP_LAYER_OFFICIAL_HALO = 'c-official-halo'
+
+/** Referenz-OSM: blauer Schein, schwarzer Kern */
+const DETAIL_REF_OSM_HALO_COLOR = 'rgba(59, 130, 246, 0.5)'
+const DETAIL_REF_OSM_CORE_COLOR = '#0a0a0a'
+
+/** Weitere OSM-Schwerpunkte: Kern blau bei matched/ambiguous, sonst grau; Halo blau / violett / grau */
+const DETAIL_OTHER_OSM_HALO_PAINT = [
+  'match',
+  ['get', 'matchCat'],
+  'matched',
+  'rgba(59, 130, 246, 0.42)',
+  'match_ambiguous',
+  'rgba(139, 92, 246, 0.45)',
+  'rgba(113, 113, 122, 0.38)',
+] as unknown as string
+
+const DETAIL_OTHER_OSM_CORE_PAINT = [
+  'match',
+  ['get', 'matchCat'],
+  'matched',
+  '#2563eb',
+  'match_ambiguous',
+  '#2563eb',
+  '#71717a',
+] as unknown as string
+
+const SCHULE_DETAIL_COMPARE_MAIN_ID = 'schule-detail-compare-main'
+
+/** Square light tile behind point swatches; inner dot is 18px so tile matches exactly. */
+const DETAIL_MAP_LEGEND_POINT_TILE =
+  'inline-flex size-[18px] shrink-0 items-center justify-center rounded-sm bg-zinc-200 p-0 shadow-sm ring-1 ring-zinc-400/25'
+
+const DETAIL_MAP_LEGEND_DOT_WRAPPER =
+  'relative inline-flex size-[18px] shrink-0 items-center justify-center'
+
+function DetailMapLegendPointDot({
+  haloClassName,
+  coreClassName,
+}: {
+  haloClassName: string
+  coreClassName: string
+}) {
+  return (
+    <span className={DETAIL_MAP_LEGEND_DOT_WRAPPER}>
+      <span className={`absolute size-[15px] rounded-full ${haloClassName}`} />
+      <span className={`relative size-1 rounded-full ring-1 ring-zinc-600/35 ${coreClassName}`} />
+    </span>
+  )
+}
+
+function schuleDetailCompareSectionId(officialId: string) {
+  return `schule-detail-compare-${officialId}`
+}
+
+function scrollToSchuleDetailCompareSection(elementId: string) {
+  requestAnimationFrame(() => {
+    const el = document.getElementById(elementId)
+    if (!el) return
+    el.scrollIntoView({ behavior: 'smooth', block: 'start' })
+    const parentDetails = el.closest('details')
+    if (parentDetails) parentDetails.open = true
+  })
+}
+
+type HoveredMapLabel =
+  | { kind: 'osm-reference'; lon: number; lat: number; name: string }
+  | { kind: 'official-current'; lon: number; lat: number; name: string; scrollTargetId: string }
+  | {
+      kind: 'osm-other'
+      lon: number
+      lat: number
+      name: string
+      matchKey: string
+      matchCat: LandMatchCategory
+    }
+
+/** Same category line as LandLayout header (`de.land.categoryLabel`). */
+function detailMapPopupCategoryLine(
+  hovered: HoveredMapLabel,
+  currentSchuleCategory: LandMatchCategory,
+): string {
+  const cat = hovered.kind === 'osm-other' ? hovered.matchCat : currentSchuleCategory
+  return de.land.categoryLabel[cat] ?? cat
 }
 
 /** Uncontrolled `<details>` opened on first paint (React’s `DetailsHTMLAttributes` has no `defaultOpen` yet). */
 function DetailsOpenByDefault({
   className,
   children,
+  id,
 }: {
   className?: string
   children: React.ReactNode
+  id?: string
 }) {
   const ref = useRef<HTMLDetailsElement>(null)
   useLayoutEffect(() => {
@@ -68,7 +148,7 @@ function DetailsOpenByDefault({
     if (el) el.open = true
   }, [])
   return (
-    <details ref={ref} className={className}>
+    <details ref={ref} id={id} className={className}>
       {children}
     </details>
   )
@@ -119,7 +199,7 @@ function MatchCompareBody({
         <div className="overflow-hidden rounded-lg border border-zinc-700">
           <div className="border-b border-zinc-700 bg-zinc-900/50 px-2.5 py-1.5 text-xs md:hidden">
             <p className="font-semibold leading-snug tracking-wide">
-              <span className="text-amber-100">
+              <span className="text-amber-200">
                 {de.detail.official}
                 {officialIdForHeader ? (
                   <>
@@ -134,7 +214,7 @@ function MatchCompareBody({
                   {'\u00B7'}{' '}
                 </span>
               ) : null}
-              <span className="text-blue-100">
+              <span className="text-blue-300">
                 {de.detail.osm}
                 {osmRefLabel ? (
                   <>
@@ -146,7 +226,7 @@ function MatchCompareBody({
             </p>
           </div>
           <div className="hidden grid-cols-2 gap-0 border-b border-zinc-700 bg-zinc-900/50 md:grid">
-            <div className="border-r border-zinc-700 bg-amber-950/35 px-3 py-2 text-xs font-semibold tracking-wide text-amber-100">
+            <div className="border-r border-zinc-700 bg-amber-950/35 px-3 py-2 text-xs font-semibold tracking-wide text-amber-200">
               {de.detail.official}
               {officialIdForHeader ? (
                 <>
@@ -155,7 +235,7 @@ function MatchCompareBody({
                 </>
               ) : null}
             </div>
-            <div className="bg-blue-950/35 px-3 py-2 text-xs font-semibold tracking-wide text-blue-100">
+            <div className="bg-blue-950/35 px-3 py-2 text-xs font-semibold tracking-wide text-blue-300">
               {de.detail.osm}
               {osmRefLabel ? (
                 <>
@@ -172,9 +252,6 @@ function MatchCompareBody({
               {nameRows.map(([k, o, s]) => (
                 <div key={k} className="grid gap-3 p-2 md:grid-cols-2 md:gap-0 md:p-0">
                   <div className="space-y-1 md:border-r md:border-zinc-800 md:bg-amber-950/15 md:p-3">
-                    <p className="text-[0.65rem] font-medium uppercase tracking-wide text-amber-200 md:hidden">
-                      {de.detail.official}
-                    </p>
                     <dl className="flex flex-col gap-0.5 sm:flex-row sm:items-center sm:gap-2">
                       <dt className="shrink-0 font-mono text-xs leading-normal text-amber-200">
                         {k}
@@ -183,9 +260,6 @@ function MatchCompareBody({
                     </dl>
                   </div>
                   <div className="space-y-1 md:bg-blue-950/15 md:p-3">
-                    <p className="text-[0.65rem] font-medium uppercase tracking-wide text-blue-300 md:hidden">
-                      {de.detail.osm}
-                    </p>
                     <dl className="flex flex-col gap-0.5 sm:flex-row sm:items-center sm:gap-2">
                       <dt className="shrink-0 font-mono text-xs leading-normal text-blue-300">
                         {k}
@@ -213,9 +287,6 @@ function MatchCompareBody({
                     className={`grid gap-3 p-2 md:grid-cols-2 md:gap-0 md:p-0 ${rowTone}`}
                   >
                     <div className="space-y-1 md:border-r md:border-zinc-800 md:bg-amber-950/15 md:p-3">
-                      <p className="text-[0.65rem] font-medium uppercase tracking-wide text-amber-200 md:hidden">
-                        {de.detail.official}
-                      </p>
                       <dl className="flex flex-col gap-0.5 sm:flex-row sm:items-center sm:gap-2">
                         <dt className="shrink-0 font-mono text-xs leading-normal text-amber-200">
                           {group.officialKey}
@@ -226,9 +297,6 @@ function MatchCompareBody({
                       </dl>
                     </div>
                     <div className="space-y-1 md:bg-blue-950/15 md:p-3">
-                      <p className="text-[0.65rem] font-medium uppercase tracking-wide text-blue-300 md:hidden">
-                        {de.detail.osm}
-                      </p>
                       {group.osmKeys.map((k) => (
                         <dl
                           key={`${group.kind}-${k}`}
@@ -249,9 +317,6 @@ function MatchCompareBody({
               {nonNameBothRows.map(([k, o, s]) => (
                 <div key={k} className="grid gap-3 p-2 md:grid-cols-2 md:gap-0 md:p-0">
                   <div className="space-y-1 md:border-r md:border-zinc-800 md:bg-amber-950/15 md:p-3">
-                    <p className="text-[0.65rem] font-medium uppercase tracking-wide text-amber-200 md:hidden">
-                      {de.detail.official}
-                    </p>
                     <dl className="flex flex-col gap-0.5 sm:flex-row sm:items-center sm:gap-2">
                       <dt className="shrink-0 font-mono text-xs leading-normal text-amber-200">
                         {k}
@@ -260,9 +325,6 @@ function MatchCompareBody({
                     </dl>
                   </div>
                   <div className="space-y-1 md:bg-blue-950/15 md:p-3">
-                    <p className="text-[0.65rem] font-medium uppercase tracking-wide text-blue-300 md:hidden">
-                      {de.detail.osm}
-                    </p>
                     <dl className="flex flex-col gap-0.5 sm:flex-row sm:items-center sm:gap-2">
                       <dt className="shrink-0 font-mono text-xs leading-normal text-blue-300">
                         {k}
@@ -317,9 +379,8 @@ export function SchuleDetail() {
   const { code, matchKey } = useParams({ strict: false }) as { code: string; matchKey: string }
   const navigate = useNavigate()
   const keyDecoded = decodeURIComponent(matchKey)
-  const { showOtherData, setShowOtherData } = useDetailShowOtherData()
+  const { showMapMask, setShowMapMask } = useDetailMapMask()
   const [detailMapBbox, setDetailMapBbox] = useState<LandMapBbox | null>(null)
-  const [hoveredOtherSchool, setHoveredOtherSchool] = useState<HoveredOtherSchool | null>(null)
 
   const q = useQuery({
     queryKey: ['schule-detail', code, keyDecoded],
@@ -426,28 +487,90 @@ export function SchuleDetail() {
     return ring
   }, [mapOsmCentroid])
 
-  /** Detail-Features inkl. Vergleichsradius-Polygon (eine GeoJSON-Quelle, Layer per Filter). */
-  const detailMapFc = useMemo((): FeatureCollection | null => {
-    if (!detailFc) return null
-    if (!compareRadiusRing) return detailFc
-    return { type: 'FeatureCollection', features: [...detailFc.features, compareRadiusRing] }
-  }, [detailFc, compareRadiusRing])
+  /** Bundeslandfläche abzüglich Kreis — nur für Abdunklung (nicht in fitBounds). */
+  const maskShellFeature = useMemo((): Feature | null => {
+    if (!q.data?.boundary || !compareRadiusRing) return null
+    const b = q.data.boundary
+    if (b.geometry?.type !== 'Polygon' && b.geometry?.type !== 'MultiPolygon') return null
+    const boundaryFeat = b as Feature<Polygon | MultiPolygon>
+    const circleFeat = compareRadiusRing as Feature<Polygon>
+    try {
+      const shell = difference(featureCollection([boundaryFeat, circleFeat]))
+      if (!shell) return null
+      return {
+        ...shell,
+        properties: { ...shell.properties, _mapDetail: 'maskShell' as const },
+      }
+    } catch {
+      return null
+    }
+  }, [q.data?.boundary, compareRadiusRing])
+
+  const connectorLineFeatures = useMemo((): Feature[] => {
+    if (!mapOsmCentroid || !q.data || !row) return []
+    const [fromLon, fromLat] = mapOsmCentroid
+    const seen = new Set<string>()
+    const out: Feature[] = []
+
+    const add = (id: string, lon: number, lat: number) => {
+      if (seen.has(id)) return
+      seen.add(id)
+      out.push({
+        type: 'Feature',
+        properties: { _mapDetail: 'connector' as const },
+        geometry: {
+          type: 'LineString',
+          coordinates: [
+            [fromLon, fromLat],
+            [lon, lat],
+          ],
+        },
+      })
+    }
+
+    if (row.ambiguousOfficialIds && row.ambiguousOfficialIds.length > 0) {
+      const snapById = new Map(
+        (row.ambiguousOfficialSnapshots ?? []).map((s) => [s.id, s] as const),
+      )
+      for (const oid of row.ambiguousOfficialIds) {
+        const fLocal = findOfficialSchoolFeature(q.data.official, oid)
+        const snap = snapById.get(oid)
+        const props = (fLocal?.properties ?? snap?.properties ?? {}) as Record<string, unknown>
+        const officialLonLat: readonly [number, number] | null =
+          fLocal?.geometry?.type === 'Point'
+            ? ([fLocal.geometry.coordinates[0], fLocal.geometry.coordinates[1]] as const)
+            : parseJedeschuleLonLatFromRecord(props)
+        if (officialLonLat) add(oid, officialLonLat[0], officialLonLat[1])
+      }
+      return out
+    }
+
+    if (row.officialId) {
+      const f = findOfficialSchoolFeature(q.data.official, row.officialId)
+      let ll: readonly [number, number] | null = null
+      if (f?.geometry?.type === 'Point') {
+        ll = [f.geometry.coordinates[0], f.geometry.coordinates[1]]
+      } else if (f?.properties) {
+        ll = parseJedeschuleLonLatFromRecord(f.properties as Record<string, unknown>)
+      }
+      if (ll) add(row.officialId, ll[0], ll[1])
+    }
+    return out
+  }, [mapOsmCentroid, q.data, row])
 
   const allOtherSchoolPoints = useMemo((): FeatureCollection => {
     const features: Feature[] = []
     if (!q.data) return { type: 'FeatureCollection', features }
     for (const match of q.data.matches) {
       if (match.key === keyDecoded) continue
-      const lonLat =
-        parseMatchRowOsmCentroidLonLat(match) ??
-        parseJedeschuleLonLatFromRecord(match.officialProperties ?? null)
+      const lonLat = parseMatchRowOsmCentroidLonLat(match)
       if (!lonLat) continue
       const [lon, lat] = lonLat
       features.push({
         type: 'Feature',
         properties: {
           matchKey: match.key,
-          name: match.officialName ?? match.osmName ?? match.key,
+          name: match.osmName ?? match.officialName ?? match.key,
           matchCat: match.category,
         },
         geometry: { type: 'Point', coordinates: [lon, lat] },
@@ -467,15 +590,34 @@ export function SchuleDetail() {
     return { type: 'FeatureCollection', features }
   }, [allOtherSchoolPoints, detailMapBbox])
 
+  /** Alles für die Karte inkl. Maske und Verbindungslinien. */
+  const detailMapFc = useMemo((): FeatureCollection | null => {
+    if (!detailFc) return null
+    const features: Feature[] = [...detailFc.features]
+    if (compareRadiusRing) features.push(compareRadiusRing)
+    if (maskShellFeature) features.push(maskShellFeature)
+    features.push(...connectorLineFeatures)
+    return { type: 'FeatureCollection', features }
+  }, [compareRadiusRing, connectorLineFeatures, detailFc, maskShellFeature])
+
+  /** fitBounds ohne Bundesland-Maske (sonst zu weit herausgezoomt). */
+  const detailMapBoundsSourceFc = useMemo((): FeatureCollection | null => {
+    if (!detailFc) return null
+    const features: Feature[] = [...detailFc.features]
+    if (compareRadiusRing) features.push(compareRadiusRing)
+    features.push(...connectorLineFeatures)
+    return { type: 'FeatureCollection', features }
+  }, [compareRadiusRing, connectorLineFeatures, detailFc])
+
   /** Bbox of the official point + OSM feature + Vergleichsradius on the map. */
   const bounds = useMemo(() => {
-    if (!detailMapFc || detailMapFc.features.length === 0) return null
+    if (!detailMapBoundsSourceFc || detailMapBoundsSourceFc.features.length === 0) return null
     try {
-      return bbox(detailMapFc) as [number, number, number, number]
+      return bbox(detailMapBoundsSourceFc) as [number, number, number, number]
     } catch {
       return null
     }
-  }, [detailMapFc])
+  }, [detailMapBoundsSourceFc])
 
   const detailMapBounds = useMemo((): [[number, number], [number, number]] | null => {
     if (!bounds) return null
@@ -524,37 +666,117 @@ export function SchuleDetail() {
     setDetailMapBbox(boundsToBboxParam(e.target.getBounds()))
   }
 
+  const [hoveredMapLabel, setHoveredMapLabel] = useState<HoveredMapLabel | null>(null)
+
+  const detailInteractiveLayerIds = useMemo(() => {
+    const ids = [
+      DETAIL_MAP_LAYER_CENTROID_CORE,
+      DETAIL_MAP_LAYER_CENTROID_HALO,
+      DETAIL_MAP_LAYER_OFFICIAL_CORE,
+      DETAIL_MAP_LAYER_OFFICIAL_HALO,
+    ]
+    if (otherSchoolPointsInViewport.features.length > 0) {
+      ids.push(OTHER_SCHOOLS_LAYER_CORE, OTHER_SCHOOLS_LAYER_HALO)
+    }
+    return ids
+  }, [otherSchoolPointsInViewport.features.length])
+
   const handleDetailMapMouseMove = (e: MapLayerMouseEvent) => {
-    if (!showOtherData) return
-    const feature = e.features?.find((f) => f.layer.id === OTHER_SCHOOLS_LAYER_CORE)
-    if (!feature || feature.geometry.type !== 'Point') {
-      setHoveredOtherSchool(null)
+    if (!row) {
+      setHoveredMapLabel(null)
       return
     }
-    const matchKeyFromFeature = feature.properties?.matchKey
-    const nameFromFeature = feature.properties?.name
-    if (typeof matchKeyFromFeature !== 'string' || typeof nameFromFeature !== 'string') {
-      setHoveredOtherSchool(null)
+    const hit = e.features?.[0]
+    if (!hit || hit.geometry.type !== 'Point') {
+      setHoveredMapLabel(null)
       return
     }
-    const [lon, lat] = feature.geometry.coordinates
-    setHoveredOtherSchool({ matchKey: matchKeyFromFeature, name: nameFromFeature, lon, lat })
+    const layerId = hit.layer?.id
+    const [lon, lat] = hit.geometry.coordinates
+
+    if (layerId === OTHER_SCHOOLS_LAYER_CORE || layerId === OTHER_SCHOOLS_LAYER_HALO) {
+      const matchKey = hit.properties?.matchKey
+      const name = hit.properties?.name
+      const matchCat = hit.properties?.matchCat as LandMatchCategory | undefined
+      if (
+        typeof matchKey === 'string' &&
+        typeof name === 'string' &&
+        matchCat != null &&
+        (matchCat === 'matched' ||
+          matchCat === 'official_only' ||
+          matchCat === 'osm_only' ||
+          matchCat === 'match_ambiguous')
+      ) {
+        setHoveredMapLabel({ kind: 'osm-other', lon, lat, name, matchKey, matchCat })
+      } else {
+        setHoveredMapLabel(null)
+      }
+      return
+    }
+
+    if (layerId === DETAIL_MAP_LAYER_CENTROID_CORE || layerId === DETAIL_MAP_LAYER_CENTROID_HALO) {
+      setHoveredMapLabel({
+        kind: 'osm-reference',
+        lon,
+        lat,
+        name: row.osmName ?? row.key,
+      })
+      return
+    }
+
+    if (layerId === DETAIL_MAP_LAYER_OFFICIAL_CORE || layerId === DETAIL_MAP_LAYER_OFFICIAL_HALO) {
+      const pid = hit.properties?.id as string | undefined
+      if (!pid) {
+        setHoveredMapLabel(null)
+        return
+      }
+      const name = typeof hit.properties?.name === 'string' ? hit.properties.name : pid
+      const scrollTargetId = ambiguousCandidates.some((c) => c.id === pid)
+        ? schuleDetailCompareSectionId(pid)
+        : SCHULE_DETAIL_COMPARE_MAIN_ID
+      setHoveredMapLabel({
+        kind: 'official-current',
+        lon,
+        lat,
+        name,
+        scrollTargetId,
+      })
+      return
+    }
+
+    setHoveredMapLabel(null)
   }
 
   const handleDetailMapMouseLeave = () => {
-    setHoveredOtherSchool(null)
+    setHoveredMapLabel(null)
   }
 
   const handleDetailMapClick = (e: MapLayerMouseEvent) => {
-    if (!showOtherData) return
-    const feature = e.features?.find((f) => f.layer.id === OTHER_SCHOOLS_LAYER_CORE)
-    const nextKey = feature?.properties?.matchKey
-    if (typeof nextKey !== 'string' || nextKey.length === 0) return
-    void navigate({
-      to: '/bundesland/$code/schule/$matchKey',
-      params: { code, matchKey: nextKey },
-      search: true,
-    })
+    if (!row) return
+    const hit = e.features?.[0]
+    if (!hit || hit.geometry.type !== 'Point') return
+    const layerId = hit.layer?.id
+
+    if (layerId === OTHER_SCHOOLS_LAYER_CORE || layerId === OTHER_SCHOOLS_LAYER_HALO) {
+      const nextKey = hit.properties?.matchKey
+      if (typeof nextKey === 'string' && nextKey.length > 0) {
+        void navigate({
+          to: '/bundesland/$code/schule/$matchKey',
+          params: { code, matchKey: nextKey },
+          search: true,
+        })
+      }
+      return
+    }
+
+    if (layerId === DETAIL_MAP_LAYER_OFFICIAL_CORE || layerId === DETAIL_MAP_LAYER_OFFICIAL_HALO) {
+      const pid = hit.properties?.id as string | undefined
+      if (!pid) return
+      const scrollTargetId = ambiguousCandidates.some((c) => c.id === pid)
+        ? schuleDetailCompareSectionId(pid)
+        : SCHULE_DETAIL_COMPARE_MAIN_ID
+      scrollToSchuleDetailCompareSection(scrollTargetId)
+    }
   }
 
   if (q.isLoading) return <p className="text-zinc-400">{de.land.loading}</p>
@@ -589,10 +811,14 @@ export function SchuleDetail() {
               mapStyle={OPENFREEMAP_STYLE}
               reuseMaps
               {...flatMapGlProps}
-              interactiveLayerIds={
-                showOtherData ? [OTHER_SCHOOLS_LAYER_CORE, OTHER_SCHOOLS_LAYER_HALO] : undefined
+              interactiveLayerIds={detailInteractiveLayerIds}
+              cursor={
+                hoveredMapLabel?.kind === 'osm-reference'
+                  ? 'default'
+                  : hoveredMapLabel
+                    ? 'pointer'
+                    : 'default'
               }
-              cursor={hoveredOtherSchool ? 'pointer' : 'default'}
               onLoad={(e) => {
                 applyFlatMapRotationLocks(e.target)
                 setDetailMapBbox(boundsToBboxParam(e.target.getBounds()))
@@ -603,6 +829,17 @@ export function SchuleDetail() {
               onClick={handleDetailMapClick}
             >
               <Source id="detail" type="geojson" data={detailMapFc}>
+                {showMapMask && maskShellFeature ? (
+                  <Layer
+                    id="mask-shell"
+                    type="fill"
+                    filter={['==', ['get', '_mapDetail'], 'maskShell']}
+                    paint={{
+                      'fill-color': 'rgba(0,0,0,0.42)',
+                      'fill-opacity': 1,
+                    }}
+                  />
+                ) : null}
                 <Layer
                   id="p"
                   type="fill"
@@ -610,6 +847,7 @@ export function SchuleDetail() {
                     'all',
                     ['in', ['geometry-type'], ['literal', ['Polygon', 'MultiPolygon']]],
                     ['!=', ['get', '_mapDetail'], 'compareRadius'],
+                    ['!=', ['get', '_mapDetail'], 'maskShell'],
                   ]}
                   paint={{
                     'fill-color': DETAIL_MAP_OSM.polygonFillRgba,
@@ -623,6 +861,7 @@ export function SchuleDetail() {
                     'all',
                     ['in', ['geometry-type'], ['literal', ['Polygon', 'MultiPolygon']]],
                     ['!=', ['get', '_mapDetail'], 'compareRadius'],
+                    ['!=', ['get', '_mapDetail'], 'maskShell'],
                   ]}
                   paint={{ 'line-color': DETAIL_MAP_OSM.polygonOutlineHex, 'line-width': 2 }}
                 />
@@ -646,6 +885,22 @@ export function SchuleDetail() {
                     'line-dasharray': [1.5, 2.5],
                   }}
                 />
+                {connectorLineFeatures.length > 0 ? (
+                  <Layer
+                    id="detail-connectors"
+                    type="line"
+                    layout={{
+                      'line-cap': 'round',
+                      'line-join': 'round',
+                    }}
+                    filter={['==', ['get', '_mapDetail'], 'connector']}
+                    paint={{
+                      'line-color': 'rgba(0,0,0,0.22)',
+                      'line-width': 14,
+                      'line-opacity': 1,
+                    }}
+                  />
+                ) : null}
                 <Layer
                   id="c-official-halo"
                   type="circle"
@@ -685,7 +940,7 @@ export function SchuleDetail() {
                   ]}
                   paint={{
                     'circle-radius': 8,
-                    'circle-color': DETAIL_MAP_OSM.haloRgba,
+                    'circle-color': DETAIL_REF_OSM_HALO_COLOR,
                     'circle-stroke-width': 0,
                   }}
                 />
@@ -699,20 +954,20 @@ export function SchuleDetail() {
                   ]}
                   paint={{
                     'circle-radius': 3.5,
-                    'circle-color': DETAIL_MAP_OSM.innerHex,
+                    'circle-color': DETAIL_REF_OSM_CORE_COLOR,
                     'circle-stroke-width': 1,
                     'circle-stroke-color': '#ffffff',
                   }}
                 />
               </Source>
-              {showOtherData && otherSchoolPointsInViewport.features.length > 0 && (
+              {otherSchoolPointsInViewport.features.length > 0 && (
                 <Source id="detail-other-schools" type="geojson" data={otherSchoolPointsInViewport}>
                   <Layer
                     id={OTHER_SCHOOLS_LAYER_HALO}
                     type="circle"
                     paint={{
                       'circle-radius': 8,
-                      'circle-color': paintMatchCatHalo,
+                      'circle-color': DETAIL_OTHER_OSM_HALO_PAINT,
                       'circle-opacity': 1,
                       'circle-stroke-width': 0,
                     }}
@@ -722,33 +977,43 @@ export function SchuleDetail() {
                     type="circle"
                     paint={{
                       'circle-radius': 3.5,
-                      'circle-color': paintMatchCatCore,
+                      'circle-color': DETAIL_OTHER_OSM_CORE_PAINT,
                       'circle-stroke-width': 1,
                       'circle-stroke-color': '#ffffff',
                     }}
                   />
                 </Source>
               )}
-              {showOtherData && hoveredOtherSchool && (
+              {hoveredMapLabel && (
                 <Popup
                   className="schule-detail-map-popup"
-                  longitude={hoveredOtherSchool.lon}
-                  latitude={hoveredOtherSchool.lat}
+                  longitude={hoveredMapLabel.lon}
+                  latitude={hoveredMapLabel.lat}
                   closeButton={false}
                   closeOnClick={false}
                   offset={14}
                 >
-                  <div className="max-w-[min(16rem,calc(100vw-2rem))] rounded-md border border-zinc-600 bg-zinc-900 px-2.5 py-1.5 font-sans text-sm font-medium text-zinc-50 shadow-md">
-                    {hoveredOtherSchool.name}
+                  <div className="max-w-[min(16rem,calc(100vw-2rem))] rounded-md border border-zinc-600 bg-zinc-900 px-2.5 py-1.5 font-sans shadow-md">
+                    <p className="text-sm font-medium leading-snug text-zinc-50">
+                      {hoveredMapLabel.name}
+                    </p>
+                    <p className="mt-0.5 text-xs leading-snug text-zinc-400">
+                      {detailMapPopupCategoryLine(hoveredMapLabel, row.category)}
+                    </p>
                   </div>
                 </Popup>
               )}
             </MapGL>
           </div>
-          <div className="mt-2 flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center sm:justify-between">
-            <div className="flex flex-wrap gap-x-3 gap-y-1 text-xs text-zinc-400 sm:gap-x-4">
+          <div className="mt-2 flex min-w-0 flex-wrap items-center justify-between gap-x-3 gap-y-2">
+            <div className="min-w-0 flex flex-1 flex-wrap items-center gap-x-3 gap-y-1 text-xs leading-snug text-zinc-400">
               <span className="inline-flex items-center gap-1.5">
-                <CategoryLegendSwatch category="official_only" />
+                <span className={DETAIL_MAP_LEGEND_POINT_TILE} aria-hidden>
+                  <DetailMapLegendPointDot
+                    haloClassName="bg-amber-500/42"
+                    coreClassName="bg-amber-500"
+                  />
+                </span>
                 {de.detail.mapLegendOfficial}
               </span>
               <span className="inline-flex items-center gap-1.5">
@@ -757,8 +1022,13 @@ export function SchuleDetail() {
               </span>
               {mapOsmCentroid != null && (
                 <span className="inline-flex items-center gap-1.5">
-                  <CategoryLegendSwatch category="osm_only" />
-                  {de.detail.mapLegendOsmCentroid}
+                  <span className={DETAIL_MAP_LEGEND_POINT_TILE} aria-hidden>
+                    <DetailMapLegendPointDot
+                      haloClassName="bg-blue-500/45"
+                      coreClassName="bg-black"
+                    />
+                  </span>
+                  {de.detail.mapLegendOsmReference}
                 </span>
               )}
               {compareRadiusRing != null && (
@@ -797,23 +1067,55 @@ export function SchuleDetail() {
                   {de.detail.mapLegendCompareRadius.replace('{m}', formatDeInteger(MATCH_RADIUS_M))}
                 </span>
               )}
+              {allOtherSchoolPoints.features.length > 0 && (
+                <>
+                  <span className="inline-flex items-center gap-1.5">
+                    <span className={DETAIL_MAP_LEGEND_POINT_TILE} aria-hidden>
+                      <DetailMapLegendPointDot
+                        haloClassName="bg-blue-500/42"
+                        coreClassName="bg-[#2563eb]"
+                      />
+                    </span>
+                    <span className="text-zinc-400">{de.detail.mapHoverLabelOsmOtherMatched}</span>
+                  </span>
+                  <span className="inline-flex items-center gap-1.5">
+                    <span className={DETAIL_MAP_LEGEND_POINT_TILE} aria-hidden>
+                      <DetailMapLegendPointDot
+                        haloClassName="bg-violet-500/45"
+                        coreClassName="bg-[#2563eb]"
+                      />
+                    </span>
+                    <span className="text-zinc-400">
+                      {de.detail.mapHoverLabelOsmOtherAmbiguous}
+                    </span>
+                  </span>
+                  <span className="inline-flex items-center gap-1.5">
+                    <span className={DETAIL_MAP_LEGEND_POINT_TILE} aria-hidden>
+                      <DetailMapLegendPointDot
+                        haloClassName="bg-zinc-500/38"
+                        coreClassName="bg-[#71717a]"
+                      />
+                    </span>
+                    <span className="text-zinc-400">{de.detail.mapHoverLabelOsmOtherOther}</span>
+                  </span>
+                </>
+              )}
             </div>
-            <label className="inline-flex items-center gap-2 sm:shrink-0">
-              <span className="relative inline-flex h-6 w-11 shrink-0 items-center">
+            <label className="inline-flex shrink-0 items-center gap-1.5">
+              <span className="relative inline-flex h-5 w-9 shrink-0 items-center">
                 <input
                   type="checkbox"
-                  checked={showOtherData}
-                  aria-label={de.detail.showOtherData}
+                  checked={showMapMask}
+                  aria-label={de.detail.mapMask}
                   className="peer sr-only"
                   onChange={(e) => {
-                    void setShowOtherData(e.target.checked)
-                    setHoveredOtherSchool(null)
+                    void setShowMapMask(e.target.checked)
                   }}
                 />
-                <span className="absolute inset-0 rounded-full bg-white/5 inset-ring inset-ring-white/10 transition-colors duration-200 ease-in-out peer-checked:bg-indigo-500 peer-focus-visible:outline-2 peer-focus-visible:outline-offset-2 peer-focus-visible:outline-indigo-500" />
-                <span className="pointer-events-none absolute left-0.5 top-0.5 size-5 rounded-full bg-zinc-900/40 shadow-xs ring-1 ring-gray-900/5 transition-transform duration-200 ease-in-out peer-checked:translate-x-5" />
+                <span className="absolute inset-0 rounded-full bg-brand-950/90 ring-1 ring-inset ring-brand-800/60 transition-colors duration-200 ease-in-out peer-checked:bg-brand-800 peer-checked:ring-brand-500/50 peer-focus-visible:outline-2 peer-focus-visible:outline-offset-2 peer-focus-visible:outline-emerald-500" />
+                <span className="pointer-events-none absolute top-0.5 left-0.5 size-4 rounded-full bg-brand-50 shadow-sm ring-1 ring-brand-900/35 transition-transform duration-200 ease-in-out peer-checked:translate-x-4" />
               </span>
-              <span className="text-sm font-medium text-zinc-100">{de.detail.showOtherData}</span>
+              <span className="text-sm leading-snug text-zinc-400">{de.detail.mapMask}</span>
             </label>
           </div>
         </div>
@@ -990,6 +1292,7 @@ export function SchuleDetail() {
             return (
               <DetailsOpenByDefault
                 key={c.id}
+                id={schuleDetailCompareSectionId(c.id)}
                 className="group rounded-lg border border-zinc-600/70 bg-zinc-900/25 transition-[border-color,background-color] open:border-transparent open:bg-transparent"
               >
                 <summary className="flex w-full cursor-pointer list-none items-start gap-2 rounded-lg px-2.5 py-2.5 text-left transition-colors hover:bg-zinc-800/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-zinc-500/60 sm:px-3 sm:py-3 [&::-webkit-details-marker]:hidden">
@@ -1002,28 +1305,36 @@ export function SchuleDetail() {
                       <span className="text-zinc-400">{idx + 1}. </span>
                       {c.name}
                     </h3>
-                    <div className="flex shrink-0 flex-row flex-wrap items-center gap-x-2 gap-y-1 text-left text-sm text-zinc-400 sm:justify-end sm:text-right">
-                      <span className="font-mono">{c.id}</span>
-                      {summaryMiddle != null && (
-                        <>
-                          <span aria-hidden className="select-none text-zinc-500">
-                            {'\u00B7'}
-                          </span>
-                          {summaryMiddle}
-                        </>
-                      )}
-                      <span aria-hidden className="select-none text-zinc-500">
-                        {'\u00B7'}
-                      </span>
-                      <a
-                        href={`https://jedeschule.codefor.de/schools/${encodeURIComponent(c.id)}`}
-                        target="_blank"
-                        rel="noreferrer"
-                        className="text-emerald-300 underline"
-                        onClick={(e) => e.stopPropagation()}
-                      >
-                        {de.detail.ambiguousJedeschule}
-                      </a>
+                    <div className="@container/compare-meta min-w-0 text-sm text-zinc-400">
+                      <div className="flex flex-col items-start gap-y-1 text-left sm:items-end sm:text-right sm:@[22rem]:flex-row sm:@[22rem]:flex-nowrap sm:@[22rem]:items-center sm:@[22rem]:justify-end sm:@[22rem]:gap-x-2 sm:@[22rem]:gap-y-0">
+                        <span className="font-mono">{c.id}</span>
+                        {summaryMiddle != null && (
+                          <>
+                            <span
+                              aria-hidden
+                              className="hidden select-none text-zinc-500 sm:@[22rem]:inline"
+                            >
+                              {'\u00B7'}
+                            </span>
+                            {summaryMiddle}
+                          </>
+                        )}
+                        <span
+                          aria-hidden
+                          className="hidden select-none text-zinc-500 sm:@[22rem]:inline"
+                        >
+                          {'\u00B7'}
+                        </span>
+                        <a
+                          href={`https://jedeschule.codefor.de/schools/${encodeURIComponent(c.id)}`}
+                          target="_blank"
+                          rel="noreferrer"
+                          className="text-emerald-300 underline"
+                          onClick={(e) => e.stopPropagation()}
+                        >
+                          {de.detail.ambiguousJedeschule}
+                        </a>
+                      </div>
                     </div>
                   </div>
                 </summary>
@@ -1041,13 +1352,15 @@ export function SchuleDetail() {
           })}
         </div>
       ) : (
-        <MatchCompareBody
-          official={row.officialProperties ?? null}
-          osm={row.osmTags ?? null}
-          officialIdForHeader={row.officialId}
-          osmTypeForHeader={row.osmType}
-          osmIdForHeader={row.osmId}
-        />
+        <div id={SCHULE_DETAIL_COMPARE_MAIN_ID}>
+          <MatchCompareBody
+            official={row.officialProperties ?? null}
+            osm={row.osmTags ?? null}
+            officialIdForHeader={row.officialId}
+            osmTypeForHeader={row.osmType}
+            osmIdForHeader={row.osmId}
+          />
+        </div>
       )}
     </div>
   )

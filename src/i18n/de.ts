@@ -103,11 +103,14 @@ export const de = {
       'Bei mindestens einem amtlichen Kandidaten fehlen nutzbare Koordinaten in den Rohdaten — dann gibt es keinen Punkt für diese Schule auf der Karte. Name, Adresse und die übrigen Felder stehen trotzdem in den Vergleichstabellen unten (inkl. Abstand zum OSM-Schwerpunkt, sofern im Datensatz hinterlegt). Der Abgleich für Uneindeutigkeiten erfolgt nur innerhalb desselben Bundeslandes wie die OSM-Schule.',
     ambiguousOfficialHeading: 'Amtliche Kandidaten',
     ambiguousJedeschule: 'JedeSchule',
-    mapLegendOfficial: 'Offizieller Punkt (Vergleichsdaten)',
+    mapLegendOfficial: 'Offizielle Schule (Übereinstimmung/Kandidaten)',
     mapLegendOsmArea: 'OSM Fläche',
-    mapLegendOsmCentroid: 'OSM Punkt',
+    mapLegendOsmReference: 'Referenz Schule (OSM)',
     mapLegendCompareRadius: 'Vergleichsradius ({m} m)',
-    showOtherData: 'Alle Schulen',
+    mapHoverLabelOsmOtherMatched: 'Andere Schule OSM mit Übereinstimmung',
+    mapHoverLabelOsmOtherAmbiguous: 'Andere Schule OSM mit Kandidaten',
+    mapHoverLabelOsmOtherOther: 'Andere Schule OSM',
+    mapMask: 'Maskierung',
     matchExplanationDistance:
       'Zuordnung über Distanz: ein einziger amtlicher Schuldatensatz lag im Vergleichsradius um den OSM-Schwerpunkt.',
     matchExplanationDistanceAndName:

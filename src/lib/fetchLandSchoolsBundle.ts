@@ -1,12 +1,14 @@
-import { landMatchesUrl, landOfficialUrl, landOsmUrl } from './paths'
+import type { Feature, MultiPolygon, Polygon } from 'geojson'
+import { landBoundaryUrl, landMatchesUrl, landOfficialUrl, landOsmUrl } from './paths'
 import { schoolsMatchesFileSchema } from './schemas'
 
-/** Official + OSM GeoJSON + matches for one Bundesland (shared cache key with SchuleDetail). */
+/** Official + OSM GeoJSON + matches + optional Bundesland outline for one land (SchuleDetail / cache). */
 export async function fetchLandSchoolsBundle(code: string) {
-  const [oRes, osmRes, mRes] = await Promise.all([
+  const [oRes, osmRes, mRes, bRes] = await Promise.all([
     fetch(landOfficialUrl(code)),
     fetch(landOsmUrl(code)),
     fetch(landMatchesUrl(code)),
+    fetch(landBoundaryUrl(code)),
   ])
   if (!oRes.ok || !osmRes.ok || !mRes.ok) {
     throw new Error('land fetch')
@@ -17,5 +19,9 @@ export async function fetchLandSchoolsBundle(code: string) {
     mRes.json(),
   ])
   const matches = schoolsMatchesFileSchema.parse(matchesRaw)
-  return { official, osm: osmGeojson, matches }
+  let boundary: Feature<Polygon | MultiPolygon> | null = null
+  if (bRes.ok) {
+    boundary = (await bRes.json()) as Feature<Polygon | MultiPolygon>
+  }
+  return { official, osm: osmGeojson, matches, boundary }
 }
