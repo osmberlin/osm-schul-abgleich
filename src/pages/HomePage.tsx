@@ -4,7 +4,6 @@ import { HomeGermanyStats } from '../components/home/HomeGermanyStats'
 import { HomeHeader } from '../components/home/HomeHeader'
 import { HomeHistorySection } from '../components/home/HomeHistorySection'
 import { HomeLandList } from '../components/home/HomeLandList'
-import { PageBreadcrumb } from '../components/PageBreadcrumb'
 import { de } from '../i18n/de'
 import { germanyHistoryFromRuns } from '../lib/matchHistoryFromRuns'
 import { runsJsonUrl, summaryJsonUrl } from '../lib/paths'
@@ -62,9 +61,6 @@ export function HomePage() {
 
   return (
     <div className="mx-auto max-w-5xl p-6 pb-16">
-      <div className="mb-6">
-        <PageBreadcrumb />
-      </div>
       <HomeHeader />
 
       {q.isLoading && <p className="text-zinc-400">{de.home.loading}</p>}

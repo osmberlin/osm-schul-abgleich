@@ -8,7 +8,7 @@ function shortMatchKey(encoded: string) {
   return d.length > 40 ? `${d.slice(0, 37)}…` : d
 }
 
-/** Brotkrumen für den Seiteninhalt (nicht im globalen Header). */
+/** Brotkrumen in der globalen Kopfleiste (ersetzt den separaten Titel). */
 export function PageBreadcrumb() {
   const pathname = useRouterState({ select: (s) => s.location.pathname })
 
@@ -40,5 +40,7 @@ export function PageBreadcrumb() {
     return { homeCurrent: true, items: [] }
   })()
 
-  return <AppBreadcrumb homeCurrent={crumbs.homeCurrent} items={crumbs.items} />
+  return (
+    <AppBreadcrumb appTitle={de.appTitle} homeCurrent={crumbs.homeCurrent} items={crumbs.items} />
+  )
 }

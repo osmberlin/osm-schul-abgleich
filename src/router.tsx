@@ -2,15 +2,15 @@ import { QueryClient } from '@tanstack/react-query'
 import { createRootRoute, createRoute, createRouter, Outlet } from '@tanstack/react-router'
 import { NuqsAdapter } from 'nuqs/adapters/tanstack-router'
 import { AppFooter } from './components/AppFooter'
-import { de } from './i18n/de'
+import { PageBreadcrumb } from './components/PageBreadcrumb'
 import { HomePage } from './pages/HomePage'
 import { LandLayout } from './pages/LandLayout'
 import { LandOverview } from './pages/LandOverview'
 import { SchuleDetail } from './pages/SchuleDetail'
 import { StatusPage } from './pages/StatusPage'
 
-const rootRoute = createRootRoute({
-  component: () => (
+function RootLayout() {
+  return (
     <NuqsAdapter>
       <div className="min-h-screen">
         <a
@@ -19,10 +19,8 @@ const rootRoute = createRootRoute({
         >
           Zum Inhalt
         </a>
-        <header className="border-b border-zinc-800 bg-brand-950/60">
-          <div className="mx-auto max-w-5xl px-4 py-3">
-            <p className="text-sm font-semibold text-brand-100">{de.appTitle}</p>
-          </div>
+        <header>
+          <PageBreadcrumb />
         </header>
         <main id="main" className="min-h-[70vh]">
           <Outlet />
@@ -30,7 +28,11 @@ const rootRoute = createRootRoute({
         <AppFooter />
       </div>
     </NuqsAdapter>
-  ),
+  )
+}
+
+const rootRoute = createRootRoute({
+  component: RootLayout,
 })
 
 const indexRoute = createRoute({

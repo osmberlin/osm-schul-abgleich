@@ -1,5 +1,4 @@
 import { useQuery } from '@tanstack/react-query'
-import { PageBreadcrumb } from '../components/PageBreadcrumb'
 import { de } from '../i18n/de'
 import { cn } from '../lib/cn'
 import { formatDurationMs } from '../lib/formatDuration'
@@ -99,9 +98,6 @@ export function StatusPage() {
 
   return (
     <div className="mx-auto max-w-4xl p-6 pb-16">
-      <div className="mb-4">
-        <PageBreadcrumb />
-      </div>
       <h1 className="text-2xl font-semibold text-zinc-100">{de.status.heading}</h1>
 
       <section className="mt-8" aria-labelledby="national-meta-heading">

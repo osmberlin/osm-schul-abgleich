@@ -3,8 +3,7 @@ import { de } from '../../i18n/de'
 export function HomeHeader() {
   return (
     <header className="mb-8 border-b border-zinc-700 pb-6">
-      <h1 className="text-3xl font-semibold tracking-tight text-brand-100">{de.appTitle}</h1>
-      <p className="mt-3 text-lg text-zinc-300">{de.home.heading}</p>
+      <h1 className="text-3xl font-semibold tracking-tight text-brand-100">{de.home.heading}</h1>
       <p className="mt-2 text-sm text-zinc-400">
         {de.home.leadIntro}
         <a

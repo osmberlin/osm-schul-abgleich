@@ -2,7 +2,6 @@ import { useQuery } from '@tanstack/react-query'
 import { Outlet, useParams, useRouterState } from '@tanstack/react-router'
 import { useMemo } from 'react'
 import { CategoryLegendSwatch } from '../components/CategoryLegendSwatch'
-import { PageBreadcrumb } from '../components/PageBreadcrumb'
 import { de } from '../i18n/de'
 import { fetchLandSchoolsBundle } from '../lib/fetchLandSchoolsBundle'
 import { formatDeInteger } from '../lib/formatNumber'
@@ -92,9 +91,6 @@ export function LandLayout() {
 
   return (
     <div className="mx-auto max-w-5xl p-4 pb-10">
-      <div className="mb-4">
-        <PageBreadcrumb />
-      </div>
       {titleBlock}
       <Outlet />
     </div>
