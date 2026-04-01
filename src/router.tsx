@@ -6,6 +6,7 @@ import { PageBreadcrumb } from './components/PageBreadcrumb'
 import { HomePage } from './pages/HomePage'
 import { LandLayout } from './pages/LandLayout'
 import { LandOverview } from './pages/LandOverview'
+import { NotFoundPage } from './pages/NotFoundPage'
 import { SchuleDetail } from './pages/SchuleDetail'
 import { StatusPage } from './pages/StatusPage'
 
@@ -79,6 +80,7 @@ export const queryClient = new QueryClient({
 export const router = createRouter({
   routeTree,
   context: { queryClient },
+  basepath: import.meta.env.BASE_URL,
   defaultPreload: 'intent',
 })
 
