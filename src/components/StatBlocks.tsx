@@ -13,7 +13,7 @@ export function StatBlocksRow({
     <dl
       aria-label={ariaLabel}
       className={
-        `flex min-w-0 flex-col gap-y-4 sm:flex-row sm:flex-nowrap sm:gap-x-0 sm:gap-y-0 ` +
+        `flex min-w-0 flex-col gap-y-4 sm:flex-row sm:flex-nowrap sm:items-stretch sm:gap-x-0 sm:gap-y-0 ` +
         `[&>*]:min-w-0 ` +
         `max-sm:[&>*]:border-l-0 max-sm:[&>*]:border-t max-sm:[&>*]:border-white/15 max-sm:[&>*]:pl-0 max-sm:[&>*]:pt-4 ` +
         `max-sm:[&>*]:first:border-t-0 max-sm:[&>*]:first:pt-0 ` +
@@ -46,8 +46,8 @@ export function LayerToggleStatBlock({
   disabled?: boolean
 }) {
   const interactive =
-    'group flex flex-col-reverse gap-y-2 transition-colors hover:bg-zinc-800/60 focus-within:bg-zinc-800/60'
-  const inert = 'flex flex-col-reverse gap-y-2 opacity-55'
+    'group flex h-full flex-col-reverse justify-end gap-y-2 transition-colors hover:bg-zinc-800/60 focus-within:bg-zinc-800/60'
+  const inert = 'flex h-full flex-col-reverse justify-end gap-y-2 opacity-55'
 
   return (
     <div className={disabled ? inert : interactive} aria-disabled={disabled || undefined}>
@@ -83,7 +83,7 @@ export function LayerToggleStatBlock({
       </dt>
       <dd
         className={
-          `text-pretty font-semibold text-2xl tracking-tight text-zinc-100 tabular-nums sm:text-3xl ` +
+          `text-pretty font-semibold text-xl tracking-tight text-zinc-100 tabular-nums sm:text-2xl md:text-3xl ` +
           (disabled ? '' : 'transition-colors group-hover:text-white')
         }
       >
@@ -112,7 +112,7 @@ export function ReadOnlyStatBlock({
   labelAddon?: ReactNode
 }) {
   return (
-    <div className="flex flex-col-reverse gap-y-2">
+    <div className="flex h-full flex-col-reverse justify-end gap-y-2">
       <dt className="min-w-0 text-base/7 text-zinc-400">
         <span className="flex min-w-0 flex-nowrap items-center gap-1 text-sm leading-snug">
           <span className="min-w-0 overflow-hidden text-ellipsis whitespace-nowrap" title={label}>
@@ -121,7 +121,7 @@ export function ReadOnlyStatBlock({
           {labelAddon ? <span className="shrink-0">{labelAddon}</span> : null}
         </span>
       </dt>
-      <dd className="flex min-w-0 items-center gap-2 text-pretty font-semibold text-2xl tracking-tight text-zinc-100 tabular-nums sm:text-3xl">
+      <dd className="flex min-w-0 items-center gap-2 text-pretty font-semibold text-xl tracking-tight text-zinc-100 tabular-nums sm:text-2xl md:text-3xl">
         <span className="inline-flex shrink-0 items-center">{swatch}</span>
         <span className="min-w-0">{value}</span>
       </dd>
