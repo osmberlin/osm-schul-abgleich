@@ -1,5 +1,6 @@
 import type { ReactNode } from 'react'
 import { formatDeInteger } from '../lib/formatNumber'
+import type { LandMatchCategory } from '../lib/landMatchCategories'
 import { CATEGORY_INNER_HEX, OFFICIAL_NO_COORD_INNER_HEX } from '../lib/matchCategoryTheme'
 import {
   MATCH_HISTORY_STACK_KEYS,
@@ -7,7 +8,6 @@ import {
   type MatchHistorySegmentKey,
   type MatchHistoryStackPoint,
 } from '../lib/matchHistoryFromRuns'
-import type { LandMatchCategory } from '../lib/useLandCategoryFilter'
 
 /** SVG `viewBox` width/height (user units). The element uses `width="100%"`, so this defines aspect ratio and internal layout. */
 const VB_W = 800

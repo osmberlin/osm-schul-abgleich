@@ -2,6 +2,7 @@ import { createHash } from 'node:crypto'
 import { mkdir, unlink } from 'node:fs/promises'
 import path from 'node:path'
 import type { Feature, FeatureCollection } from 'geojson'
+import { berlinCalendarDateKey } from '../../src/lib/berlinCalendarDateKey'
 import { schoolsMatchesFileSchema } from '../../src/lib/schemas'
 import {
   type LandCode,
@@ -487,7 +488,22 @@ async function appendRunRecord(
   const runsFileName = envScopedJsonFileName('runs.json')
   const runsPath = path.join(statusDir(projectRoot), runsFileName)
   const prev = (await readJsonFile<{ runs: unknown[] }>(runsPath)) ?? { runs: [] }
-  prev.runs = [...prev.runs, { ...record, gitSha: process.env.GITHUB_SHA ?? 'local' }].slice(-90)
+  const gitSha = process.env.GITHUB_SHA ?? 'local'
+  const newRun = { ...record, gitSha }
+  const startedAt = record.startedAt
+  const dayKey =
+    typeof startedAt === 'string' && startedAt.trim() !== '' ? berlinCalendarDateKey(startedAt) : ''
+  const prior = Array.isArray(prev.runs) ? prev.runs : []
+  const filtered =
+    dayKey === ''
+      ? prior
+      : prior.filter((r) => {
+          if (typeof r !== 'object' || r === null) return true
+          const s = (r as { startedAt?: unknown }).startedAt
+          if (typeof s !== 'string' || s.trim() === '') return true
+          return berlinCalendarDateKey(s) !== dayKey
+        })
+  prev.runs = [...filtered, newRun].slice(-90)
   await writeJson(runsPath, prev)
 }
 

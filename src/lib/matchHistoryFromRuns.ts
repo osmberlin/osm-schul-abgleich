@@ -1,7 +1,8 @@
 import type { z } from 'zod'
+import { berlinCalendarDateKey } from './berlinCalendarDateKey'
+import { LAND_MATCH_CATEGORIES, type LandMatchCategory } from './landMatchCategories'
 import { runRecordSchema } from './schemas'
 import type { LandCode } from './stateConfig'
-import { LAND_MATCH_CATEGORIES, type LandMatchCategory } from './useLandCategoryFilter'
 
 type RunRecord = z.infer<typeof runRecordSchema>
 
@@ -58,7 +59,7 @@ export function germanyHistoryFromRuns(
   stateOrder: readonly LandCode[],
 ): MatchHistoryStackPoint[] {
   const sorted = [...runs].sort((a, b) => Date.parse(a.finishedAt) - Date.parse(b.finishedAt))
-  const out: MatchHistoryStackPoint[] = []
+  const outByBerlinDay = new Map<string, MatchHistoryStackPoint>()
   for (const run of sorted) {
     if (!isFullNationalRun(run, stateOrder)) continue
     let matched = 0
@@ -76,7 +77,9 @@ export function germanyHistoryFromRuns(
       official_no_coord += c.official_no_coord
     }
     if (matched + official_only + osm_only + match_ambiguous + official_no_coord === 0) continue
-    out.push({
+    const dayKey = berlinCalendarDateKey(run.finishedAt)
+    if (!dayKey) continue
+    outByBerlinDay.set(dayKey, {
       finishedAt: run.finishedAt,
       matched,
       official_only,
@@ -85,19 +88,25 @@ export function germanyHistoryFromRuns(
       official_no_coord,
     })
   }
-  return out
+  return [...outByBerlinDay.values()].sort(
+    (a, b) => Date.parse(a.finishedAt) - Date.parse(b.finishedAt),
+  )
 }
 
 /** Stacked counts for one Land over time (chronological). */
 export function landHistoryFromRuns(runs: RunRecord[], landCode: string): MatchHistoryStackPoint[] {
   const sorted = [...runs].sort((a, b) => Date.parse(a.finishedAt) - Date.parse(b.finishedAt))
-  const out: MatchHistoryStackPoint[] = []
+  const outByBerlinDay = new Map<string, MatchHistoryStackPoint>()
   for (const run of sorted) {
     const entry = run.lands.find((l) => l.code === landCode)
     if (!entry?.counts) continue
     const stack = countsToStack(entry.counts)
     if (totalOfStack(stack) === 0) continue
-    out.push({ finishedAt: run.finishedAt, ...stack })
+    const dayKey = berlinCalendarDateKey(run.finishedAt)
+    if (!dayKey) continue
+    outByBerlinDay.set(dayKey, { finishedAt: run.finishedAt, ...stack })
   }
-  return out
+  return [...outByBerlinDay.values()].sort(
+    (a, b) => Date.parse(a.finishedAt) - Date.parse(b.finishedAt),
+  )
 }

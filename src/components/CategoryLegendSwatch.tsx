@@ -1,8 +1,8 @@
+import type { LandMatchCategory } from '../lib/landMatchCategories'
 import {
   MATCH_CATEGORY_SWATCH_CLASSES,
   OFFICIAL_NO_COORD_SWATCH_CLASSES,
 } from '../lib/matchCategoryTheme'
-import type { LandMatchCategory } from '../lib/useLandCategoryFilter'
 
 /** Same nested-circle language as map halo + core (LandMap). */
 export function CategoryLegendSwatch({

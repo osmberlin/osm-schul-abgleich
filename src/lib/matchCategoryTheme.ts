@@ -1,4 +1,4 @@
-import type { LandMatchCategory } from './useLandCategoryFilter'
+import type { LandMatchCategory } from './landMatchCategories'
 
 /**
  * Single source of truth for the four match categories (Legende, Karte, Listen, Detail).

@@ -5,6 +5,9 @@ import { useEffect, useMemo, useRef, useState } from 'react'
 import MapGL, { Layer, type MapLayerMouseEvent, type MapRef, Source } from 'react-map-gl/maplibre'
 import 'maplibre-gl/dist/maplibre-gl.css'
 import type { Feature, FeatureCollection, MultiPolygon, Polygon } from 'geojson'
+import { de } from '../i18n/de'
+import { LAND_MATCH_CATEGORIES, type LandMatchCategory } from '../lib/landMatchCategories'
+import { boundsToBboxParam } from '../lib/mapBounds'
 import {
   paintMatchCatCore,
   paintMatchCatHalo,
@@ -17,10 +20,7 @@ import {
   OPENFREEMAP_STYLE,
 } from '../lib/openFreeMapStyle'
 import { type LandCode, STATE_BOUNDS, STATE_MAP_CENTER } from '../lib/stateConfig'
-import { ALL_LAND_MATCH_CATEGORIES, type LandMatchCategory } from '../lib/useLandCategoryFilter'
 import type { LandMapBbox } from '../lib/useLandMapBbox'
-import { de } from '../i18n/de'
-import { boundsToBboxParam } from '../lib/mapBounds'
 import { LandMapBboxToolbar } from './LandMapBboxToolbar'
 import { MapPointHoverPanel } from './MapPointHoverPanel'
 
@@ -67,7 +67,7 @@ const landMapCircleLayout = { 'circle-sort-key': paintMatchCatSortKey }
 function matchCategoryFilter(
   enabled: ReadonlySet<LandMatchCategory>,
 ): FilterSpecification | undefined {
-  if (enabled.size === ALL_LAND_MATCH_CATEGORIES.length) return undefined
+  if (enabled.size === LAND_MATCH_CATEGORIES.length) return undefined
   if (enabled.size === 0) {
     return ['==', ['get', 'matchCat'], '__none__']
   }

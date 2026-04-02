@@ -5,9 +5,9 @@ import { CategoryLegendSwatch } from '../components/CategoryLegendSwatch'
 import { de } from '../i18n/de'
 import { fetchLandSchoolsBundle } from '../lib/fetchLandSchoolsBundle'
 import { formatDeInteger } from '../lib/formatNumber'
+import type { LandMatchCategory } from '../lib/landMatchCategories'
 import { formatSchoolWhereSubtitle } from '../lib/schoolWhere'
 import { type LandCode, STATE_LABEL_DE } from '../lib/stateConfig'
-import type { LandMatchCategory } from '../lib/useLandCategoryFilter'
 
 export function LandLayout() {
   const { code } = useParams({ strict: false }) as { code: string }

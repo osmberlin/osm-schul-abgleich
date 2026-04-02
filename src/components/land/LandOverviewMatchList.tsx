@@ -1,11 +1,11 @@
 import { ChevronRightIcon } from '@heroicons/react/20/solid'
 import { Link } from '@tanstack/react-router'
-import { CategoryLegendSwatch } from '../CategoryLegendSwatch'
 import { de } from '../../i18n/de'
 import { formatDeInteger } from '../../lib/formatNumber'
-import { matchRowDisplayName } from '../../lib/matchRowInBbox'
 import { formatMatchRowListId } from '../../lib/formatOsmRef'
-import type { LandMatchCategory } from '../../lib/useLandCategoryFilter'
+import type { LandMatchCategory } from '../../lib/landMatchCategories'
+import { matchRowDisplayName } from '../../lib/matchRowInBbox'
+import { CategoryLegendSwatch } from '../CategoryLegendSwatch'
 
 type ListMatchRow = {
   key: string
