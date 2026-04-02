@@ -3,6 +3,7 @@ import { Link } from '@tanstack/react-router'
 import { CategoryLegendSwatch } from '../CategoryLegendSwatch'
 import { de } from '../../i18n/de'
 import { formatDeInteger } from '../../lib/formatNumber'
+import { matchRowDisplayName } from '../../lib/matchRowInBbox'
 import { formatMatchRowListId } from '../../lib/formatOsmRef'
 import type { LandMatchCategory } from '../../lib/useLandCategoryFilter'
 
@@ -14,6 +15,7 @@ type ListMatchRow = {
   osmId: string | null
   officialName: string | null
   osmName: string | null
+  officialProperties?: Record<string, unknown> | null
   matchMode?: 'distance' | 'distance_and_name' | 'name'
   distanceMeters: number | null
 }
@@ -53,7 +55,7 @@ export function LandOverviewMatchList({
         ) : (
           <ul className="divide-y divide-zinc-700">
             {listMatches.slice(0, 500).map((row) => {
-              const title = row.officialName ?? row.osmName ?? '—'
+              const title = matchRowDisplayName(row)
               const subId = formatMatchRowListId(row)
               return (
                 <li key={row.key}>

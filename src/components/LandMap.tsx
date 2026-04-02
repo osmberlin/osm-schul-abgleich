@@ -1,8 +1,8 @@
 import type { CircleLayerSpecification } from '@maplibre/maplibre-gl-style-spec'
 import bbox from '@turf/bbox'
 import type { FilterSpecification } from 'maplibre-gl'
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
-import MapGL, { Layer, type MapRef, Source } from 'react-map-gl/maplibre'
+import { useEffect, useMemo, useRef, useState } from 'react'
+import MapGL, { Layer, type MapLayerMouseEvent, type MapRef, Source } from 'react-map-gl/maplibre'
 import 'maplibre-gl/dist/maplibre-gl.css'
 import type { Feature, FeatureCollection, MultiPolygon, Polygon } from 'geojson'
 import {
@@ -19,13 +19,20 @@ import {
 import { type LandCode, STATE_BOUNDS, STATE_MAP_CENTER } from '../lib/stateConfig'
 import { ALL_LAND_MATCH_CATEGORIES, type LandMatchCategory } from '../lib/useLandCategoryFilter'
 import type { LandMapBbox } from '../lib/useLandMapBbox'
+import { de } from '../i18n/de'
 import { boundsToBboxParam } from '../lib/mapBounds'
 import { LandMapBboxToolbar } from './LandMapBboxToolbar'
+import { MapPointHoverPanel } from './MapPointHoverPanel'
 
 const FIT_PADDING = 48
 const FIT_MAX_ZOOM = 16
 const LAND_MAP_ID = 'land-map'
+const LAYER_MATCH_OVERVIEW_HALO = 'match-overview-halo'
 const BBOX_EPSILON = 0.0001
+
+function isLandMatchCategory(v: unknown): v is LandMatchCategory {
+  return v === 'matched' || v === 'official_only' || v === 'osm_only' || v === 'match_ambiguous'
+}
 
 function lngLatBoundsFromTurfBbox(
   b: [number, number, number, number],
@@ -82,6 +89,7 @@ export function LandMap({
   urlBbox,
   onApplyUrlBbox,
   onClearUrlBbox,
+  onSchoolClick,
 }: {
   /** One Point per Trefferliste row; `matchCat` = category for color. */
   matchPoints: FeatureCollection
@@ -93,6 +101,8 @@ export function LandMap({
   urlBbox?: LandMapBbox | null
   onApplyUrlBbox?: (bbox: LandMapBbox) => void
   onClearUrlBbox?: () => void
+  /** When set, halo points are hoverable and clickable (navigate to Schule detail). */
+  onSchoolClick?: (matchKey: string) => void
 }) {
   const bounds = useMemo(() => {
     try {
@@ -137,6 +147,10 @@ export function LandMap({
   const [mapReady, setMapReady] = useState(false)
   const [currentBbox, setCurrentBbox] = useState<LandMapBbox | null>(null)
   const [baselineBbox, setBaselineBbox] = useState<LandMapBbox | null>(null)
+  const [hoveredPoint, setHoveredPoint] = useState<{
+    name: string
+    matchCat: LandMatchCategory
+  } | null>(null)
 
   const hasUrlBbox = urlBbox != null
   const bboxToolbarEnabled = onApplyUrlBbox != null && onClearUrlBbox != null
@@ -151,7 +165,7 @@ export function LandMap({
     return ['all', geom, catFilter] as FilterSpecification
   }, [catFilter])
 
-  const handleIdle = useCallback(() => {
+  function handleIdle() {
     if (!pendingBaselineRef.current) return
     const m = mapRef.current?.getMap()
     if (!m) return
@@ -159,13 +173,13 @@ export function LandMap({
     const b = boundsToBboxParam(m.getBounds())
     setBaselineBbox(b)
     setCurrentBbox(b)
-  }, [])
+  }
 
-  const handleMove = useCallback(() => {
+  function handleMove() {
     const m = mapRef.current?.getMap()
     if (!m) return
     setCurrentBbox(boundsToBboxParam(m.getBounds()))
-  }, [])
+  }
 
   useEffect(
     function initializeMapStateFromExistingInstance() {
@@ -201,12 +215,52 @@ export function LandMap({
     [fitTargetBounds],
   )
 
-  const handleApply = useCallback(
-    (b: LandMapBbox) => {
-      onApplyUrlBbox?.(b)
-    },
-    [onApplyUrlBbox],
-  )
+  function handleApply(b: LandMapBbox) {
+    onApplyUrlBbox?.(b)
+  }
+
+  function handleOverviewMouseMove(e: MapLayerMouseEvent) {
+    if (!onSchoolClick) return
+    const hit = e.features?.[0]
+    if (!hit || hit.geometry.type !== 'Point') {
+      setHoveredPoint(null)
+      return
+    }
+    const name = hit.properties?.name
+    const matchCat = hit.properties?.matchCat
+    const matchKey = hit.properties?.matchKey
+    if (
+      typeof name !== 'string' ||
+      typeof matchKey !== 'string' ||
+      !isLandMatchCategory(matchCat)
+    ) {
+      setHoveredPoint(null)
+      return
+    }
+    setHoveredPoint({ name, matchCat })
+  }
+
+  function handleOverviewMouseLeave() {
+    setHoveredPoint(null)
+  }
+
+  function handleOverviewClick(e: MapLayerMouseEvent) {
+    if (!onSchoolClick) return
+    const hit = e.features?.[0]
+    if (!hit || hit.geometry.type !== 'Point') return
+    const matchKey = hit.properties?.matchKey
+    if (typeof matchKey === 'string' && matchKey.length > 0) onSchoolClick(matchKey)
+  }
+
+  const schoolInteractionProps = onSchoolClick
+    ? {
+        interactiveLayerIds: [LAYER_MATCH_OVERVIEW_HALO],
+        cursor: hoveredPoint ? 'pointer' : 'default',
+        onMouseMove: handleOverviewMouseMove,
+        onMouseLeave: handleOverviewMouseLeave,
+        onClick: handleOverviewClick,
+      }
+    : {}
 
   return (
     <div
@@ -231,6 +285,7 @@ export function LandMap({
         }}
         onIdle={handleIdle}
         onMove={handleMove}
+        {...schoolInteractionProps}
       >
         {landBoundary && (
           <Source id="land-boundary-outline" type="geojson" data={landBoundary}>
@@ -239,7 +294,7 @@ export function LandMap({
         )}
         <Source id="match-overview-points" type="geojson" data={matchPoints}>
           <Layer
-            id="match-overview-halo"
+            id={LAYER_MATCH_OVERVIEW_HALO}
             type="circle"
             filter={pointFilter}
             layout={landMapCircleLayout}
@@ -254,6 +309,12 @@ export function LandMap({
           />
         </Source>
       </MapGL>
+      {onSchoolClick && hoveredPoint ? (
+        <MapPointHoverPanel
+          name={hoveredPoint.name}
+          categoryLine={de.land.categoryLabel[hoveredPoint.matchCat] ?? hoveredPoint.matchCat}
+        />
+      ) : null}
       {bboxToolbarEnabled && (
         <LandMapBboxToolbar
           mapId={LAND_MAP_ID}

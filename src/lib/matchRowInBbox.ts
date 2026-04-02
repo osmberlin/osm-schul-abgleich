@@ -6,6 +6,34 @@ import { parseJedeschuleLonLatFromRecord, parseMatchRowOsmCentroidLonLat } from 
 
 type Row = z.infer<typeof schoolsMatchRowSchema>
 
+function trimNonEmptyString(v: string | null | undefined): string | null {
+  if (v == null) return null
+  const t = v.trim()
+  return t.length ? t : null
+}
+
+function nameFromOfficialProperties(
+  props: Record<string, unknown> | null | undefined,
+): string | null {
+  if (!props) return null
+  const n = props.name
+  return typeof n === 'string' ? trimNonEmptyString(n) : null
+}
+
+/** Display title aligned with map hover + list (amtlich, OSM, then JedeSchule `name` on `officialProperties`). */
+export function matchRowDisplayName(row: {
+  officialName: string | null
+  osmName: string | null
+  officialProperties?: Record<string, unknown> | null
+}): string {
+  return (
+    trimNonEmptyString(row.officialName) ??
+    trimNonEmptyString(row.osmName) ??
+    nameFromOfficialProperties(row.officialProperties ?? null) ??
+    '—'
+  )
+}
+
 /** Representative point for list/map filtering (OSM-Schwerpunkt bevorzugt, sonst amtliche Koordinaten). */
 function matchRowRepresentativeLonLat(row: Row): [number, number] | null {
   return (
@@ -24,7 +52,11 @@ export function matchesToOverviewMapPoints(rows: Row[]): FeatureCollection {
     if (!ll) continue
     features.push({
       type: 'Feature',
-      properties: { matchCat: r.category },
+      properties: {
+        matchKey: r.key,
+        name: matchRowDisplayName(r),
+        matchCat: r.category,
+      },
       geometry: { type: 'Point', coordinates: ll },
     })
   }

@@ -1,3 +1,4 @@
+import { useNavigate } from '@tanstack/react-router'
 import { MapProvider } from 'react-map-gl/maplibre'
 import type { Feature, FeatureCollection, Geometry, MultiPolygon, Polygon } from 'geojson'
 import { LandMap } from '../LandMap'
@@ -24,6 +25,8 @@ export function LandOverviewMapSection({
   setListBbox: (bbox: LandMapBbox) => void
   clearListBbox: () => void
 }) {
+  const navigate = useNavigate()
+
   if (enabledCategories.length === 0) {
     return (
       <div
@@ -47,6 +50,12 @@ export function LandOverviewMapSection({
           urlBbox={listBbox}
           onApplyUrlBbox={(bbox) => void setListBbox(bbox)}
           onClearUrlBbox={clearListBbox}
+          onSchoolClick={(matchKey) =>
+            void navigate({
+              to: '/bundesland/$code/schule/$matchKey',
+              params: { code: landCode, matchKey },
+            })
+          }
         />
         {mapMatchPoints.features.length > 0 && (
           <p className="mt-2 text-xs text-zinc-400">{de.land.mapLegendPoints}</p>

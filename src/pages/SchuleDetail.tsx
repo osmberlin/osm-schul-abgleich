@@ -10,6 +10,7 @@ import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
 import MapGL, { Layer, type MapLayerMouseEvent, type MapRef, Source } from 'react-map-gl/maplibre'
 import 'maplibre-gl/dist/maplibre-gl.css'
 import type { Feature, FeatureCollection, MultiPolygon, Polygon } from 'geojson'
+import { MapPointHoverPanel } from '../components/MapPointHoverPanel'
 import {
   getSchuleDetailLicenceInfo,
   SchuleDetailLicenceCompatibleInline,
@@ -1039,18 +1040,13 @@ export function SchuleDetail() {
               )}
             </MapGL>
             {hoveredMapLabel ? (
-              <div
-                className="pointer-events-none absolute left-2 top-2 z-10 max-w-[min(16rem,calc(100%-1rem))] rounded-md border border-zinc-600 bg-zinc-900 px-2.5 py-1.5 font-sans shadow-md"
-                role="status"
-                aria-live="polite"
-              >
-                <p className="text-sm font-medium leading-snug text-zinc-50">
-                  {hoveredMapLabel.name}
-                </p>
-                <p className="mt-0.5 text-xs leading-snug text-zinc-400">
-                  {detailMapPopupCategoryLine(hoveredMapLabel, row.matchCategory ?? row.category)}
-                </p>
-              </div>
+              <MapPointHoverPanel
+                name={hoveredMapLabel.name}
+                categoryLine={detailMapPopupCategoryLine(
+                  hoveredMapLabel,
+                  row.matchCategory ?? row.category,
+                )}
+              />
             ) : null}
           </div>
           <div className="mt-2 flex min-w-0 flex-wrap items-center justify-between gap-x-3 gap-y-2">
