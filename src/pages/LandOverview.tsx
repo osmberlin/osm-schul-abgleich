@@ -1,6 +1,6 @@
 import { useQuery } from '@tanstack/react-query'
 import { useParams } from '@tanstack/react-router'
-import type { Feature, MultiPolygon, Polygon } from 'geojson'
+import type { Feature, FeatureCollection, MultiPolygon, Polygon } from 'geojson'
 import { useId, useMemo } from 'react'
 import { LandOverviewHistorySection } from '../components/land/LandOverviewHistorySection'
 import { LandOverviewMapSection } from '../components/land/LandOverviewMapSection'
@@ -8,7 +8,11 @@ import { LandOverviewMatchList } from '../components/land/LandOverviewMatchList'
 import { LandOverviewStats } from '../components/land/LandOverviewStats'
 import { de } from '../i18n/de'
 import { landHistoryFromRuns } from '../lib/matchHistoryFromRuns'
-import { matchesToOverviewMapPoints, matchRowInLandMapBbox } from '../lib/matchRowInBbox'
+import {
+  buildOfficialSchoolLonLatIndex,
+  matchesToOverviewMapPoints,
+  matchRowInLandMapBbox,
+} from '../lib/matchRowInBbox'
 import {
   landBoundaryUrl,
   landMatchesUrl,
@@ -104,10 +108,16 @@ export function LandOverview() {
 
   const matches = dataQ.data?.matches ?? []
 
+  const officialLonLatIndex = useMemo((): Map<string, [number, number]> | null => {
+    const o = dataQ.data?.official as FeatureCollection | undefined
+    if (!o?.features?.length) return null
+    return buildOfficialSchoolLonLatIndex(o)
+  }, [dataQ.data?.official])
+
   const matchesForCatCounts = useMemo(() => {
     if (!listBbox) return matches
-    return matches.filter((r) => matchRowInLandMapBbox(r, listBbox))
-  }, [matches, listBbox])
+    return matches.filter((r) => matchRowInLandMapBbox(r, listBbox, officialLonLatIndex))
+  }, [matches, listBbox, officialLonLatIndex])
 
   const catCounts = useMemo(() => {
     const z = {
@@ -129,10 +139,13 @@ export function LandOverview() {
 
   const listMatches = useMemo(() => {
     if (!listBbox) return visibleMatches
-    return visibleMatches.filter((r) => matchRowInLandMapBbox(r, listBbox))
-  }, [visibleMatches, listBbox])
+    return visibleMatches.filter((r) => matchRowInLandMapBbox(r, listBbox, officialLonLatIndex))
+  }, [visibleMatches, listBbox, officialLonLatIndex])
 
-  const mapMatchPoints = useMemo(() => matchesToOverviewMapPoints(listMatches), [listMatches])
+  const mapMatchPoints = useMemo(
+    () => matchesToOverviewMapPoints(listMatches, officialLonLatIndex),
+    [listMatches, officialLonLatIndex],
+  )
 
   if (dataQ.isLoading || summaryQ.isLoading) {
     return <p className="text-zinc-400">{de.land.loading}</p>

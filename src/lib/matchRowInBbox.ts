@@ -34,21 +34,60 @@ export function matchRowDisplayName(row: {
   )
 }
 
-/** Representative point for list/map filtering (OSM-Schwerpunkt bevorzugt, sonst amtliche Koordinaten). */
-function matchRowRepresentativeLonLat(row: Row): [number, number] | null {
-  return (
-    parseMatchRowOsmCentroidLonLat(row) ??
-    parseJedeschuleLonLatFromRecord(row.officialProperties ?? null)
-  )
+/** Point geometry or JedeSchule lat/lon on feature properties (aligned with `detailMapConnectorLines`). */
+export function lonLatFromOfficialFeature(f: Feature): [number, number] | null {
+  if (f.geometry?.type === 'Point') {
+    const [lon, lat] = f.geometry.coordinates
+    return [lon, lat]
+  }
+  if (f.properties) {
+    return parseJedeschuleLonLatFromRecord(f.properties as Record<string, unknown>)
+  }
+  return null
+}
+
+/** `officialId` → coordinates from `schools_official.geojson` (Point or jedeschule props). */
+export function buildOfficialSchoolLonLatIndex(
+  fc: FeatureCollection,
+): Map<string, [number, number]> {
+  const m = new Map<string, [number, number]>()
+  for (const f of fc.features) {
+    const pid = f.properties?.id as string | undefined
+    const idKey = pid ?? (typeof f.id === 'string' ? f.id : null)
+    if (!idKey) continue
+    const ll = lonLatFromOfficialFeature(f)
+    if (ll) m.set(idKey, ll)
+  }
+  return m
+}
+
+/**
+ * Representative point: OSM-Schwerpunkt, then JedeSchule-Felder auf der Match-Zeile, dann Lookup in amtlichem GeoJSON.
+ */
+export function matchRowMapLonLat(
+  row: Row,
+  officialLonLatIndex: Map<string, [number, number]> | null,
+): [number, number] | null {
+  const fromOsm = parseMatchRowOsmCentroidLonLat(row)
+  if (fromOsm) return fromOsm
+  const fromRow = parseJedeschuleLonLatFromRecord(row.officialProperties ?? null)
+  if (fromRow) return fromRow
+  if (officialLonLatIndex && row.officialId) {
+    return officialLonLatIndex.get(row.officialId) ?? null
+  }
+  return null
 }
 
 /**
  * One map point per Treffer (same coordinate logic as list/bbox filter), `matchCat` = row category.
  */
-export function matchesToOverviewMapPoints(rows: Row[]): FeatureCollection {
+export function matchesToOverviewMapPoints(
+  rows: Row[],
+  officialLonLatIndex: Map<string, [number, number]> | null,
+): FeatureCollection {
   const features: Feature[] = []
   for (const r of rows) {
-    const ll = matchRowRepresentativeLonLat(r)
+    const ll = matchRowMapLonLat(r, officialLonLatIndex)
     if (!ll) continue
     features.push({
       type: 'Feature',
@@ -68,8 +107,12 @@ function pointInLandMapBbox(lon: number, lat: number, bbox: LandMapBbox): boolea
   return lon >= w && lon <= e && lat >= s && lat <= n
 }
 
-export function matchRowInLandMapBbox(row: Row, bbox: LandMapBbox): boolean {
-  const p = matchRowRepresentativeLonLat(row)
+export function matchRowInLandMapBbox(
+  row: Row,
+  bbox: LandMapBbox,
+  officialLonLatIndex: Map<string, [number, number]> | null,
+): boolean {
+  const p = matchRowMapLonLat(row, officialLonLatIndex)
   if (!p) return false
   return pointInLandMapBbox(p[0], p[1], bbox)
 }

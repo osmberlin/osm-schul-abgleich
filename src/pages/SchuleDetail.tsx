@@ -25,6 +25,11 @@ import type { LandMatchCategory } from '../lib/landMatchCategories'
 import { boundsToBboxParam } from '../lib/mapBounds'
 import { DETAIL_MAP_OFFICIAL, DETAIL_MAP_OSM } from '../lib/matchCategoryTheme'
 import { MATCH_RADIUS_KM, MATCH_RADIUS_M } from '../lib/matchRadius'
+import {
+  buildOfficialSchoolLonLatIndex,
+  matchRowDisplayName,
+  matchRowMapLonLat,
+} from '../lib/matchRowInBbox'
 import { miniMarkdownNodes } from '../lib/miniMarkdown'
 import {
   applyFlatMapRotationLocks,
@@ -621,16 +626,20 @@ export function SchuleDetail() {
   const allOtherSchoolPoints = useMemo((): FeatureCollection => {
     const features: Feature[] = []
     if (!q.data) return { type: 'FeatureCollection', features }
+    const officialFc = q.data.official as FeatureCollection
+    const officialLonLatIndex = officialFc?.features?.length
+      ? buildOfficialSchoolLonLatIndex(officialFc)
+      : null
     for (const match of q.data.matches) {
       if (match.key === keyDecoded) continue
-      const lonLat = parseMatchRowOsmCentroidLonLat(match)
+      const lonLat = matchRowMapLonLat(match, officialLonLatIndex)
       if (!lonLat) continue
       const [lon, lat] = lonLat
       features.push({
         type: 'Feature',
         properties: {
           matchKey: match.key,
-          name: match.osmName ?? match.officialName ?? match.key,
+          name: matchRowDisplayName(match),
           matchCat: match.matchCategory ?? match.category,
         },
         geometry: { type: 'Point', coordinates: [lon, lat] },
