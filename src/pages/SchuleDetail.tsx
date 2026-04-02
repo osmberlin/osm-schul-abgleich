@@ -1050,11 +1050,15 @@ export function SchuleDetail() {
             </MapGL>
             {hoveredMapLabel ? (
               <MapPointHoverPanel
-                name={hoveredMapLabel.name}
-                categoryLine={detailMapPopupCategoryLine(
-                  hoveredMapLabel,
-                  row.matchCategory ?? row.category,
-                )}
+                entries={[
+                  {
+                    name: hoveredMapLabel.name,
+                    categoryLine: detailMapPopupCategoryLine(
+                      hoveredMapLabel,
+                      row.matchCategory ?? row.category,
+                    ),
+                  },
+                ]}
               />
             ) : null}
           </div>

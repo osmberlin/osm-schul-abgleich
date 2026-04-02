@@ -147,10 +147,9 @@ export function LandMap({
   const [mapReady, setMapReady] = useState(false)
   const [currentBbox, setCurrentBbox] = useState<LandMapBbox | null>(null)
   const [baselineBbox, setBaselineBbox] = useState<LandMapBbox | null>(null)
-  const [hoveredPoint, setHoveredPoint] = useState<{
-    name: string
-    matchCat: LandMatchCategory
-  } | null>(null)
+  const [hoveredPointEntries, setHoveredPointEntries] = useState<
+    Array<{ name: string; matchCat: LandMatchCategory }>
+  >([])
 
   const hasUrlBbox = urlBbox != null
   const bboxToolbarEnabled = onApplyUrlBbox != null && onClearUrlBbox != null
@@ -221,27 +220,30 @@ export function LandMap({
 
   function handleOverviewMouseMove(e: MapLayerMouseEvent) {
     if (!onSchoolClick) return
-    const hit = e.features?.[0]
-    if (!hit || hit.geometry.type !== 'Point') {
-      setHoveredPoint(null)
-      return
+    const raw = e.features ?? []
+    const seen = new Set<string>()
+    const next: Array<{ name: string; matchCat: LandMatchCategory }> = []
+    for (const hit of raw) {
+      if (hit.geometry.type !== 'Point') continue
+      const name = hit.properties?.name
+      const matchCat = hit.properties?.matchCat
+      const matchKey = hit.properties?.matchKey
+      if (
+        typeof name !== 'string' ||
+        typeof matchKey !== 'string' ||
+        !isLandMatchCategory(matchCat)
+      ) {
+        continue
+      }
+      if (seen.has(matchKey)) continue
+      seen.add(matchKey)
+      next.push({ name, matchCat })
     }
-    const name = hit.properties?.name
-    const matchCat = hit.properties?.matchCat
-    const matchKey = hit.properties?.matchKey
-    if (
-      typeof name !== 'string' ||
-      typeof matchKey !== 'string' ||
-      !isLandMatchCategory(matchCat)
-    ) {
-      setHoveredPoint(null)
-      return
-    }
-    setHoveredPoint({ name, matchCat })
+    setHoveredPointEntries(next)
   }
 
   function handleOverviewMouseLeave() {
-    setHoveredPoint(null)
+    setHoveredPointEntries([])
   }
 
   function handleOverviewClick(e: MapLayerMouseEvent) {
@@ -255,7 +257,7 @@ export function LandMap({
   const schoolInteractionProps = onSchoolClick
     ? {
         interactiveLayerIds: [LAYER_MATCH_OVERVIEW_HALO],
-        cursor: hoveredPoint ? 'pointer' : 'default',
+        cursor: hoveredPointEntries.length > 0 ? 'pointer' : 'default',
         onMouseMove: handleOverviewMouseMove,
         onMouseLeave: handleOverviewMouseLeave,
         onClick: handleOverviewClick,
@@ -309,10 +311,12 @@ export function LandMap({
           />
         </Source>
       </MapGL>
-      {onSchoolClick && hoveredPoint ? (
+      {onSchoolClick && hoveredPointEntries.length > 0 ? (
         <MapPointHoverPanel
-          name={hoveredPoint.name}
-          categoryLine={de.land.categoryLabel[hoveredPoint.matchCat] ?? hoveredPoint.matchCat}
+          entries={hoveredPointEntries.map((h) => ({
+            name: h.name,
+            categoryLine: de.land.categoryLabel[h.matchCat] ?? h.matchCat,
+          }))}
         />
       ) : null}
       {bboxToolbarEnabled && (
