@@ -1,7 +1,7 @@
 {
   "pipelineStep": "pipeline:download:osm",
-  "generatedAt": "2026-04-01T20:11:17.535Z",
+  "generatedAt": "2026-04-02T07:22:37.202Z",
   "ok": true,
-  "overpassResponseTimestamp": "2026-02-16T14:09:02Z",
+  "overpassResponseTimestamp": "2026-02-15T14:44:30Z",
   "interpreterUrl": "https://overpass.kumi.systems/api/interpreter"
 }

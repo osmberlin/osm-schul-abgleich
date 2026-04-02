@@ -855,6 +855,220 @@
         }
       },
       "gitSha": "5383acb004a6b64799caa299b5b728520079473d"
+    },
+    {
+      "startedAt": "2026-04-02T07:22:38.364Z",
+      "finishedAt": "2026-04-02T07:31:32.651Z",
+      "durationMs": 534291,
+      "overallOk": true,
+      "errors": [],
+      "lands": [
+        {
+          "code": "BW",
+          "osmSource": "live",
+          "osmSnapshotAt": "2026-02-15T14:44:30Z",
+          "counts": {
+            "matched": 2624,
+            "official_only": 11246,
+            "osm_only": 1186,
+            "ambiguous": 1451,
+            "official_no_coord": 621
+          }
+        },
+        {
+          "code": "BY",
+          "osmSource": "live",
+          "osmSnapshotAt": "2026-02-15T14:44:30Z",
+          "counts": {
+            "matched": 2229,
+            "official_only": 261,
+            "osm_only": 2094,
+            "ambiguous": 1372,
+            "official_no_coord": 0
+          }
+        },
+        {
+          "code": "BE",
+          "osmSource": "live",
+          "osmSnapshotAt": "2026-02-15T14:44:30Z",
+          "counts": {
+            "matched": 758,
+            "official_only": 128,
+            "osm_only": 273,
+            "ambiguous": 34,
+            "official_no_coord": 1
+          }
+        },
+        {
+          "code": "BB",
+          "osmSource": "live",
+          "osmSnapshotAt": "2026-02-15T14:44:30Z",
+          "counts": {
+            "matched": 701,
+            "official_only": 105,
+            "osm_only": 263,
+            "ambiguous": 100,
+            "official_no_coord": 6
+          }
+        },
+        {
+          "code": "HB",
+          "osmSource": "live",
+          "osmSnapshotAt": "2026-02-15T14:44:30Z",
+          "counts": {
+            "matched": 108,
+            "official_only": 0,
+            "osm_only": 144,
+            "ambiguous": 0,
+            "official_no_coord": 99
+          }
+        },
+        {
+          "code": "HH",
+          "osmSource": "live",
+          "osmSnapshotAt": "2026-02-15T14:44:30Z",
+          "counts": {
+            "matched": 416,
+            "official_only": 69,
+            "osm_only": 91,
+            "ambiguous": 49,
+            "official_no_coord": 5
+          }
+        },
+        {
+          "code": "HE",
+          "osmSource": "live",
+          "osmSnapshotAt": "2026-02-15T14:44:30Z",
+          "counts": {
+            "matched": 1492,
+            "official_only": 348,
+            "osm_only": 883,
+            "ambiguous": 46,
+            "official_no_coord": 189
+          }
+        },
+        {
+          "code": "MV",
+          "osmSource": "live",
+          "osmSnapshotAt": "2026-02-15T14:44:30Z",
+          "counts": {
+            "matched": 411,
+            "official_only": 69,
+            "osm_only": 223,
+            "ambiguous": 70,
+            "official_no_coord": 2
+          }
+        },
+        {
+          "code": "NI",
+          "osmSource": "live",
+          "osmSnapshotAt": "2026-02-15T14:44:30Z",
+          "counts": {
+            "matched": 1086,
+            "official_only": 0,
+            "osm_only": 2834,
+            "ambiguous": 14,
+            "official_no_coord": 2042
+          }
+        },
+        {
+          "code": "NW",
+          "osmSource": "live",
+          "osmSnapshotAt": "2026-02-15T14:44:30Z",
+          "counts": {
+            "matched": 3882,
+            "official_only": 455,
+            "osm_only": 2286,
+            "ambiguous": 1286,
+            "official_no_coord": 0
+          }
+        },
+        {
+          "code": "RP",
+          "osmSource": "live",
+          "osmSnapshotAt": "2026-02-15T14:44:30Z",
+          "counts": {
+            "matched": 860,
+            "official_only": 524,
+            "osm_only": 671,
+            "ambiguous": 212,
+            "official_no_coord": 0
+          }
+        },
+        {
+          "code": "SL",
+          "osmSource": "live",
+          "osmSnapshotAt": "2026-02-15T14:44:30Z",
+          "counts": {
+            "matched": 274,
+            "official_only": 38,
+            "osm_only": 92,
+            "ambiguous": 49,
+            "official_no_coord": 354
+          }
+        },
+        {
+          "code": "SN",
+          "osmSource": "live",
+          "osmSnapshotAt": "2026-02-15T14:44:30Z",
+          "counts": {
+            "matched": 1176,
+            "official_only": 323,
+            "osm_only": 422,
+            "ambiguous": 333,
+            "official_no_coord": 2
+          }
+        },
+        {
+          "code": "ST",
+          "osmSource": "live",
+          "osmSnapshotAt": "2026-02-15T14:44:30Z",
+          "counts": {
+            "matched": 648,
+            "official_only": 93,
+            "osm_only": 316,
+            "ambiguous": 127,
+            "official_no_coord": 898
+          }
+        },
+        {
+          "code": "SH",
+          "osmSource": "live",
+          "osmSnapshotAt": "2026-02-15T14:44:30Z",
+          "counts": {
+            "matched": 740,
+            "official_only": 144,
+            "osm_only": 279,
+            "ambiguous": 138,
+            "official_no_coord": 979
+          }
+        },
+        {
+          "code": "TH",
+          "osmSource": "live",
+          "osmSnapshotAt": "2026-02-15T14:44:30Z",
+          "counts": {
+            "matched": 614,
+            "official_only": 119,
+            "osm_only": 456,
+            "ambiguous": 225,
+            "official_no_coord": 105
+          }
+        }
+      ],
+      "matchSkipped": false,
+      "downloads": {
+        "jedeschule": {
+          "ok": true,
+          "generatedAt": "2026-04-02T07:15:14.432Z",
+          "upstreamDatasetChanged": false
+        },
+        "osm": {
+          "ok": true,
+          "generatedAt": "2026-04-02T07:22:37.202Z"
+        }
+      },
+      "gitSha": "d2dbf131f8c561fc98d3cccb1b17ece2709bbb37"
     }
   ]
 }
