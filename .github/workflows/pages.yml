@@ -65,9 +65,18 @@ jobs:
         run: |
           git fetch origin main
           git reset --hard origin/main
+      - name: Remove processing-only artifacts before build
+        run: |
+          rm -f public/datasets/jedeschule-latest.csv
+          rm -f public/datasets/schools_official_de.geojson
+          rm -f public/datasets/schools_osm_de.geojson
+          rm -f public/datasets/schools_matches_de.json
+          rm -f public/datasets/.pipeline_skip_split
       - run: bun run build
         env:
           GITHUB_PAGES: 'true'
+      - name: Create gzip/brotli sidecars in dist (experiment)
+        run: bun run build:compress
       - uses: actions/upload-pages-artifact@v3
         with:
           path: dist
@@ -75,9 +84,31 @@ jobs:
   deploy:
     needs: build
     runs-on: ubuntu-latest
+    outputs:
+      page_url: ${{ steps.deployment.outputs.page_url }}
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
     steps:
       - id: deployment
         uses: actions/deploy-pages@v4
+
+  verify-compression:
+    needs: deploy
+    runs-on: ubuntu-latest
+    steps:
+      - name: Probe response compression headers
+        env:
+          PAGE_URL: ${{ needs.deploy.outputs.page_url }}
+        run: |
+          set -e
+          DATASET_URL="${PAGE_URL%/}/datasets/BW/schools_matches.json"
+          echo "Testing ${DATASET_URL}"
+          echo "--- HEAD with Accept-Encoding: br,gzip ---"
+          curl -sSI -H "Accept-Encoding: br,gzip" "$DATASET_URL" | tee /tmp/headers.txt
+          echo "--- Compression verdict ---"
+          if rg -i "content-encoding:\\s*(br|gzip)" /tmp/headers.txt >/dev/null; then
+            echo "Compression appears active."
+          else
+            echo "No content-encoding header observed for this dataset URL."
+          fi

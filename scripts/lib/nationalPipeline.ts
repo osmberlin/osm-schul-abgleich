@@ -1,7 +1,8 @@
 import { createHash } from 'node:crypto'
 import { mkdir, unlink } from 'node:fs/promises'
 import path from 'node:path'
-import type { Feature, FeatureCollection } from 'geojson'
+import simplify from '@turf/simplify'
+import type { Feature, FeatureCollection, Geometry } from 'geojson'
 import { berlinCalendarDateKey } from '../../src/lib/berlinCalendarDateKey'
 import { schoolsMatchesFileSchema } from '../../src/lib/schemas'
 import {
@@ -66,6 +67,96 @@ type SummaryFileOut = {
   pipelineVersion: number
   jedeschuleCsvSource?: string
   lands: LandSummaryOut[]
+}
+
+// 4 decimals ~= 11m latitude resolution; acceptable "about 10m" for Germany.
+const USER_FACING_COORD_DECIMALS = 4 as const
+
+/** Douglas–Peucker tolerance in degrees (~N/S meters ≈ tolerance * 111_320). */
+const OSM_USER_GEOMETRY_SIMPLIFY_TOLERANCE_DEG = 10 / 111_320
+
+function roundToDecimals(value: number, decimals: number): number {
+  if (!Number.isFinite(value)) return value
+  const scale = 10 ** decimals
+  return Math.round(value * scale) / scale
+}
+
+function roundGeoCoordinates(value: unknown): unknown {
+  if (typeof value === 'number') return roundToDecimals(value, USER_FACING_COORD_DECIMALS)
+  if (Array.isArray(value)) return value.map(roundGeoCoordinates)
+  return value
+}
+
+function roundFeatureGeometry(geometry: Feature['geometry'] | null): Feature['geometry'] | null {
+  if (!geometry) return geometry
+  if (geometry.type === 'GeometryCollection') {
+    return {
+      ...geometry,
+      geometries: geometry.geometries.map((g) => roundFeatureGeometry(g) as NonNullable<typeof g>),
+    }
+  }
+  return {
+    ...geometry,
+    coordinates: roundGeoCoordinates((geometry as { coordinates: unknown }).coordinates) as never,
+  }
+}
+
+function optimizeOfficialFeatureForUserOutput(f: Feature): Feature {
+  return {
+    ...f,
+    geometry: roundFeatureGeometry(f.geometry),
+  }
+}
+
+function simplifyOsmGeometryForUser(
+  geometry: Feature['geometry'] | null,
+): Feature['geometry'] | null {
+  if (!geometry) return geometry
+  if (geometry.type === 'GeometryCollection') {
+    return {
+      type: 'GeometryCollection',
+      geometries: geometry.geometries.map((g) => simplifyOsmGeometryForUser(g) as Geometry),
+    }
+  }
+  if (geometry.type === 'Point' || geometry.type === 'MultiPoint') {
+    return roundFeatureGeometry(geometry)
+  }
+  try {
+    const simplified = simplify(
+      { type: 'Feature', properties: {}, geometry },
+      {
+        tolerance: OSM_USER_GEOMETRY_SIMPLIFY_TOLERANCE_DEG,
+        highQuality: false,
+      },
+    )
+    const g = simplified.type === 'Feature' ? simplified.geometry : null
+    return roundFeatureGeometry(g ?? geometry)
+  } catch {
+    return roundFeatureGeometry(geometry)
+  }
+}
+
+function optimizeOsmFeatureForUserOutput(f: Feature): Feature {
+  return {
+    type: 'Feature',
+    id: f.id,
+    properties: null,
+    geometry: simplifyOsmGeometryForUser(f.geometry),
+  }
+}
+
+function optimizeMatchRowForUserOutput(
+  row: Record<string, unknown> & { osmCentroidLon?: number | null; osmCentroidLat?: number | null },
+): Record<string, unknown> {
+  const out = { ...row }
+  delete out.pipelineLand
+  if (typeof out.osmCentroidLon === 'number') {
+    out.osmCentroidLon = roundToDecimals(out.osmCentroidLon, USER_FACING_COORD_DECIMALS)
+  }
+  if (typeof out.osmCentroidLat === 'number') {
+    out.osmCentroidLat = roundToDecimals(out.osmCentroidLat, USER_FACING_COORD_DECIMALS)
+  }
+  return out
 }
 
 function nearestLandByCenter(lon: number, lat: number): LandCode {
@@ -583,22 +674,34 @@ export async function runSplitLands(
     await mkdir(path.join(datasetsDir(projectRoot), code), { recursive: true })
     const officialLand: FeatureCollection = {
       type: 'FeatureCollection',
-      features: officialFc.features.filter((f) => {
-        const p = f.properties as { land?: string } | null
-        return p?.land === code || landCodeFromSchoolId(String(f.id)) === code
-      }),
+      features: officialFc.features
+        .filter((f) => {
+          const p = f.properties as { land?: string } | null
+          return p?.land === code || landCodeFromSchoolId(String(f.id)) === code
+        })
+        .map(optimizeOfficialFeatureForUserOutput),
     }
     const osmLand: FeatureCollection = {
       type: 'FeatureCollection',
-      features: osmFc.features.filter((f) => assignPipelineLandToOsmFeature(f) === code),
+      features: osmFc.features
+        .filter((f) => assignPipelineLandToOsmFeature(f) === code)
+        .map(optimizeOsmFeatureForUserOutput),
     }
     const rowsLand = matchRows.filter((r) => rowLandCode(r) === code)
+    const rowsLandUser = rowsLand.map((r) =>
+      optimizeMatchRowForUserOutput(
+        r as Record<string, unknown> & {
+          osmCentroidLon?: number | null
+          osmCentroidLat?: number | null
+        },
+      ),
+    )
     await writeJson(
       path.join(datasetsDir(projectRoot), code, 'schools_official.geojson'),
       officialLand,
     )
     await writeJson(path.join(datasetsDir(projectRoot), code, 'schools_osm.geojson'), osmLand)
-    await writeJson(path.join(datasetsDir(projectRoot), code, 'schools_matches.json'), rowsLand)
+    await writeJson(path.join(datasetsDir(projectRoot), code, 'schools_matches.json'), rowsLandUser)
 
     const osmMetaLand: Record<string, unknown> = {
       overpassQueriedAt: osmMeta?.generatedAt,

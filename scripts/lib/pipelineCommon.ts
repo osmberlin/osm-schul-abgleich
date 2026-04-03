@@ -1,5 +1,5 @@
 import path from 'node:path'
-import { landCodeFromSchoolId, type LandCode, STATE_ORDER } from '../../src/lib/stateConfig'
+import { landCodeFromSchoolId } from '../../src/lib/stateConfig'
 import type { JedeschuleSchool } from './jedeschuleCsv'
 
 export const PIPELINE_VERSION = 1 as const
@@ -54,6 +54,7 @@ export async function readJsonFile<T>(filePath: string): Promise<T | null> {
   }
 }
 
+/** Pipeline artifacts: minified JSON only (smaller files). Do not switch to `JSON.stringify(data, null, 2)`. */
 export async function writeJson(p: string, data: unknown) {
-  await Bun.write(p, JSON.stringify(data, null, 2))
+  await Bun.write(p, JSON.stringify(data))
 }
