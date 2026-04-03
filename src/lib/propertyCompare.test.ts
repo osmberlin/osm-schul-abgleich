@@ -1,5 +1,5 @@
-import { describe, expect, it } from 'vitest'
 import { comparePropertySections } from './propertyCompare'
+import { describe, expect, it } from 'vitest'
 
 describe('comparePropertySections address group', () => {
   it('creates address compare group and consumes address/street/housenumber keys', () => {

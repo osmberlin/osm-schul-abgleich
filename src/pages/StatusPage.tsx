@@ -1,9 +1,9 @@
-import { useQuery } from '@tanstack/react-query'
 import { de } from '../i18n/de'
 import { cn } from '../lib/cn'
 import { formatDurationMs } from '../lib/formatDuration'
 import { nationalOfficialMetaUrl, nationalOsmMetaUrl, runsJsonUrl } from '../lib/paths'
 import { type PipelineSourceMeta, pipelineSourceMetaSchema, runsFileSchema } from '../lib/schemas'
+import { useQuery } from '@tanstack/react-query'
 
 async function fetchNationalMeta(
   url: string,

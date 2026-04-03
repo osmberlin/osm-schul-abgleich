@@ -1,7 +1,7 @@
-import { useRouterState } from '@tanstack/react-router'
 import { de } from '../i18n/de'
 import { type LandCode, STATE_LABEL_DE } from '../lib/stateConfig'
 import { AppBreadcrumb, type AppBreadcrumbCrumb } from './AppBreadcrumb'
+import { useRouterState } from '@tanstack/react-router'
 
 function shortMatchKey(encoded: string) {
   const d = decodeURIComponent(encoded)

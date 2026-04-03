@@ -8,15 +8,15 @@ Die zentrale CSV wird **wöchentlich** aktualisiert ([Projekt](https://codefor.d
 
 Die Pipeline arbeitet zuerst **bundesweit** (GeoJSON + Meta unter `public/datasets/`), führt den **Abgleich** darauf aus und **verteilt** die Ergebnisse nach Bundesland.
 
-| Skript | Aufgabe |
-|--------|---------|
-| `pipeline:download:jedeschule` | CSV laden → `schools_official_de.geojson`, `jedeschule_stats.json`, `schools_official_de.meta.json`. |
-| `pipeline:download:osm` | Ein Overpass-Lauf für **Deutschland** → `schools_osm_de.geojson`, `schools_osm_de.meta.json`. |
-| `pipeline:download` | Startet **beide** Downloads **parallel**; **Exit 1**, wenn eine Quelle fehlschlägt (`ok: false` in den Meta-JSONs). |
-| `pipeline:match` | Nationaler Abgleich; **nur** wenn JedeSchule- **und** OSM-Meta `ok: true` sind, sonst Skip + `runs.json`. `PIPELINE_FORCE_MATCH=1` erzwingt Match mit vorliegenden Dateien (lokal z. B. nach teilweisem Download). |
-| `pipeline:split-lands` | Nach erfolgreichem Match: Sharding nach `public/datasets/{code}/…` und `summary.json`. Wenn Match übersprungen wurde: **No-op** (Marker `.pipeline_skip_split`). |
-| `pipeline:rebuild` | Nur `pipeline:match` → `pipeline:split-lands` (**ohne** Downloads). |
-| `pipeline` | `pipeline:download` → `pipeline:match` → `pipeline:split-lands` (z. B. CI). |
+| Skript                         | Aufgabe                                                                                                                                                                                                            |
+| ------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `pipeline:download:jedeschule` | CSV laden → `schools_official_de.geojson`, `jedeschule_stats.json`, `schools_official_de.meta.json`.                                                                                                               |
+| `pipeline:download:osm`        | Ein Overpass-Lauf für **Deutschland** → `schools_osm_de.geojson`, `schools_osm_de.meta.json`.                                                                                                                      |
+| `pipeline:download`            | Startet **beide** Downloads **parallel**; **Exit 1**, wenn eine Quelle fehlschlägt (`ok: false` in den Meta-JSONs).                                                                                                |
+| `pipeline:match`               | Nationaler Abgleich; **nur** wenn JedeSchule- **und** OSM-Meta `ok: true` sind, sonst Skip + `runs.json`. `PIPELINE_FORCE_MATCH=1` erzwingt Match mit vorliegenden Dateien (lokal z. B. nach teilweisem Download). |
+| `pipeline:split-lands`         | Nach erfolgreichem Match: Sharding nach `public/datasets/{code}/…` und `summary.json`. Wenn Match übersprungen wurde: **No-op** (Marker `.pipeline_skip_split`).                                                   |
+| `pipeline:rebuild`             | Nur `pipeline:match` → `pipeline:split-lands` (**ohne** Downloads).                                                                                                                                                |
+| `pipeline`                     | `pipeline:download` → `pipeline:match` → `pipeline:split-lands` (z. B. CI).                                                                                                                                        |
 
 ```bash
 bun run pipeline

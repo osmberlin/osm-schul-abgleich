@@ -1,15 +1,3 @@
-import { ChevronRightIcon, InformationCircleIcon, MapPinIcon } from '@heroicons/react/20/solid'
-import { useQuery } from '@tanstack/react-query'
-import { Link, useNavigate, useParams } from '@tanstack/react-router'
-import bbox from '@turf/bbox'
-import circle from '@turf/circle'
-import difference from '@turf/difference'
-import distance from '@turf/distance'
-import { featureCollection, point } from '@turf/helpers'
-import { useEffect, useLayoutEffect, useMemo, useRef, useState, type ReactNode } from 'react'
-import MapGL, { Layer, type MapLayerMouseEvent, type MapRef, Source } from 'react-map-gl/maplibre'
-import 'maplibre-gl/dist/maplibre-gl.css'
-import type { Feature, FeatureCollection, MultiPolygon, Polygon } from 'geojson'
 import { MapPointHoverPanel } from '../components/MapPointHoverPanel'
 import {
   getSchuleDetailLicenceInfo,
@@ -24,6 +12,7 @@ import { formatDeInteger } from '../lib/formatNumber'
 import type { LandMatchCategory } from '../lib/landMatchCategories'
 import { boundsToBboxParam } from '../lib/mapBounds'
 import { DETAIL_MAP_OFFICIAL, DETAIL_MAP_OSM } from '../lib/matchCategoryTheme'
+import 'maplibre-gl/dist/maplibre-gl.css'
 import { MATCH_RADIUS_KM, MATCH_RADIUS_M } from '../lib/matchRadius'
 import {
   buildOfficialSchoolLonLatIndex,
@@ -43,6 +32,17 @@ import { comparePropertySections, normalizeAddressCompareString } from '../lib/p
 import { useDetailMapMask } from '../lib/useDetailMapMask'
 import type { LandMapBbox } from '../lib/useLandMapBbox'
 import { parseJedeschuleLonLatFromRecord, parseMatchRowOsmCentroidLonLat } from '../lib/zodGeo'
+import { ChevronRightIcon, InformationCircleIcon, MapPinIcon } from '@heroicons/react/20/solid'
+import { useQuery } from '@tanstack/react-query'
+import { Link, useNavigate, useParams } from '@tanstack/react-router'
+import bbox from '@turf/bbox'
+import circle from '@turf/circle'
+import difference from '@turf/difference'
+import distance from '@turf/distance'
+import { featureCollection, point } from '@turf/helpers'
+import type { Feature, FeatureCollection, MultiPolygon, Polygon } from 'geojson'
+import { useEffect, useLayoutEffect, useMemo, useRef, useState, type ReactNode } from 'react'
+import MapGL, { Layer, type MapLayerMouseEvent, type MapRef, Source } from 'react-map-gl/maplibre'
 
 /** Padding around the two compared geometries; maxZoom avoids excessive zoom when points are very close. */
 const DETAIL_MAP_PADDING = 64
@@ -279,7 +279,7 @@ function MatchCompareBody({
         <h2 className="mb-3 font-semibold text-zinc-100">{de.detail.keysBoth}</h2>
         <div className="overflow-hidden rounded-lg border border-zinc-700">
           <div className="border-b border-zinc-700 bg-zinc-900/50 px-2.5 py-1.5 text-xs md:hidden">
-            <p className="font-semibold leading-snug tracking-wide">
+            <p className="leading-snug font-semibold tracking-wide">
               <span className="text-amber-200">
                 {de.detail.official}
                 {officialIdForHeader ? (
@@ -1107,7 +1107,7 @@ export function SchuleDetail() {
             ) : null}
           </div>
           <div className="mt-2 flex min-w-0 flex-wrap items-center justify-between gap-x-3 gap-y-2">
-            <div className="min-w-0 flex flex-1 flex-wrap items-center gap-x-3 gap-y-1 text-xs leading-snug text-zinc-400">
+            <div className="flex min-w-0 flex-1 flex-wrap items-center gap-x-3 gap-y-1 text-xs leading-snug text-zinc-400">
               <span className="inline-flex items-center gap-1.5">
                 <span className={DETAIL_MAP_LEGEND_POINT_TILE} aria-hidden>
                   <DetailMapLegendPointDot
@@ -1182,7 +1182,7 @@ export function SchuleDetail() {
                     void setShowMapMask(e.target.checked)
                   }}
                 />
-                <span className="absolute inset-0 rounded-full bg-brand-950/90 ring-1 ring-inset ring-brand-800/60 transition-colors duration-200 ease-in-out peer-checked:bg-brand-800 peer-checked:ring-brand-500/50 peer-focus-visible:outline-2 peer-focus-visible:outline-offset-2 peer-focus-visible:outline-emerald-500" />
+                <span className="peer-checked:ring-brand-500/50 absolute inset-0 rounded-full bg-brand-950/90 ring-1 ring-brand-800/60 transition-colors duration-200 ease-in-out ring-inset peer-checked:bg-brand-800 peer-focus-visible:outline-2 peer-focus-visible:outline-offset-2 peer-focus-visible:outline-emerald-500" />
                 <span className="pointer-events-none absolute top-0.5 left-0.5 size-4 rounded-full bg-brand-50 shadow-sm ring-1 ring-brand-900/35 transition-transform duration-200 ease-in-out peer-checked:translate-x-4" />
               </span>
               <span className="flex flex-col text-xs leading-snug text-zinc-400">
@@ -1303,7 +1303,7 @@ export function SchuleDetail() {
         <div className="space-y-6">
           <h2 className="flex flex-row flex-wrap items-center gap-x-2 text-base font-semibold text-zinc-100">
             <span>{de.detail.ambiguousOfficialHeading}</span>
-            <span className="inline-flex shrink-0 items-center rounded-full border border-zinc-300/90 bg-zinc-100 px-2.5 py-0.5 text-xs font-semibold tabular-nums text-zinc-700">
+            <span className="inline-flex shrink-0 items-center rounded-full border border-zinc-300/90 bg-zinc-100 px-2.5 py-0.5 text-xs font-semibold text-zinc-700 tabular-nums">
               {formatDeInteger(ambiguousCandidates.length)}
             </span>
           </h2>
@@ -1325,7 +1325,7 @@ export function SchuleDetail() {
                   {de.detail.abstand}: {formatDeInteger(c.distM)} m
                 </span>
               ) : c.showOfficialCoordsMissing ? (
-                <span className="whitespace-nowrap font-medium text-orange-300">
+                <span className="font-medium whitespace-nowrap text-orange-300">
                   {de.detail.officialCoordsMissing}
                 </span>
               ) : null
@@ -1335,13 +1335,13 @@ export function SchuleDetail() {
                 id={schuleDetailCompareSectionId(c.id)}
                 className="group rounded-lg border border-zinc-600/70 bg-zinc-900/25 transition-[border-color,background-color] open:border-transparent open:bg-transparent"
               >
-                <summary className="flex w-full cursor-pointer list-none items-start gap-2 rounded-lg px-2.5 py-2.5 text-left transition-colors hover:bg-zinc-800/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-zinc-500/60 sm:px-3 sm:py-3 [&::-webkit-details-marker]:hidden">
+                <summary className="flex w-full cursor-pointer list-none items-start gap-2 rounded-lg px-2.5 py-2.5 text-left transition-colors hover:bg-zinc-800/50 focus-visible:ring-2 focus-visible:ring-zinc-500/60 focus-visible:outline-none sm:px-3 sm:py-3 [&::-webkit-details-marker]:hidden">
                   <ChevronRightIcon
                     aria-hidden
                     className="mt-0.5 size-5 shrink-0 text-zinc-500 transition-transform group-open:rotate-90"
                   />
                   <div className={AMBIGUOUS_COMPARE_SUMMARY_LAYOUT}>
-                    <h3 className="min-w-0 text-lg font-semibold leading-snug text-zinc-100 break-words md:flex-1">
+                    <h3 className="min-w-0 text-lg leading-snug font-semibold break-words text-zinc-100 md:flex-1">
                       <span className="text-zinc-400">{idx + 1}. </span>
                       {c.name}
                     </h3>
@@ -1352,7 +1352,7 @@ export function SchuleDetail() {
                     />
                   </div>
                 </summary>
-                <div className="border-t border-zinc-700/80 px-2.5 pb-3 pt-3 sm:px-3 sm:pb-4 sm:pt-4">
+                <div className="border-t border-zinc-700/80 px-2.5 pt-3 pb-3 sm:px-3 sm:pt-4 sm:pb-4">
                   <MatchCompareBody
                     official={c.properties}
                     osm={row.osmTags ?? null}

@@ -1,6 +1,6 @@
+import { LAND_MATCH_CATEGORIES, type LandMatchCategory } from './landMatchCategories'
 import { parseAsArrayOf, parseAsStringLiteral, useQueryState } from 'nuqs'
 import { useCallback, useMemo } from 'react'
-import { LAND_MATCH_CATEGORIES, type LandMatchCategory } from './landMatchCategories'
 
 /** Mutable full list + stable reference for nuqs default / “all categories” URL value. */
 const DEFAULT_LAND_MATCH_CATEGORIES: LandMatchCategory[] = [...LAND_MATCH_CATEGORIES]

@@ -1,6 +1,3 @@
-import { ScaleIcon } from '@heroicons/react/20/solid'
-import { format, isValid, parseISO } from 'date-fns'
-import { de as deLocale } from 'date-fns/locale/de'
 import { de } from '../../i18n/de'
 import {
   BUNDESLAND_OFFICIAL_SOURCES,
@@ -12,6 +9,9 @@ import {
   githubNewIssueLicenseResearchUrl,
 } from '../../lib/githubRepo'
 import { STATE_LABEL_DE, STATE_ORDER } from '../../lib/stateConfig'
+import { ScaleIcon } from '@heroicons/react/20/solid'
+import { format, isValid, parseISO } from 'date-fns'
+import { de as deLocale } from 'date-fns/locale/de'
 
 const OSM_COMPAT_LEGEND_BASE_ORDER = ['unknown', 'no'] as const
 
@@ -65,7 +65,7 @@ export function HomeOfficialSourcesSection() {
       <div className="overflow-x-auto rounded-lg border border-zinc-700/60">
         <table className="min-w-full border-collapse text-left text-sm text-zinc-300">
           <thead>
-            <tr className="border-b border-zinc-700 bg-zinc-900/80 text-xs font-semibold uppercase tracking-wide text-zinc-400">
+            <tr className="border-b border-zinc-700 bg-zinc-900/80 text-xs font-semibold tracking-wide text-zinc-400 uppercase">
               <th scope="col" className="px-3 py-2.5 align-top">
                 {t.colLand}
               </th>
@@ -88,7 +88,7 @@ export function HomeOfficialSourcesSection() {
                 <tr
                   key={code}
                   id={licenceTableRowHash(code)}
-                  className="scroll-mt-4 border-b border-zinc-800/90 odd:bg-zinc-950/30 [&:target>*]:bg-emerald-500/15 [&:target>*]:ring-1 [&:target>*]:ring-inset [&:target>*]:ring-emerald-500/35"
+                  className="scroll-mt-4 border-b border-zinc-800/90 odd:bg-zinc-950/30 [&:target>*]:bg-emerald-500/15 [&:target>*]:ring-1 [&:target>*]:ring-emerald-500/35 [&:target>*]:ring-inset"
                 >
                   <th
                     scope="row"
@@ -112,7 +112,7 @@ export function HomeOfficialSourcesSection() {
                             : row.officialLicense}
                         </span>
                         {row.likelyNote ? (
-                          <span className="mt-1 block text-xs italic text-zinc-500">
+                          <span className="mt-1 block text-xs text-zinc-500 italic">
                             {row.likelyNote}
                           </span>
                         ) : null}

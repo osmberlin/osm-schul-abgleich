@@ -1,11 +1,11 @@
-import { ChevronRightIcon } from '@heroicons/react/20/solid'
-import { Link } from '@tanstack/react-router'
 import { de } from '../../i18n/de'
 import { formatDeInteger } from '../../lib/formatNumber'
 import { formatMatchRowListId } from '../../lib/formatOsmRef'
 import type { LandMatchCategory } from '../../lib/landMatchCategories'
 import { matchRowDisplayName } from '../../lib/matchRowInBbox'
 import { CategoryLegendSwatch } from '../CategoryLegendSwatch'
+import { ChevronRightIcon } from '@heroicons/react/20/solid'
+import { Link } from '@tanstack/react-router'
 
 type ListMatchRow = {
   key: string
@@ -37,7 +37,7 @@ export function LandOverviewMatchList({
     <>
       <h2 className="mt-10 mb-2 flex flex-row flex-wrap items-center gap-x-2 text-lg font-semibold text-zinc-100">
         <span>{de.land.table}</span>
-        <span className="inline-flex shrink-0 items-center rounded-full border border-zinc-300/90 bg-zinc-100 px-2.5 py-0.5 text-xs font-semibold tabular-nums text-zinc-700">
+        <span className="inline-flex shrink-0 items-center rounded-full border border-zinc-300/90 bg-zinc-100 px-2.5 py-0.5 text-xs font-semibold text-zinc-700 tabular-nums">
           {formatDeInteger(listMatches.length)}
         </span>
       </h2>
@@ -86,7 +86,7 @@ export function LandOverviewMatchList({
                             <p className="text-right font-mono text-xs/5 text-zinc-400">{subId}</p>
                           )}
                           {row.distanceMeters != null && (
-                            <p className="text-xs/5 text-right text-zinc-400 tabular-nums">
+                            <p className="text-right text-xs/5 text-zinc-400 tabular-nums">
                               {de.land.tableDistanceAway.replace(
                                 '{meters}',
                                 formatDeInteger(row.distanceMeters),

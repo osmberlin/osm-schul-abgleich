@@ -1,6 +1,6 @@
 #!/usr/bin/env bun
-import path from 'node:path'
 import { runSplitLands } from './lib/nationalPipeline'
+import path from 'node:path'
 
 const ROOT = path.join(import.meta.dirname, '..')
 

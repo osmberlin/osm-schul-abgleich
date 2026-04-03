@@ -1,6 +1,6 @@
+import { de } from '../i18n/de'
 import { HomeIcon } from '@heroicons/react/20/solid'
 import { Link } from '@tanstack/react-router'
-import { de } from '../i18n/de'
 
 export type AppBreadcrumbCrumb = { name: string; to: string } | { name: string; current: true }
 

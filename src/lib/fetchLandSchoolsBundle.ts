@@ -1,6 +1,6 @@
-import type { Feature, MultiPolygon, Polygon } from 'geojson'
 import { landBoundaryUrl, landMatchesUrl, landOfficialUrl, landOsmUrl } from './paths'
 import { schoolsMatchesFileSchema } from './schemas'
+import type { Feature, MultiPolygon, Polygon } from 'geojson'
 
 /** Official + OSM GeoJSON + matches + optional Bundesland outline for one land (SchuleDetail / cache). */
 export async function fetchLandSchoolsBundle(code: string) {

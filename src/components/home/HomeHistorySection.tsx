@@ -1,7 +1,7 @@
-import { MatchCountsHistoryChart } from '../MatchCountsHistoryChart'
 import { de } from '../../i18n/de'
 import { MATCH_CHART_LABELS } from '../../lib/matchChartLabels'
 import type { MatchHistoryStackPoint } from '../../lib/matchHistoryFromRuns'
+import { MatchCountsHistoryChart } from '../MatchCountsHistoryChart'
 
 export function HomeHistorySection({ points }: { points: MatchHistoryStackPoint[] }) {
   if (points.length === 0) return null

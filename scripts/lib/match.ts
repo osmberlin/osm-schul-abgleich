@@ -1,13 +1,12 @@
-import centroid from '@turf/centroid'
-import distance from '@turf/distance'
-import { point } from '@turf/helpers'
-import type { Feature, FeatureCollection, Geometry, MultiPolygon, Polygon } from 'geojson'
-
 import { MATCH_RADIUS_KM } from '../../src/lib/matchRadius'
 import { OSM_SCHOOL_NAME_TAGS_IN_ORDER, type OsmNameMatchTag } from '../../src/lib/osmNameMatchTags'
 import type { LandCode } from '../../src/lib/stateConfig'
 import { landCodeFromSchoolId } from '../../src/lib/stateConfig'
 import { normalizeSchoolNameForMatch } from './schoolNameNormalize'
+import centroid from '@turf/centroid'
+import distance from '@turf/distance'
+import { point } from '@turf/helpers'
+import type { Feature, FeatureCollection, Geometry, MultiPolygon, Polygon } from 'geojson'
 
 export { MATCH_RADIUS_KM }
 export { normalizeSchoolNameForMatch } from './schoolNameNormalize'

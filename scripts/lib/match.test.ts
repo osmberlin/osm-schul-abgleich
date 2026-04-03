@@ -1,4 +1,3 @@
-import { describe, expect, it } from 'vitest'
 import type { LandCode } from '../../src/lib/stateConfig'
 import {
   MATCH_RADIUS_KM,
@@ -10,6 +9,7 @@ import {
   type OfficialInput,
   type OsmSchoolInput,
 } from './match'
+import { describe, expect, it } from 'vitest'
 
 function landOpts(osm: OsmSchoolInput, land: LandCode): { osmLandByKey: Map<string, LandCode> } {
   return { osmLandByKey: new Map([[`${osm.osmType}/${osm.osmId}`, land]]) }

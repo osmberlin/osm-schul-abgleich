@@ -1,6 +1,6 @@
-import path from 'node:path'
 import { landCodeFromSchoolId } from '../../src/lib/stateConfig'
 import type { JedeschuleSchool } from './jedeschuleCsv'
+import path from 'node:path'
 
 export const PIPELINE_VERSION = 1 as const
 

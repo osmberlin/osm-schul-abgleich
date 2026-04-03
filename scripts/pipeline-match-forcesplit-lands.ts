@@ -1,8 +1,8 @@
 #!/usr/bin/env bun
-import path from 'node:path'
-import { cancel, intro, isCancel, outro, select } from '@clack/prompts'
 import { type LandCode, STATE_LABEL_DE, STATE_ORDER } from '../src/lib/stateConfig'
 import { type RunSplitLandsOptions, runMatchNational, runSplitLands } from './lib/nationalPipeline'
+import { cancel, intro, isCancel, outro, select } from '@clack/prompts'
+import path from 'node:path'
 
 const ALL_LANDS = '__all__' as const
 

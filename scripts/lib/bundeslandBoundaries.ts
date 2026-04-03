@@ -1,10 +1,9 @@
-import { readFileSync } from 'node:fs'
-import path from 'node:path'
+import { type LandCode, STATE_ORDER } from '../../src/lib/stateConfig'
 import booleanPointInPolygon from '@turf/boolean-point-in-polygon'
 import { point } from '@turf/helpers'
 import type { Feature, MultiPolygon, Polygon } from 'geojson'
-
-import { type LandCode, STATE_ORDER } from '../../src/lib/stateConfig'
+import { readFileSync } from 'node:fs'
+import path from 'node:path'
 
 /**
  * Order for point-in-polygon checks (small city-states first — same as former bbox heuristic).

@@ -1,9 +1,9 @@
-import { InformationCircleIcon } from '@heroicons/react/20/solid'
 import { de } from '../../i18n/de'
 import { formatDeInteger } from '../../lib/formatNumber'
 import { LAND_MATCH_CATEGORIES } from '../../lib/landMatchCategories'
 import { CategoryLegendSwatch, OfficialNoCoordLegendSwatch } from '../CategoryLegendSwatch'
 import { ReadOnlyStatBlock, StatBlocksRow } from '../StatBlocks'
+import { InformationCircleIcon } from '@heroicons/react/20/solid'
 
 type GermanyTotals = {
   matched: number

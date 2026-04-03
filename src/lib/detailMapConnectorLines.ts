@@ -1,7 +1,7 @@
-import type { Feature, FeatureCollection } from 'geojson'
-import type { z } from 'zod'
 import { schoolsMatchRowSchema } from './schemas'
 import { parseJedeschuleLonLatFromRecord } from './zodGeo'
+import type { Feature, FeatureCollection } from 'geojson'
+import type { z } from 'zod'
 
 export type SchoolsMatchRow = z.infer<typeof schoolsMatchRowSchema>
 

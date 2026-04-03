@@ -1,11 +1,11 @@
-import { Link } from '@tanstack/react-router'
 import { de } from '../i18n/de'
+import { Link } from '@tanstack/react-router'
 
 export function NotFoundPage() {
   return (
     <section className="mx-auto flex min-h-[60vh] max-w-3xl items-center p-6">
       <div className="w-full rounded-2xl border border-zinc-800 bg-zinc-900/60 p-8 shadow-xl shadow-black/20">
-        <p className="mb-2 text-xs font-semibold uppercase tracking-wider text-zinc-400">
+        <p className="mb-2 text-xs font-semibold tracking-wider text-zinc-400 uppercase">
           {de.notFound.badge}
         </p>
         <h1 className="mb-3 text-2xl font-semibold text-zinc-100">{de.notFound.title}</h1>

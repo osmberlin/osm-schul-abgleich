@@ -1,6 +1,6 @@
-import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { isRefreshedWithinDaysBerlin, jedeschuleUpstreamDatasetChanged } from './pipelineFreshness'
 import type { PipelineSourceMeta } from './pipelineMeta'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
 describe('isRefreshedWithinDaysBerlin', () => {
   beforeEach(() => {

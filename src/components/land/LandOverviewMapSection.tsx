@@ -1,10 +1,10 @@
-import { useNavigate } from '@tanstack/react-router'
-import type { Feature, FeatureCollection, Geometry, MultiPolygon, Polygon } from 'geojson'
-import { MapProvider } from 'react-map-gl/maplibre'
 import { de } from '../../i18n/de'
 import type { LandMatchCategory } from '../../lib/landMatchCategories'
 import type { LandMapBbox } from '../../lib/useLandMapBbox'
 import { LandMap } from '../LandMap'
+import { useNavigate } from '@tanstack/react-router'
+import type { Feature, FeatureCollection, Geometry, MultiPolygon, Polygon } from 'geojson'
+import { MapProvider } from 'react-map-gl/maplibre'
 
 export function LandOverviewMapSection({
   enabledCategories,

@@ -1,6 +1,3 @@
-import { QueryClient } from '@tanstack/react-query'
-import { createRootRoute, createRoute, createRouter, Outlet } from '@tanstack/react-router'
-import { NuqsAdapter } from 'nuqs/adapters/tanstack-router'
 import { AppFooter } from './components/AppFooter'
 import { PageBreadcrumb } from './components/PageBreadcrumb'
 import { HomePage } from './pages/HomePage'
@@ -9,6 +6,9 @@ import { LandOverview } from './pages/LandOverview'
 import { NotFoundPage } from './pages/NotFoundPage'
 import { SchuleDetail } from './pages/SchuleDetail'
 import { StatusPage } from './pages/StatusPage'
+import { QueryClient } from '@tanstack/react-query'
+import { createRootRoute, createRoute, createRouter, Outlet } from '@tanstack/react-router'
+import { NuqsAdapter } from 'nuqs/adapters/tanstack-router'
 
 function RootLayout() {
   return (
@@ -16,7 +16,7 @@ function RootLayout() {
       <div className="min-h-screen">
         <a
           href="#main"
-          className="sr-only focus:not-sr-only focus:absolute focus:left-2 focus:top-2 focus:z-50 focus:rounded focus:bg-zinc-800 focus:p-2 focus:text-zinc-100"
+          className="sr-only focus:not-sr-only focus:absolute focus:top-2 focus:left-2 focus:z-50 focus:rounded focus:bg-zinc-800 focus:p-2 focus:text-zinc-100"
         >
           Zum Inhalt
         </a>

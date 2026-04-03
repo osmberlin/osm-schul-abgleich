@@ -1,5 +1,5 @@
-import { parse } from 'csv-parse/sync'
 import { jedeschuleSchoolSchema, jedeschuleStatSchema } from '../../src/lib/schemas'
+import { parse } from 'csv-parse/sync'
 
 export type JedeschuleSchool = (typeof jedeschuleSchoolSchema)['_output']
 

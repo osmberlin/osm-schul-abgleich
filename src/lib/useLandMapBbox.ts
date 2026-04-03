@@ -1,6 +1,6 @@
+import { landMapBboxTupleSchema } from './zodGeo'
 import { createParser, useQueryState } from 'nuqs'
 import { useCallback } from 'react'
-import { landMapBboxTupleSchema } from './zodGeo'
 
 /** Map viewport bbox in WGS84: west, south, east, north (URL `?bbox=`). */
 export type LandMapBbox = readonly [west: number, south: number, east: number, north: number]

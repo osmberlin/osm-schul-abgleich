@@ -1,11 +1,11 @@
 #!/usr/bin/env bun
+import { NATIONAL, nationalPath } from './lib/nationalDatasetPaths'
+import { readJsonFile } from './lib/pipelineCommon'
+import type { PipelineSourceMeta } from './lib/pipelineMeta'
 /**
  * pipeline:download — parallel downloads; exit 1 unless both Meta-Dateien `ok: true` sind.
  */
 import path from 'node:path'
-import { NATIONAL, nationalPath } from './lib/nationalDatasetPaths'
-import { readJsonFile } from './lib/pipelineCommon'
-import type { PipelineSourceMeta } from './lib/pipelineMeta'
 
 const ROOT = path.join(import.meta.dirname, '..')
 

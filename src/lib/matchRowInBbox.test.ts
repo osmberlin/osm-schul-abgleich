@@ -1,5 +1,3 @@
-import type { FeatureCollection } from 'geojson'
-import { describe, expect, it } from 'vitest'
 import {
   buildOfficialSchoolLonLatIndex,
   lonLatFromOfficialFeature,
@@ -7,6 +5,8 @@ import {
   spreadCoincidentMapPointFeatures,
 } from './matchRowInBbox'
 import { schoolsMatchRowSchema } from './schemas'
+import type { FeatureCollection } from 'geojson'
+import { describe, expect, it } from 'vitest'
 
 describe('matchRowMapLonLat', () => {
   it('uses official GeoJSON when match row has no OSM centroid and no lat/lon on officialProperties', () => {

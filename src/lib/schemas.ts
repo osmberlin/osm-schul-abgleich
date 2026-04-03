@@ -1,5 +1,5 @@
-import { z } from 'zod'
 import { OSM_SCHOOL_NAME_TAGS_IN_ORDER } from './osmNameMatchTags'
+import { z } from 'zod'
 
 export const jedeschuleSchoolSchema = z.object({
   id: z.string(),

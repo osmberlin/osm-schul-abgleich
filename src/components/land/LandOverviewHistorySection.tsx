@@ -1,8 +1,8 @@
-import { MatchCountsHistoryChart } from '../MatchCountsHistoryChart'
 import { de } from '../../i18n/de'
 import { MATCH_CHART_LABELS } from '../../lib/matchChartLabels'
-import { type LandCode, STATE_LABEL_DE } from '../../lib/stateConfig'
 import type { MatchHistoryStackPoint } from '../../lib/matchHistoryFromRuns'
+import { type LandCode, STATE_LABEL_DE } from '../../lib/stateConfig'
+import { MatchCountsHistoryChart } from '../MatchCountsHistoryChart'
 
 export function LandOverviewHistorySection({
   code,

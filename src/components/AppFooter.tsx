@@ -1,6 +1,6 @@
+import { de } from '../i18n/de'
 import { HeartIcon } from '@heroicons/react/20/solid'
 import { Link } from '@tanstack/react-router'
-import { de } from '../i18n/de'
 
 /** Geo + OSS credits: muted by default; footer group-hover uses same colors as the bottom links’ hover. */
 const bodyFooterLinkClass =

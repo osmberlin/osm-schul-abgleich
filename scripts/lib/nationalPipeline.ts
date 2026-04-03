@@ -1,8 +1,3 @@
-import { createHash } from 'node:crypto'
-import { mkdir, unlink } from 'node:fs/promises'
-import path from 'node:path'
-import simplify from '@turf/simplify'
-import type { Feature, FeatureCollection, Geometry } from 'geojson'
 import { berlinCalendarDateKey } from '../../src/lib/berlinCalendarDateKey'
 import { schoolsMatchesFileSchema } from '../../src/lib/schemas'
 import {
@@ -40,6 +35,11 @@ import {
 } from './pipelineCommon'
 import { jedeschuleUpstreamDatasetChanged } from './pipelineFreshness'
 import type { PipelineSourceMeta } from './pipelineMeta'
+import simplify from '@turf/simplify'
+import type { Feature, FeatureCollection, Geometry } from 'geojson'
+import { createHash } from 'node:crypto'
+import { mkdir, unlink } from 'node:fs/promises'
+import path from 'node:path'
 
 function envScopedJsonFileName(fileName: string): string {
   if (process.env.GITHUB_ACTIONS === 'true') return fileName

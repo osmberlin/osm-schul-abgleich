@@ -1,5 +1,5 @@
-import { describe, expect, it } from 'vitest'
 import { segmentMiniMarkdown } from './miniMarkdown'
+import { describe, expect, it } from 'vitest'
 
 describe('segmentMiniMarkdown', () => {
   it('returns empty for empty string', () => {

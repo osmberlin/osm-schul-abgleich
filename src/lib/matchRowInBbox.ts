@@ -1,8 +1,8 @@
-import type { Feature, FeatureCollection, Point } from 'geojson'
-import type { z } from 'zod'
 import type { schoolsMatchRowSchema } from './schemas'
 import type { LandMapBbox } from './useLandMapBbox'
 import { parseJedeschuleLonLatFromRecord, parseMatchRowOsmCentroidLonLat } from './zodGeo'
+import type { Feature, FeatureCollection, Point } from 'geojson'
+import type { z } from 'zod'
 
 type Row = z.infer<typeof schoolsMatchRowSchema>
 

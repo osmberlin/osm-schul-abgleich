@@ -1,5 +1,3 @@
-import { ExclamationTriangleIcon, ShieldCheckIcon } from '@heroicons/react/20/solid'
-import { Link } from '@tanstack/react-router'
 import { de } from '../../i18n/de'
 import {
   BUNDESLAND_OFFICIAL_SOURCES,
@@ -7,6 +5,8 @@ import {
   type BundeslandOfficialSourceRow,
 } from '../../lib/bundeslandOfficialSources'
 import { type LandCode, STATE_ORDER } from '../../lib/stateConfig'
+import { ExclamationTriangleIcon, ShieldCheckIcon } from '@heroicons/react/20/solid'
+import { Link } from '@tanstack/react-router'
 
 export type SchuleDetailLicenceInfo = {
   officialLicenceRow: BundeslandOfficialSourceRow | null

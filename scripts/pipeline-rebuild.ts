@@ -1,9 +1,9 @@
 #!/usr/bin/env bun
+import { runPipelineRebuild } from './lib/nationalPipeline'
 /**
  * pipeline:rebuild — nur Match + Split (keine Downloads).
  */
 import path from 'node:path'
-import { runPipelineRebuild } from './lib/nationalPipeline'
 
 const ROOT = path.join(import.meta.dirname, '..')
 
