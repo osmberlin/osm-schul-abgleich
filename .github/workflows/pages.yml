@@ -78,8 +78,6 @@ jobs:
           rm -f public/datasets/schools_matches_de.json
           rm -f public/datasets/.pipeline_skip_split
       - run: bun run build
-        env:
-          GITHUB_PAGES: 'true'
       - name: Create gzip/brotli sidecars in dist (experiment)
         run: bun run build:compress
       - uses: actions/upload-pages-artifact@v3

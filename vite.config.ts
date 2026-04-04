@@ -29,7 +29,8 @@ function spaGithubPages404(): Plugin {
 }
 
 export default defineConfig({
-  base: process.env.GITHUB_PAGES === 'true' ? '/osm-schul-abgleich/' : '/',
+  /** Custom domain is subdomain root (`schulabgleich.osm-verkehrswende.org`), not `/repo/`. */
+  base: '/',
   plugins: [
     tailwindcss(),
     react(),
