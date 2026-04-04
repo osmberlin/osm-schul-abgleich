@@ -91,8 +91,6 @@ export const de = {
     mapFilterListButton: 'Liste auf Gebiet filtern',
     mapFilterClear: 'Filter löschen',
     mapBboxToolbarAria: 'Kartenausschnitt und Trefferliste',
-    mapLegendPoints:
-      'Ein Punkt pro Treffer in Legendenfarbe. Position: OSM-Schwerpunkt, falls vorhanden, sonst amtliche Koordinaten.',
     categoryLabel: {
       matched: 'In beiden Daten',
       official_only: 'Nur in offiziellen Daten',

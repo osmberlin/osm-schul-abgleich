@@ -57,9 +57,6 @@ export function LandOverviewMapSection({
             })
           }
         />
-        {mapMatchPoints.features.length > 0 && (
-          <p className="mt-2 text-xs text-zinc-400">{de.land.mapLegendPoints}</p>
-        )}
       </div>
     </MapProvider>
   )
