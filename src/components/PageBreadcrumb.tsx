@@ -19,6 +19,9 @@ export function PageBreadcrumb() {
     if (pathname === '/status') {
       return { homeCurrent: false, items: [{ name: de.navStatus, current: true }] }
     }
+    if (pathname === '/aenderungen') {
+      return { homeCurrent: false, items: [{ name: de.osm.reviewBreadcrumb, current: true }] }
+    }
 
     const m = pathname.match(/^\/bundesland\/([^/]+)(?:\/schule\/(.+))?$/)
     if (m) {

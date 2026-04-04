@@ -3,6 +3,38 @@ export const de = {
   navHome: 'Start',
   navStatus: 'Pipeline-Status',
 
+  osm: {
+    authLoading: 'OSM …',
+    login: 'Anmelden',
+    loginBusy: 'Anmeldung…',
+    loginFailed: 'Anmeldung fehlgeschlagen',
+    oauthSpaRegistrationHint:
+      'Registriere die OAuth-App auf openstreetmap.org ohne „Confidential application“ (öffentliche App + PKCE). Als „Confidential“ liefert der Token-Schritt 401, weil kein Client-Secret im Browser gesendet wird. Siehe wiki.openstreetmap.org/wiki/OAuth (Abschnitt „Registering your application…”).',
+    logout: 'Abmelden',
+    oauthMissingShort: 'OAuth nicht konfiguriert',
+    oauthMissingHint: 'Setze VITE_OSM_OAUTH_CLIENT_ID für die OSM-Anmeldung.',
+    reviewLink: 'Prüfen und hochladen',
+    reviewBreadcrumb: 'Änderungen prüfen',
+    reviewTitle: 'Änderungen prüfen und zu OSM hochladen',
+    reviewLead:
+      'Die Liste unten zeigt vorgemerkte Tag-Änderungen. Sie gehen beim Schließen des Tabs verloren, bis du sie hochlädst.',
+    reviewEmpty: 'Keine vorgemerkten Änderungen.',
+    reviewNotLoggedIn: 'Melde dich mit deinem OSM-Konto an, um Änderungen hochzuladen.',
+    uploadButton: 'Änderungen in OSM eintragen',
+    uploadBusy: 'Wird hochgeladen…',
+    uploadSuccess: 'Änderungen wurden in OSM gespeichert.',
+    uploadError: 'Upload fehlgeschlagen.',
+    removeTagAria: 'Tag aus Vorschlag entfernen',
+    mapAria: 'Karte der betroffenen OSM-Objekte',
+    grundschuleSectionTitle: 'Vorschlag aus amtlichen Daten (Grundschule)',
+    grundschuleSectionLead:
+      'Für diese Schule deuten die offiziellen Daten auf eine Grundschule hin. Du kannst passende OSM-Tags vormerken.',
+    proposeSchoolPrimary: 'school=primary vormerken',
+    proposeIsced1: 'isced:level=1 vormerken',
+    tagAlreadySet: 'Bereits gesetzt',
+    confirmTagChange: '{key}={from} wird zu {key}={to} geändert. Fortfahren?',
+  },
+
   breadcrumb: {
     navLabel: 'Brotkrumen-Navigation',
     home: 'Startseite',
@@ -251,6 +283,15 @@ export const de = {
       { name: 'Zod', href: 'https://zod.dev/' },
       { name: 'Heroicons', href: 'https://heroicons.com/' },
       { name: 'Fontsource (Inter)', href: 'https://fontsource.org/fonts/inter' },
+      { name: 'osm-api', href: 'https://www.npmjs.com/package/osm-api' },
+      { name: 'Zustand', href: 'https://zustand-demo.pmnd.rs/' },
     ],
   },
 } as const
+
+export function formatOsmTagChangeConfirm(key: string, from: string, to: string): string {
+  return de.osm.confirmTagChange
+    .replaceAll('{key}', key)
+    .replaceAll('{from}', from)
+    .replaceAll('{to}', to)
+}

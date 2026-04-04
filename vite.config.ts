@@ -36,5 +36,10 @@ export default defineConfig({
     babel({ presets: [reactCompilerPreset()] }),
     spaGithubPages404(),
   ],
-  server: { port: 5174 },
+  server: {
+    port: 5174,
+    strictPort: true,
+    /** Use 127.0.0.1 so OSM OAuth redirect can be `http://127.0.0.1:5174/osm-oauth-land.html`. */
+    host: '127.0.0.1',
+  },
 })

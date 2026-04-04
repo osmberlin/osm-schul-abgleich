@@ -32,17 +32,14 @@ export function AppBreadcrumb({ appTitle, homeCurrent, items }: Props) {
     'flex items-center gap-2 text-sm font-medium text-zinc-400 hover:text-zinc-200'
   const homeIconClass = 'size-5 shrink-0 text-zinc-400 md:-ml-1'
 
-  /** Fixed bar height so home and nested routes measure the same; chevrons use `h-full`. */
+  /** Row height matches parent `AppHeader` (`h-14`); chevrons use `h-full`. */
   const rowClass = 'h-14'
 
   return (
-    <nav
-      aria-label={de.breadcrumb.navLabel}
-      className="flex border-b border-zinc-800 bg-brand-950/60"
-    >
+    <nav aria-label={de.breadcrumb.navLabel} className="flex min-w-0 flex-1">
       <ol
         role="list"
-        className={`mx-auto flex w-full max-w-5xl flex-nowrap items-stretch overflow-x-auto px-4 sm:px-6 lg:px-8 ${rowClass}`}
+        className={`flex w-full min-w-0 flex-nowrap items-stretch overflow-x-auto ${rowClass}`}
       >
         <li className="flex shrink-0 items-stretch">
           <div className={`flex items-center ${rowClass}`}>

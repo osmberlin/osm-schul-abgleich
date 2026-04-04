@@ -1,18 +1,45 @@
 import { AppFooter } from './components/AppFooter'
-import { PageBreadcrumb } from './components/PageBreadcrumb'
+import { AppHeader } from './components/AppHeader'
+import { AenderungenPage } from './pages/AenderungenPage'
 import { HomePage } from './pages/HomePage'
 import { LandLayout } from './pages/LandLayout'
 import { LandOverview } from './pages/LandOverview'
 import { NotFoundPage } from './pages/NotFoundPage'
 import { SchuleDetail } from './pages/SchuleDetail'
 import { StatusPage } from './pages/StatusPage'
+import { getOsmPendingObjectCount, useOsmAppActions } from './stores/osmAppStore'
 import { QueryClient } from '@tanstack/react-query'
 import { createRootRoute, createRoute, createRouter, Outlet } from '@tanstack/react-router'
 import { NuqsAdapter } from 'nuqs/adapters/tanstack-router'
+import { useEffect } from 'react'
+
+function OsmAuthBootstrap() {
+  const { initAuth } = useOsmAppActions()
+  useEffect(() => {
+    void initAuth()
+  }, [initAuth])
+  return null
+}
+
+function PendingEditsBeforeUnload() {
+  useEffect(() => {
+    const onBeforeUnload = (e: BeforeUnloadEvent) => {
+      if (getOsmPendingObjectCount() > 0) {
+        e.preventDefault()
+        e.returnValue = ''
+      }
+    }
+    window.addEventListener('beforeunload', onBeforeUnload)
+    return () => window.removeEventListener('beforeunload', onBeforeUnload)
+  }, [])
+  return null
+}
 
 function RootLayout() {
   return (
     <NuqsAdapter>
+      <OsmAuthBootstrap />
+      <PendingEditsBeforeUnload />
       <div className="min-h-screen">
         <a
           href="#main"
@@ -20,9 +47,7 @@ function RootLayout() {
         >
           Zum Inhalt
         </a>
-        <header>
-          <PageBreadcrumb />
-        </header>
+        <AppHeader />
         <main id="main" className="min-h-[70vh]">
           <Outlet />
         </main>
@@ -49,6 +74,12 @@ const statusRoute = createRoute({
   component: StatusPage,
 })
 
+const aenderungenRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: '/aenderungen',
+  component: AenderungenPage,
+})
+
 const landRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: '/bundesland/$code',
@@ -70,6 +101,7 @@ const schuleRoute = createRoute({
 const routeTree = rootRoute.addChildren([
   indexRoute,
   statusRoute,
+  aenderungenRoute,
   landRoute.addChildren([landIndexRoute, schuleRoute]),
 ])
 

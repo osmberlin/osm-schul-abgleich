@@ -1,4 +1,5 @@
 import { MapPointHoverPanel } from '../components/MapPointHoverPanel'
+import { GrundschuleOsmSuggest } from '../components/schule/GrundschuleOsmSuggest'
 import {
   getSchuleDetailLicenceInfo,
   SchuleDetailLicenceCompatibleInline,
@@ -486,15 +487,34 @@ export function SchuleDetail() {
     [q.data, keyDecoded],
   )
 
-  /** Schwerpunkt der OSM-Geometrie (wie im Matcher); aus JSON oder zur Laufzeit aus der Fläche. */
+  /**
+   * Karten-Schwerpunkt: zuerst OSM (wie Matcher), sonst OSM-Geometrie, sonst amtliche
+   * Koordinaten — damit z. B. Grundschule-Vorschläge und Kartenmarker auch ohne
+   * gespeicherten OSM-Schwerpunkt im JSON funktionieren.
+   */
   const mapOsmCentroid = useMemo((): readonly [number, number] | null => {
     if (!q.data || !row) return null
     const fromRow = parseMatchRowOsmCentroidLonLat(row)
     if (fromRow) return fromRow
     const of = findOsmFeature(q.data.osm, row.osmType, row.osmId)
-    if (!of?.geometry) return null
-    const c = osmGeometryCentroidLonLat(of.geometry)
-    return c ?? null
+    if (of?.geometry) {
+      const c = osmGeometryCentroidLonLat(of.geometry)
+      if (c) return c
+    }
+    const fromOfficialProps = parseJedeschuleLonLatFromRecord(row.officialProperties ?? undefined)
+    if (fromOfficialProps) return fromOfficialProps
+    if (row.officialId) {
+      const fOff = findOfficialSchoolFeature(q.data.official, row.officialId)
+      if (fOff?.geometry) {
+        if (fOff.geometry.type === 'Point') {
+          const [lon, lat] = fOff.geometry.coordinates
+          return [lon, lat] as const
+        }
+        const cOff = osmGeometryCentroidLonLat(fOff.geometry)
+        if (cOff) return cOff
+      }
+    }
+    return null
   }, [q.data, row])
 
   const ambiguousCandidates = useMemo(() => {
@@ -1287,6 +1307,10 @@ export function SchuleDetail() {
             de.detail.matchExplanationDistance
           )}
         </p>
+      )}
+
+      {mapOsmCentroid != null && (
+        <GrundschuleOsmSuggest row={row} lon={mapOsmCentroid[0]} lat={mapOsmCentroid[1]} />
       )}
 
       {ambiguousCandidates.length > 0 && (

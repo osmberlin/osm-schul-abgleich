@@ -94,6 +94,8 @@ export const schoolsMatchRowSchema = z
 
 export const schoolsMatchesFileSchema = z.array(schoolsMatchRowSchema)
 
+export type SchoolsMatchRow = z.infer<typeof schoolsMatchRowSchema>
+
 const landSummarySchema = z.object({
   code: z.string(),
   osmSource: z.enum(['live', 'cached', 'missing']),
