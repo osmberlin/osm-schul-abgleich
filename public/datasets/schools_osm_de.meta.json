@@ -1,7 +1,1 @@
-{
-  "pipelineStep": "pipeline:download:osm",
-  "generatedAt": "2026-04-03T07:13:53.224Z",
-  "ok": true,
-  "overpassResponseTimestamp": "2026-04-03T07:09:59Z",
-  "interpreterUrl": "https://overpass-api.de/api/interpreter"
-}
+{"pipelineStep":"pipeline:download:osm","generatedAt":"2026-04-04T20:09:24.840Z","ok":true,"overpassResponseTimestamp":"2026-04-04T20:06:22Z","interpreterUrl":"https://overpass-api.de/api/interpreter"}

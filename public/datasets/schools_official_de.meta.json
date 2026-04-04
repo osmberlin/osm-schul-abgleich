@@ -1,11 +1,1 @@
-{
-  "pipelineStep": "pipeline:download:jedeschule",
-  "generatedAt": "2026-04-03T07:11:40.761Z",
-  "sourceUrl": "https://jedeschule.codefor.de/csv-data/latest.csv",
-  "ok": true,
-  "httpLastModified": "Sat, 28 Mar 2026 16:51:00 GMT",
-  "httpEtag": "\"69c806f4-33ff021\"",
-  "csvSha256": "97140884af3beac2db01c7b3e2050bed98136d0dfaa3b18d56613a20a0ecc798",
-  "csvMaxUpdateTimestamp": "2026-03-28 16:50:59.482854",
-  "upstreamDatasetChanged": false
-}
+{"pipelineStep":"pipeline:download:jedeschule","generatedAt":"2026-04-04T20:07:42.362Z","sourceUrl":"https://jedeschule.codefor.de/csv-data/latest.csv","ok":true,"httpLastModified":"Sat, 04 Apr 2026 16:51:11 GMT","httpEtag":"\"69d1417f-34b2ac6\"","csvSha256":"8b02e2e020a8d25c536f20e42a98f25b10144970f0ffec186ac936f7a710c6f0","csvMaxUpdateTimestamp":"2026-04-04 16:51:10.650571","upstreamDatasetChanged":true}
