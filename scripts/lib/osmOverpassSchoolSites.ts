@@ -8,7 +8,7 @@ function geometryRank(g: Geometry | null): number {
 }
 
 /**
- * osmtogeojson can emit the same `way/id` twice (e.g. Polygon + LineString from a site relation).
+ * Overpass → GeoJSON can yield the same `way/id` twice (e.g. legacy osmtogeojson: Polygon + LineString).
  * Keep the highest-rank geometry per id so the matcher does not see duplicate OSM schools.
  */
 export function dedupeOsmGeoJsonFeaturesById(fc: FeatureCollection): FeatureCollection {
@@ -77,9 +77,9 @@ function hasRelationFeature(fc: FeatureCollection, relationId: number): boolean 
 }
 
 /**
- * `osmtogeojson` often does not emit `relation/{id}` for `type=site` + `amenity=school` (only member ways).
- * Inject a Point feature from Overpass bounds / member geometries, and drop duplicate `amenity=school` member
- * ways so one campus does not produce multiple matcher rows.
+ * `type=site` + `amenity=school`: keep one OSM object per campus for matching.
+ * - If GeoJSON already has `relation/{id}` (e.g. osm2geojson-ultra), drop tagged `amenity=school` member ways.
+ * - If not (legacy converters), inject a Point from Overpass bounds / member vertices and drop those ways.
  */
 export function injectSchoolSiteRelationsFromOverpass(
   raw: { elements?: unknown[] },
@@ -95,7 +95,13 @@ export function injectSchoolSiteRelationsFromOverpass(
     if (el.type !== 'relation' || typeof el.id !== 'number') continue
     const tags = el.tags
     if (!tags || tags.amenity !== 'school' || tags.type !== 'site') continue
+
+    for (const m of el.members ?? []) {
+      if (m.type === 'way' && typeof m.ref === 'number') wayIdsToDrop.add(m.ref)
+    }
+
     if (hasRelationFeature(deduped, el.id)) continue
+
     const c = centroidLonLatFromRelation(el)
     if (!c) continue
     const [lon, lat] = c
@@ -109,9 +115,6 @@ export function injectSchoolSiteRelationsFromOverpass(
       properties: props,
       geometry: { type: 'Point', coordinates: [lon, lat] },
     })
-    for (const m of el.members ?? []) {
-      if (m.type === 'way' && typeof m.ref === 'number') wayIdsToDrop.add(m.ref)
-    }
   }
 
   if (extra.length === 0 && wayIdsToDrop.size === 0) return deduped

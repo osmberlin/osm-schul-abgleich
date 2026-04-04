@@ -1,6 +1,6 @@
 import { injectSchoolSiteRelationsFromOverpass } from './osmOverpassSchoolSites'
-import type { FeatureCollection } from 'geojson'
-import osmtogeojson from 'osmtogeojson'
+import type { Feature, FeatureCollection } from 'geojson'
+import osm2geojson from 'osm2geojson-ultra'
 import { z } from 'zod'
 
 const INTERPRETERS = [
@@ -77,14 +77,24 @@ async function fetchSchoolsOsmOverpassQuery(query: string): Promise<OverpassOk> 
         lastErr = new Error(`Overpass remark: ${remark}`)
         continue
       }
-      // osmtogeojson mutates `elements` (e.g. relation member `ref` → internal ids); keep a snapshot for site-relation injection.
-      const rawForSiteInjection = structuredClone(raw) as typeof raw
-      const gjRaw = osmtogeojson(raw) as FeatureCollection
-      if (gjRaw.type !== 'FeatureCollection') {
-        lastErr = new Error('osmtogeojson did not return FeatureCollection')
+      const converted = osm2geojson(parsed.data as object)
+      let gjRaw: FeatureCollection
+      if (converted == null) {
+        lastErr = new Error('osm2geojson-ultra returned no data')
         continue
       }
-      const gj = injectSchoolSiteRelationsFromOverpass(rawForSiteInjection, gjRaw)
+      if (converted.type === 'Feature') {
+        gjRaw = { type: 'FeatureCollection', features: [converted as Feature] }
+      } else if (converted.type === 'FeatureCollection') {
+        gjRaw = converted as FeatureCollection
+      } else {
+        lastErr = new Error('osm2geojson-ultra: unexpected GeoJSON root type')
+        continue
+      }
+      const gj = injectSchoolSiteRelationsFromOverpass(
+        parsed.data as { elements?: unknown[] },
+        gjRaw,
+      )
       const ts =
         typeof raw === 'object' && raw != null && 'osm3s' in raw
           ? String(

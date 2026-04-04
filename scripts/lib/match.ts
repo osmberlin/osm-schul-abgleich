@@ -6,15 +6,16 @@ import {
   normalizeWebsiteMatchKey,
 } from '../../src/lib/compareMatchKeys'
 import { MATCH_RADIUS_KM } from '../../src/lib/matchRadius'
+import { centroidFromOsmGeometry } from '../../src/lib/osmGeometryCentroid'
 import { OSM_SCHOOL_NAME_TAGS_IN_ORDER, type OsmNameMatchTag } from '../../src/lib/osmNameMatchTags'
 import { canonicalSchoolKindDe } from '../../src/lib/osmSchoolKindDe'
 import type { LandCode } from '../../src/lib/stateConfig'
 import { landCodeFromSchoolId } from '../../src/lib/stateConfig'
-import centroid from '@turf/centroid'
 import distance from '@turf/distance'
 import { point } from '@turf/helpers'
-import type { Feature, FeatureCollection, Geometry, MultiPolygon, Polygon } from 'geojson'
+import type { FeatureCollection } from 'geojson'
 
+export { centroidFromOsmGeometry } from '../../src/lib/osmGeometryCentroid'
 export { MATCH_RADIUS_KM }
 export { normalizeSchoolNameForMatch } from '../../src/lib/compareMatchKeys'
 
@@ -214,27 +215,6 @@ function uniqueNameOfficialIn(officials: OfficialInput[], o: OsmSchoolInput): Of
   return matches[0]
 }
 
-function isPolyGeom(g: Geometry | null): g is Polygon | MultiPolygon {
-  if (!g) return false
-  return g.type === 'Polygon' || g.type === 'MultiPolygon'
-}
-
-export function centroidFromOsmGeometry(geom: Geometry | null): [number, number] | null {
-  if (!geom) return null
-  if (geom.type === 'Point') {
-    return [geom.coordinates[0], geom.coordinates[1]]
-  }
-  if (!isPolyGeom(geom)) return null
-  try {
-    const f: Feature<Polygon | MultiPolygon> = { type: 'Feature', properties: {}, geometry: geom }
-    const c = centroid(f)
-    const [lon, lat] = c.geometry.coordinates
-    return [lon, lat]
-  } catch {
-    return null
-  }
-}
-
 export function buildOsmSchoolsFromGeoJson(fc: FeatureCollection): OsmSchoolInput[] {
   const out: OsmSchoolInput[] = []
   for (const f of fc.features) {
@@ -263,6 +243,7 @@ export function buildOsmSchoolsFromGeoJson(fc: FeatureCollection): OsmSchoolInpu
     for (const [k, v] of Object.entries(p)) {
       if (v == null || typeof v === 'object') continue
       if (k.startsWith('_pipeline')) continue
+      if (k.startsWith('@')) continue
       tags[k] = String(v)
     }
     const name = primaryOsmDisplayNameFromTags(tags)

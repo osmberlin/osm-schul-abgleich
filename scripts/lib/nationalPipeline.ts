@@ -1,4 +1,5 @@
 import { berlinCalendarDateKey } from '../../src/lib/berlinCalendarDateKey'
+import { centroidFromOsmGeometry } from '../../src/lib/osmGeometryCentroid'
 import { schoolsMatchesFileSchema } from '../../src/lib/schemas'
 import {
   type LandCode,
@@ -17,7 +18,6 @@ import {
 import { JEDESCHULE_WEEKLY_CSV_URL, jedeschuleDumpAbsolutePath } from './jedeschuleDumpConfig'
 import {
   buildOsmSchoolsFromGeoJson,
-  centroidFromOsmGeometry,
   type MatchRowOut,
   matchSchools,
   type OfficialInput,
