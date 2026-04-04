@@ -905,7 +905,7 @@ export function SchuleDetail() {
   }
 
   const idUrl = buildIdUrl(row.osmType, row.osmId, bounds)
-  const josmUrl = buildJosmLoadObject(row.osmType, row.osmId)
+  const josmUrl = buildJosmLoadObject(row.osmType, row.osmId, bounds)
   const osmBrowseUrl = buildOsmBrowseUrl(row.osmType, row.osmId)
   const jedeschuleItem =
     row.officialId && !(row.ambiguousOfficialIds && row.ambiguousOfficialIds.length > 0)
