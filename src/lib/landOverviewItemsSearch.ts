@@ -63,7 +63,6 @@ export function createLandMatchItemsJsEngine(rows: LandMatchRow[]) {
   const data = rows.map(matchRowToItemsJsDoc)
   return itemsjs(data, {
     searchableFields: ['nameSubstantives'],
-    removeStopWordFilter: true,
     sortings: {
       id_asc: { field: 'id', order: 'asc' },
     },
@@ -102,6 +101,7 @@ export function searchLandMatchesWithExplorer(
     query: state.query.trim() || undefined,
     per_page: 500_000,
     sort: 'id_asc',
+    removeStopWordFilter: true,
     filters: Object.keys(filters).length > 0 ? filters : undefined,
     filter: (item: Record<string, unknown>) => {
       if (state.nameScope === 'official' && item.hasOfficial !== 'yes') return false

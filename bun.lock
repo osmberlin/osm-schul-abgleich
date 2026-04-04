@@ -40,6 +40,7 @@
         "@tailwindcss/vite": "^4.1.18",
         "@types/bun": "^1.3.11",
         "@types/geojson": "^7946.0.16",
+        "@types/itemsjs": "^2.1.8",
         "@types/react": "^19.2.14",
         "@types/react-dom": "^19.2.3",
         "@vitejs/plugin-react": "^6.0.1",
@@ -547,6 +548,8 @@
     "@types/estree": ["@types/estree@1.0.8", "", {}, "sha512-dWHzHa2WqEXI/O1E9OjrocMTKJl2mSrEolh1Iomrv6U+JuNwaHXsXx9bLu5gG7BUWFIN0skIQJQ/L1rIex4X6w=="],
 
     "@types/geojson": ["@types/geojson@7946.0.16", "", {}, "sha512-6C8nqWur3j98U6+lXDfTUWIfgvZU+EumvpHKcYjujKH7woYyLj2sUmff0tRhrqM7BohUw7Pz3ZB1jj2gW9Fvmg=="],
+
+    "@types/itemsjs": ["@types/itemsjs@2.1.8", "", {}, "sha512-AJqmghdk7xyZ3DOb9JmGVNfKSepbMhjoM6qMvAuEQEs4zoKTk0P0L7oODXmQ7cPNLXg3CbmZzj+Ww5PXfKhglA=="],
 
     "@types/node": ["@types/node@25.5.0", "", { "dependencies": { "undici-types": "~7.18.0" } }, "sha512-jp2P3tQMSxWugkCUKLRPVUpGaL5MVFwF8RDuSRztfwgN1wmqJeMSbKlnEtQqU8UrhTmzEmZdu2I6v2dpp7XIxw=="],
 
