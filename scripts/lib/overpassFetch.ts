@@ -41,15 +41,26 @@ type OverpassOk = {
   interpreterUrl: string
 }
 
+function overpassRequestInit(query: string): BunFetchRequestInit {
+  const init: BunFetchRequestInit = {
+    method: 'POST',
+    body: `data=${encodeURIComponent(query)}`,
+    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+  }
+  // Bun on GitHub-hosted runners sometimes fails Overpass HTTPS with
+  // "unknown certificate verification error" (BoringSSL vs public CA edge cases).
+  // Enable only in CI via workflow env — not for local/default runs.
+  if (process.env.OVERPASS_FETCH_RELAX_TLS === 'true') {
+    init.tls = { rejectUnauthorized: false }
+  }
+  return init
+}
+
 async function fetchSchoolsOsmOverpassQuery(query: string): Promise<OverpassOk> {
   let lastErr: Error | null = null
   for (const url of INTERPRETERS) {
     try {
-      const r = await fetch(url, {
-        method: 'POST',
-        body: `data=${encodeURIComponent(query)}`,
-        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-      })
+      const r = await fetch(url, overpassRequestInit(query))
       if (!r.ok) {
         lastErr = new Error(`Overpass ${url} HTTP ${r.status}`)
         continue

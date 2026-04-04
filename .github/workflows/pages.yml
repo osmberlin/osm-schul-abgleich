@@ -39,6 +39,8 @@ jobs:
       - run: bun run pipeline
         env:
           GITHUB_SHA: ${{ github.sha }}
+          # Work around Bun TLS verification failing to some Overpass endpoints on ubuntu-latest
+          OVERPASS_FETCH_RELAX_TLS: 'true'
       - name: Validate pipeline snapshot outputs
         run: |
           bun -e "JSON.parse(await Bun.file('public/datasets/summary.json').text())"
