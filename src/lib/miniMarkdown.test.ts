@@ -1,4 +1,4 @@
-import { segmentMiniMarkdown } from './miniMarkdown'
+import { parseRichInline, segmentMiniMarkdown } from './miniMarkdown'
 import { describe, expect, it } from 'vitest'
 
 describe('segmentMiniMarkdown', () => {
@@ -15,13 +15,15 @@ describe('segmentMiniMarkdown', () => {
   })
 
   it('parses bold', () => {
-    expect(segmentMiniMarkdown('**wichtig**')).toEqual([{ type: 'bold', value: 'wichtig' }])
+    expect(segmentMiniMarkdown('**wichtig**')).toEqual([
+      { type: 'bold', children: [{ type: 'text', value: 'wichtig' }] },
+    ])
   })
 
   it('parses code before bold without interpreting bold inside code', () => {
     expect(segmentMiniMarkdown('`a`**b**')).toEqual([
       { type: 'code', value: 'a' },
-      { type: 'bold', value: 'b' },
+      { type: 'bold', children: [{ type: 'text', value: 'b' }] },
     ])
   })
 
@@ -39,5 +41,35 @@ describe('segmentMiniMarkdown', () => {
 
   it('leaves unclosed ** as text', () => {
     expect(segmentMiniMarkdown('a**b')).toEqual([{ type: 'text', value: 'a**b' }])
+  })
+
+  it('parses strikethrough', () => {
+    expect(segmentMiniMarkdown('~~x~~')).toEqual([
+      { type: 'strike', children: [{ type: 'text', value: 'x' }] },
+    ])
+  })
+
+  it('parses italic with asterisks', () => {
+    expect(segmentMiniMarkdown('*x*')).toEqual([
+      { type: 'italic', children: [{ type: 'text', value: 'x' }] },
+    ])
+  })
+
+  it('parses italic with underscores', () => {
+    expect(segmentMiniMarkdown('_x_')).toEqual([
+      { type: 'italic', children: [{ type: 'text', value: 'x' }] },
+    ])
+  })
+
+  it('does not treat __ as underscore italic opener', () => {
+    expect(segmentMiniMarkdown('__a__')).toEqual([{ type: 'text', value: '__a__' }])
+  })
+})
+
+describe('parseRichInline', () => {
+  it('nests bold inside strike', () => {
+    expect(parseRichInline('~~**a**~~')).toEqual([
+      { type: 'strike', children: [{ type: 'bold', children: [{ type: 'text', value: 'a' }] }] },
+    ])
   })
 })

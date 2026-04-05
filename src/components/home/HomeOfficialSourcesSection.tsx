@@ -8,6 +8,7 @@ import {
   githubBlobUrl,
   githubNewIssueLicenseResearchUrl,
 } from '../../lib/githubRepo'
+import { miniMarkdownNodes } from '../../lib/miniMarkdown'
 import { STATE_LABEL_DE, STATE_ORDER } from '../../lib/stateConfig'
 import { ScaleIcon } from '@heroicons/react/20/solid'
 import { Link } from '@tanstack/react-router'
@@ -199,13 +200,13 @@ export function HomeOfficialSourcesSection() {
             <li key={key}>
               <span className="font-medium text-zinc-300">{t.osmCompatibleLabel[key]}</span>
               {' \u2013 '}
-              {t.osmCompatLegendText[key]}
+              {miniMarkdownNodes(t.osmCompatLegendText[key])}
             </li>
           ))}
           <li>
             <span className="font-medium text-zinc-300">{t.osmCompatibleLabel.yes_licence}</span>
             {' \u2013 '}
-            {t.osmCompatLegendText.yesLicenceOrWaiver}
+            {miniMarkdownNodes(t.osmCompatLegendText.yesLicenceOrWaiver)}
           </li>
         </ul>
       </div>
