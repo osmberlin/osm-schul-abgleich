@@ -117,14 +117,27 @@ export function HomeOfficialSourcesSection() {
                           </span>
                         ) : null}
                       </div>
-                      <a
-                        href={row.officialSourceUrl}
-                        target="_blank"
-                        rel="noreferrer"
-                        className="text-xs text-emerald-400/90 underline decoration-emerald-600/40 hover:text-emerald-300"
-                      >
-                        {t.sourceLinkLabel}
-                      </a>
+                      <div className="flex flex-row flex-wrap items-baseline gap-x-3 gap-y-1">
+                        <a
+                          href={row.officialSourceUrl}
+                          target="_blank"
+                          rel="noreferrer"
+                          className="text-xs text-emerald-400/90 underline decoration-emerald-600/40 hover:text-emerald-300"
+                        >
+                          {t.sourceLinkLabel}
+                        </a>
+                        {row.officialSourceRefUrl &&
+                        row.officialSourceRefUrl !== row.officialSourceUrl ? (
+                          <a
+                            href={row.officialSourceRefUrl}
+                            target="_blank"
+                            rel="noreferrer"
+                            className="text-xs text-emerald-400/90 underline decoration-emerald-600/40 hover:text-emerald-300"
+                          >
+                            {t.officialSourceRefLink}
+                          </a>
+                        ) : null}
+                      </div>
                     </div>
                   </td>
                   <td className="px-3 py-2 align-top">

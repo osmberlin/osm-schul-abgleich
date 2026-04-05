@@ -90,7 +90,7 @@ export const de = {
       colOsmCompatible: 'OSM-kompatibel',
       colChecked: 'Zuletzt geprüft',
       unknownLicense: 'Unbekannt',
-      sourceLinkLabel: 'Link',
+      sourceLinkLabel: 'Datenquelle (API)',
       osmCompatibleLabel: {
         unknown: 'Unbekannt',
         no: 'Nein',
@@ -98,6 +98,7 @@ export const de = {
         yes_waiver: 'Ja (Lizenz oder Freigabe)',
       },
       osmCompatibilityRefLink: 'Nachweis (OSM-Wiki, PDF)',
+      officialSourceRefLink: 'Referenz',
       osmCompatLegendHeading: 'Legende zur OSM-Kompatibilität',
       osmCompatLegendText: {
         unknown:

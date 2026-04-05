@@ -10,6 +10,11 @@ export type OsmLicenseCompatibility = 'unknown' | 'no' | 'yes_licence' | 'yes_wa
 export type BundeslandOfficialSourceRow = {
   /** Primary official source URL (aligned with jedeschule.codefor.de/ueber/ where possible). */
   officialSourceUrl: string
+  /**
+   * Optional second official URL when it differs from `officialSourceUrl` (e.g. OGC-API / CSV-Abruf
+   * vs. Geodatenportal; licence research “Nachweis” for the public URL). Omit when identical.
+   */
+  officialSourceRefUrl?: string
   /** Free text, e.g. `CC BY 4.0`, or `unknown` until researched. */
   officialLicense: string
   osmCompatible: OsmLicenseCompatibility
@@ -19,7 +24,7 @@ export type BundeslandOfficialSourceRow = {
   lastCheckedAt?: string
   /** GitHub username of verifier (set when merging a PR / from issue author). */
   lastCheckedByGithub?: string
-  /** Optional link backing the OSM-compatibility assessment (e.g. official PDF on the OSM wiki). */
+  /** Optional link backing the OSM-compatibility assessment (e.g. OSM-Wiki, Waiver-PDF). */
   osmCompatibilityRefUrl?: string
 }
 
@@ -68,10 +73,9 @@ export const BUNDESLAND_OFFICIAL_SOURCES = {
   ),
   HB: seed('https://www.bildung.bremen.de/detail.php?template=35_schulsuche_stufe2_d'),
   HH: seed('https://metaver.de/trefferanzeige?docuuid=BDEB9B13-0C2B-42A3-B248-A31B01B454BA', {
+    officialSourceRefUrl: 'https://api.hamburg.de/datasets/v1/schulen',
     officialLicense: 'DL-DE BY 2.0',
     osmCompatible: 'no',
-    likelyNote:
-      'Quellenvermerk: Freie und Hansestadt Hamburg, Behörde für Schule und Berufsausbildung. Für OSM liegt keine bekannte Zusatzvereinbarung (Waiver) vor.',
     lastCheckedAt: '2026-04-05',
     lastCheckedByGithub: 'vizsim',
   }),
@@ -79,10 +83,10 @@ export const BUNDESLAND_OFFICIAL_SOURCES = {
   MV: seed('https://www.laiv-mv.de/Statistik/Ver%C3%B6ffentlichungen/Verzeichnisse/'),
   NI: seed('https://schulen.nibis.de/search/advanced'),
   NW: seed('https://www.schulministerium.nrw/open-data', {
+    officialSourceRefUrl:
+      'https://www.schulministerium.nrw.de/BiPo/OpenData/Schuldaten/schuldaten.csv',
     officialLicense: 'DL-DE BY 2.0',
     osmCompatible: 'no',
-    likelyNote:
-      'MSB: Datenlizenz Deutschland – Namensnennung 2.0. Für OSM liegt keine bekannte Zusatzvereinbarung (Waiver) vor.',
     lastCheckedAt: '2026-04-05',
     lastCheckedByGithub: 'vizsim',
   }),
