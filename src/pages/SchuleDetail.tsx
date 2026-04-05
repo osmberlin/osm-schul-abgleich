@@ -28,6 +28,7 @@ import {
   flatMapGlProps,
   OPENFREEMAP_STYLE,
 } from '../lib/openFreeMapStyle'
+import { promoteClosedLineStringsToPolygons } from '../lib/osmClosedRingsToPolygons'
 import { findOsmFeature } from '../lib/osmFeatureLookup'
 import { osmGeometryCentroidLonLat } from '../lib/osmGeometryCentroid'
 import { comparePropertySections, normalizeAddressCompareString } from '../lib/propertyCompare'
@@ -581,7 +582,10 @@ export function SchuleDetail() {
       if (f) features.push(f as Feature)
     }
     const of = findOsmFeature(q.data.osm, row.osmType, row.osmId)
-    if (of) features.push(of)
+    if (of) {
+      const g = promoteClosedLineStringsToPolygons(of.geometry ?? null) ?? of.geometry
+      features.push({ ...of, geometry: g })
+    }
     if (mapOsmCentroid) {
       const [clon, clat] = mapOsmCentroid
       features.push({

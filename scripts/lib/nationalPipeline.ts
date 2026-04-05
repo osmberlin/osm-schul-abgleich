@@ -1,4 +1,5 @@
 import { berlinCalendarDateKey } from '../../src/lib/berlinCalendarDateKey'
+import { promoteClosedLineStringsToPolygons } from '../../src/lib/osmClosedRingsToPolygons'
 import { centroidFromOsmGeometry } from '../../src/lib/osmGeometryCentroid'
 import { parseRunHistoryFileText, stringifyRunHistoryJsonl } from '../../src/lib/runHistoryJsonl'
 import { schoolsMatchesFileSchema } from '../../src/lib/schemas'
@@ -114,6 +115,7 @@ function simplifyOsmGeometryForUser(
   geometry: Feature['geometry'] | null,
 ): Feature['geometry'] | null {
   if (!geometry) return geometry
+  geometry = promoteClosedLineStringsToPolygons(geometry) ?? geometry
   if (geometry.type === 'GeometryCollection') {
     return {
       type: 'GeometryCollection',
