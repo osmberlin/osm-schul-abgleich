@@ -71,7 +71,14 @@ export const BUNDESLAND_OFFICIAL_SOURCES = {
   HE: seed('https://schul-db.bildung.hessen.de/schul_db.html'),
   MV: seed('https://www.laiv-mv.de/Statistik/Ver%C3%B6ffentlichungen/Verzeichnisse/'),
   NI: seed('https://schulen.nibis.de/search/advanced'),
-  NW: seed('https://www.schulministerium.nrw/open-data'),
+  NW: seed('https://www.schulministerium.nrw/open-data', {
+    officialLicense: 'DL-DE BY 2.0',
+    osmCompatible: 'no',
+    likelyNote:
+      'MSB: Datenlizenz Deutschland – Namensnennung 2.0. Für OSM liegt keine bekannte Zusatzvereinbarung (Waiver) vor.',
+    lastCheckedAt: '2026-04-05',
+    lastCheckedByGithub: 'vizsim',
+  }),
   RP: seed('https://bildung.rlp.de/schulen'),
   SL: seed(
     'https://geoportal.saarland.de/arcgis/services/Internet/Staatliche_Dienste/MapServer/WFSServer?SERVICE=WFS&REQUEST=GetCapabilities',
