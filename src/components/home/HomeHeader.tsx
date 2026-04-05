@@ -1,29 +1,50 @@
 import { de } from '../../i18n/de'
+import { GITHUB_REPO_ROOT } from '../../lib/githubRepo'
+
+const headerLinkClass =
+  'font-medium text-emerald-300 underline decoration-emerald-300/30 underline-offset-2 hover:decoration-emerald-400'
 
 export function HomeHeader() {
+  const h = de.home
   return (
     <header className="mb-8 border-b border-zinc-700 pb-6">
-      <h1 className="text-3xl font-semibold tracking-tight text-brand-100">{de.home.heading}</h1>
+      <h1 className="text-3xl font-semibold tracking-tight text-brand-100">{h.heading}</h1>
       <p className="mt-2 text-sm text-zinc-400">
-        {de.home.leadIntro}
+        {h.leadIntro}
         <a
-          href={de.home.links.jedeschule.href}
-          className="font-medium text-emerald-300 underline decoration-emerald-300/30 underline-offset-2 hover:decoration-emerald-400"
+          href={h.links.jedeschule.href}
+          className={headerLinkClass}
           target="_blank"
           rel="noreferrer"
         >
-          {de.home.links.jedeschule.label}
+          {h.links.jedeschule.label}
         </a>
-        {de.home.leadBetween}
+        {h.leadBetween}
         <a
-          href={de.home.links.osmSchoolTag.href}
-          className="font-medium text-emerald-300 underline decoration-emerald-300/30 underline-offset-2 hover:decoration-emerald-400"
+          href={h.links.osmSchoolTag.href}
+          className={headerLinkClass}
           target="_blank"
           rel="noreferrer"
         >
-          {de.home.links.osmSchoolTag.label}
+          {h.links.osmSchoolTag.label}
         </a>
-        {de.home.leadOutro}
+        {h.leadOutro}
+      </p>
+      <p className="mt-2 text-sm text-zinc-400">
+        <a href={GITHUB_REPO_ROOT} className={headerLinkClass} target="_blank" rel="noreferrer">
+          {h.githubCodeLinkLabel}
+        </a>
+        <span aria-hidden className="mx-1.5 text-zinc-500">
+          ·
+        </span>
+        <a
+          href={`${GITHUB_REPO_ROOT}/issues`}
+          className={headerLinkClass}
+          target="_blank"
+          rel="noreferrer"
+        >
+          {h.githubIssuesLinkLabel}
+        </a>
       </p>
     </header>
   )

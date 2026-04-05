@@ -56,6 +56,8 @@ export const de = {
     leadIntro: 'Diese Anwendung vergleicht pro Bundesland die öffentlichen Schuldaten von ',
     leadBetween: ' mit OSM-Daten (',
     leadOutro: '). Das Ziel ist eine bessere Datenqualität.',
+    githubCodeLinkLabel: 'Code auf GitHub',
+    githubIssuesLinkLabel: 'Feedback bitte als GitHub-Issues beitragen',
     links: {
       jedeschule: {
         href: 'https://jedeschule.codefor.de/ueber/',
@@ -102,8 +104,8 @@ export const de = {
       osmCompatLegendHeading: 'Legende zur OSM-Kompatibilität',
       osmCompatLegendText: {
         unknown:
-          'Die Nutzbarkeit der amtlichen Daten für OpenStreetMap ist ungeklärt. Dieser Abgleich darf daher nur als Basis für eine eigene Recherche genutzt werden.',
-        no: 'Für diese amtliche Quelle besteht keine Freigabe zur Nutzung in OSM. Dieser Abgleich darf daher nur als Basis für eine eigene Recherche genutzt werden.',
+          'Die Nutzbarkeit der amtlichen Daten für OpenStreetMap ist ungeklärt. Die amtlichen Daten dürfen daher nur als Basis für eine **eigene Recherche** genutzt werden.',
+        no: 'Für diese amtliche Quelle besteht keine Freigabe zur Nutzung in OSM. Die amtlichen Daten dürfen daher nur als Basis für eine **eigene Recherche** genutzt werden.',
         yesLicenceOrWaiver: 'Diese Daten dürfen in OSM übernommen werden.',
       },
     },
