@@ -17,6 +17,7 @@ export function useDetailMapParam() {
   const setMap = (nextMap: OsmStyleMapTriple | null) => {
     void navigate({
       replace: true,
+      resetScroll: false,
       search: (prev) => ({
         ...prev,
         map: nextMap ? serializeOsmStyleMapSearchParam(nextMap) : undefined,

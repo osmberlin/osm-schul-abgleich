@@ -28,6 +28,7 @@ export function useStateOverviewMapState() {
     setMapCamera: (mapCamera: OsmStyleMapTriple | null) => {
       void navigate({
         replace: true,
+        resetScroll: false,
         search: (prev) => ({
           ...prev,
           map: mapCamera ? serializeOsmStyleMapSearchParam(mapCamera) : undefined,
@@ -37,6 +38,7 @@ export function useStateOverviewMapState() {
     setBboxFilter: (bboxFilter: StateMapBbox | null) => {
       void navigate({
         replace: true,
+        resetScroll: false,
         search: (prev) => ({
           ...prev,
           bbox: bboxFilter ? serializeStateMapBboxSearchParam(bboxFilter) : undefined,
@@ -46,6 +48,7 @@ export function useStateOverviewMapState() {
     clearBboxFilter: () => {
       void navigate({
         replace: true,
+        resetScroll: false,
         search: (prev) => ({
           ...prev,
           bbox: undefined,
