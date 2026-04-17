@@ -28,7 +28,7 @@ import {
 import { runsPayloadFromHistoryText } from '../lib/runHistoryJsonl'
 import { runsFileSchema, schoolsMatchesFileSchema, summaryFileSchema } from '../lib/schemas'
 import { useLandCategoryFilter } from '../lib/useLandCategoryFilter'
-import { useLandMapBbox } from '../lib/useLandMapBbox'
+import { useLandMapState } from '../lib/useLandMapState'
 import { useLandOverviewExplorerFilter } from '../lib/useLandOverviewExplorerFilter'
 import { useQuery } from '@tanstack/react-query'
 import { useParams } from '@tanstack/react-router'
@@ -41,7 +41,7 @@ export function LandOverview() {
   const historyHeadingId = useId()
   const { enabledSet, enabledCategories, setCategoryEnabled, isCategoryEnabled } =
     useLandCategoryFilter()
-  const { bbox: listBbox, setBbox: setListBbox, clearBbox: clearListBbox } = useLandMapBbox()
+  const { mapCamera, setMapCamera, bboxFilter, setBboxFilter, clearBboxFilter } = useLandMapState()
   const explorer = useLandOverviewExplorerFilter()
 
   const summaryQ = useQuery({
@@ -129,11 +129,11 @@ export function LandOverview() {
   }, [dataQ.data?.official])
 
   const matchesAfterBbox = useMemo(() => {
-    if (!listBbox) return matches
+    if (!bboxFilter) return matches
     return matches.filter((r) =>
-      matchRowIncludedWhenLandMapBboxActive(r, listBbox, officialLonLatIndex),
+      matchRowIncludedWhenLandMapBboxActive(r, bboxFilter, officialLonLatIndex),
     )
-  }, [matches, listBbox, officialLonLatIndex])
+  }, [matches, bboxFilter, officialLonLatIndex])
 
   const explorerKey = useMemo(
     () =>
@@ -264,9 +264,11 @@ export function LandOverview() {
         mapMatchPoints={mapMatchPoints}
         landCode={code}
         boundary={boundaryQ.data ?? null}
-        listBbox={listBbox}
-        setListBbox={setListBbox}
-        clearListBbox={clearListBbox}
+        mapCamera={mapCamera}
+        setMapCamera={setMapCamera}
+        bboxFilter={bboxFilter}
+        setBboxFilter={setBboxFilter}
+        clearBboxFilter={clearBboxFilter}
       />
 
       <LandOverviewMatchList
@@ -275,7 +277,7 @@ export function LandOverview() {
         matchesLength={matches.length}
         enabledCategoriesLength={enabledCategories.length}
         visibleMatchesLength={visibleMatches.length}
-        listBboxActive={listBbox != null}
+        listBboxActive={bboxFilter != null}
         matchesAfterBboxCount={matchesAfterBbox.length}
         exploreFilteredCount={matchesAfterExplorer.length}
       />

@@ -1,5 +1,6 @@
 import { de } from '../../i18n/de'
 import type { LandMatchCategory } from '../../lib/landMatchCategories'
+import type { OsmStyleMapTriple } from '../../lib/useDetailMapParam'
 import type { LandMapBbox } from '../../lib/useLandMapBbox'
 import { LandMap } from '../LandMap'
 import { useNavigate } from '@tanstack/react-router'
@@ -12,18 +13,22 @@ export function LandOverviewMapSection({
   mapMatchPoints,
   landCode,
   boundary,
-  listBbox,
-  setListBbox,
-  clearListBbox,
+  mapCamera,
+  setMapCamera,
+  bboxFilter,
+  setBboxFilter,
+  clearBboxFilter,
 }: {
   enabledCategories: LandMatchCategory[]
   enabledSet: Set<LandMatchCategory>
   mapMatchPoints: FeatureCollection<Geometry>
   landCode: string
   boundary: Feature<Polygon | MultiPolygon> | null
-  listBbox: LandMapBbox | null
-  setListBbox: (bbox: LandMapBbox) => void
-  clearListBbox: () => void
+  mapCamera: OsmStyleMapTriple | null
+  setMapCamera: (mapCamera: OsmStyleMapTriple | null) => void
+  bboxFilter: LandMapBbox | null
+  setBboxFilter: (bboxFilter: LandMapBbox | null) => void
+  clearBboxFilter: () => void
 }) {
   const navigate = useNavigate()
 
@@ -47,9 +52,11 @@ export function LandOverviewMapSection({
           enabledCategories={enabledSet}
           landCode={landCode}
           landBoundary={boundary}
-          urlBbox={listBbox}
-          onApplyUrlBbox={(bbox) => void setListBbox(bbox)}
-          onClearUrlBbox={clearListBbox}
+          mapCamera={mapCamera}
+          onMapCameraChange={setMapCamera}
+          bboxFilter={bboxFilter}
+          onApplyBboxFilter={setBboxFilter}
+          onClearBboxFilter={clearBboxFilter}
           onSchoolClick={(matchKey) =>
             void navigate({
               to: '/bundesland/$code/schule/$matchKey',

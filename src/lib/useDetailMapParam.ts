@@ -13,7 +13,7 @@ function serializeOsmStyleMapTriple(value: OsmStyleMapTriple): string {
   return `${zStr}/${lat.toFixed(5)}/${lon.toFixed(5)}`
 }
 
-const detailMapParamParser = createParser({
+export const osmStyleMapParamParser = createParser({
   parse(value: string) {
     const parts = value.split('/').map((x) => Number.parseFloat(x.trim()))
     if (parts.length !== 3) return null
@@ -29,7 +29,7 @@ const detailMapParamParser = createParser({
  * URL-synced camera for the school detail compare map (`?map=zoom/lat/lon`, OSM hash order).
  */
 export function useDetailMapParam() {
-  const [map, setMap] = useQueryState('map', detailMapParamParser)
+  const [map, setMap] = useQueryState('map', osmStyleMapParamParser)
 
   return {
     map,

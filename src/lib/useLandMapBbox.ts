@@ -1,11 +1,10 @@
 import { landMapBboxTupleSchema } from './zodGeo'
 import { createParser, useQueryState } from 'nuqs'
-import { useCallback } from 'react'
 
 /** Map viewport bbox in WGS84: west, south, east, north (URL `?bbox=`). */
 export type LandMapBbox = readonly [west: number, south: number, east: number, north: number]
 
-const landMapBboxParser = createParser({
+export const landMapBboxParser = createParser({
   parse(value) {
     const parts = value.split(',').map((x) => Number.parseFloat(x.trim()))
     const r = landMapBboxTupleSchema.safeParse(parts)
@@ -22,9 +21,11 @@ const landMapBboxParser = createParser({
 export function useLandMapBbox() {
   const [bbox, setBbox] = useQueryState('bbox', landMapBboxParser)
 
-  const clearBbox = useCallback(() => {
-    void setBbox(null)
-  }, [setBbox])
-
-  return { bbox, setBbox, clearBbox }
+  return {
+    bbox,
+    setBbox,
+    clearBbox: () => {
+      void setBbox(null)
+    },
+  }
 }

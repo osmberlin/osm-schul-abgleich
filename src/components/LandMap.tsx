@@ -14,6 +14,7 @@ import {
 } from '../lib/openFreeMapStyle'
 import 'maplibre-gl/dist/maplibre-gl.css'
 import { type LandCode, STATE_BOUNDS, STATE_MAP_CENTER } from '../lib/stateConfig'
+import type { OsmStyleMapTriple } from '../lib/useDetailMapParam'
 import type { LandMapBbox } from '../lib/useLandMapBbox'
 import { LandMapBboxToolbar } from './LandMapBboxToolbar'
 import { MapPointHoverPanel } from './MapPointHoverPanel'
@@ -21,12 +22,22 @@ import type { CircleLayerSpecification } from '@maplibre/maplibre-gl-style-spec'
 import bbox from '@turf/bbox'
 import type { Feature, FeatureCollection, MultiPolygon, Polygon } from 'geojson'
 import type { FilterSpecification } from 'maplibre-gl'
-import { useEffect, useMemo, useRef, useState } from 'react'
-import MapGL, { Layer, type MapLayerMouseEvent, type MapRef, Source } from 'react-map-gl/maplibre'
+import { useMemo, useState } from 'react'
+import MapGL, {
+  Layer,
+  type MapLayerMouseEvent,
+  type ViewStateChangeEvent,
+  Source,
+} from 'react-map-gl/maplibre'
 
 const FIT_PADDING = 48
 const FIT_MAX_ZOOM = 16
 const LAND_MAP_ID = 'land-map'
+
+/**
+ * Uncontrolled MapGL (`initialViewState` only; no `viewState`) with event-driven URL sync:
+ * `?map=` follows camera (always), `?bbox=` is explicit list filter (apply/clear only).
+ */
 const LAYER_MATCH_OVERVIEW_HALO = 'match-overview-halo'
 const BBOX_EPSILON = 0.0001
 
@@ -86,9 +97,11 @@ export function LandMap({
   enabledCategories,
   landCode,
   landBoundary,
-  urlBbox,
-  onApplyUrlBbox,
-  onClearUrlBbox,
+  mapCamera,
+  onMapCameraChange,
+  bboxFilter,
+  onApplyBboxFilter,
+  onClearBboxFilter,
   onSchoolClick,
 }: {
   /** One Point per Trefferliste row; `matchCat` = category for color. */
@@ -98,9 +111,11 @@ export function LandMap({
   landCode?: string
   /** Simplified Bundesland outline (`public/bundesland-boundaries/{code}.geojson`). */
   landBoundary?: Feature<Polygon | MultiPolygon> | null
-  urlBbox?: LandMapBbox | null
-  onApplyUrlBbox?: (bbox: LandMapBbox) => void
-  onClearUrlBbox?: () => void
+  mapCamera?: OsmStyleMapTriple | null
+  onMapCameraChange?: (mapCamera: OsmStyleMapTriple | null) => void
+  bboxFilter?: LandMapBbox | null
+  onApplyBboxFilter?: (bboxFilter: LandMapBbox | null) => void
+  onClearBboxFilter?: () => void
   /** When set, halo points are hoverable and clickable (navigate to Schule detail). */
   onSchoolClick?: (matchKey: string) => void
 }) {
@@ -122,11 +137,17 @@ export function LandMap({
   }, [bounds, landCode])
 
   const fitTargetBounds = useMemo((): [[number, number], [number, number]] | null => {
-    if (urlBbox) return lngLatBoundsFromTurfBbox([urlBbox[0], urlBbox[1], urlBbox[2], urlBbox[3]])
+    if (bboxFilter) {
+      return lngLatBoundsFromTurfBbox([bboxFilter[0], bboxFilter[1], bboxFilter[2], bboxFilter[3]])
+    }
     return frameBounds
-  }, [urlBbox, frameBounds])
+  }, [bboxFilter, frameBounds])
 
   const initialViewState = useMemo(() => {
+    if (mapCamera) {
+      const [zoom, lat, lon] = mapCamera
+      return { longitude: lon, latitude: lat, zoom, pitch: 0, bearing: 0 }
+    }
     if (fitTargetBounds) {
       return {
         bounds: fitTargetBounds,
@@ -140,21 +161,18 @@ export function LandMap({
       return { longitude: lon, latitude: lat, zoom, pitch: 0, bearing: 0 }
     }
     return { longitude: 10.5, latitude: 51.2, zoom: 5.5, pitch: 0, bearing: 0 }
-  }, [fitTargetBounds, landCode])
+  }, [fitTargetBounds, landCode, mapCamera])
 
-  const mapRef = useRef<MapRef>(null)
-  const pendingBaselineRef = useRef(false)
-  const [mapReady, setMapReady] = useState(false)
   const [currentBbox, setCurrentBbox] = useState<LandMapBbox | null>(null)
   const [baselineBbox, setBaselineBbox] = useState<LandMapBbox | null>(null)
   const [hoveredPointEntries, setHoveredPointEntries] = useState<
     Array<{ name: string; matchCat: LandMatchCategory }>
   >([])
 
-  const hasUrlBbox = urlBbox != null
-  const bboxToolbarEnabled = onApplyUrlBbox != null && onClearUrlBbox != null
+  const hasFilterBbox = bboxFilter != null
+  const bboxToolbarEnabled = onApplyBboxFilter != null && onClearBboxFilter != null
   const toolbarVisible =
-    bboxToolbarEnabled && (hasUrlBbox || bboxChanged(baselineBbox, currentBbox))
+    bboxToolbarEnabled && (hasFilterBbox || bboxChanged(baselineBbox, currentBbox))
 
   const catFilter = useMemo(() => matchCategoryFilter(enabledCategories), [enabledCategories])
 
@@ -164,58 +182,22 @@ export function LandMap({
     return ['all', geom, catFilter] as FilterSpecification
   }, [catFilter])
 
-  function handleIdle() {
-    if (!pendingBaselineRef.current) return
-    const m = mapRef.current?.getMap()
-    if (!m) return
-    pendingBaselineRef.current = false
-    const b = boundsToBboxParam(m.getBounds())
-    setBaselineBbox(b)
+  function handleMove(e: ViewStateChangeEvent) {
+    const b = boundsToBboxParam(e.target.getBounds())
     setCurrentBbox(b)
   }
 
-  function handleMove() {
-    const m = mapRef.current?.getMap()
-    if (!m) return
-    setCurrentBbox(boundsToBboxParam(m.getBounds()))
+  function handleMoveEnd(e: ViewStateChangeEvent) {
+    const b = boundsToBboxParam(e.target.getBounds())
+    setCurrentBbox(b)
+    if (!onMapCameraChange) return
+    const { zoom, latitude, longitude } = e.viewState
+    onMapCameraChange([zoom, latitude, longitude])
   }
 
-  useEffect(
-    function initializeMapStateFromExistingInstance() {
-      if (mapReady) return
-      const m = mapRef.current?.getMap()
-      if (!m) return
-      const b = boundsToBboxParam(m.getBounds())
-      setMapReady(true)
-      setCurrentBbox(b)
-      setBaselineBbox((prev) => prev ?? b)
-    },
-    [mapReady],
-  )
-
-  useEffect(
-    function fitMapToTargetBounds() {
-      const m = mapRef.current?.getMap()
-      if (!m || !fitTargetBounds) return
-
-      const run = () => {
-        m.resize()
-        pendingBaselineRef.current = true
-        m.fitBounds(fitTargetBounds, {
-          padding: FIT_PADDING,
-          duration: 0,
-          maxZoom: FIT_MAX_ZOOM,
-        })
-      }
-
-      if (m.loaded()) run()
-      else m.once('load', run)
-    },
-    [fitTargetBounds],
-  )
-
   function handleApply(b: LandMapBbox) {
-    onApplyUrlBbox?.(b)
+    if (!onApplyBboxFilter) return
+    onApplyBboxFilter(b)
   }
 
   function handleOverviewMouseMove(e: MapLayerMouseEvent) {
@@ -271,7 +253,6 @@ export function LandMap({
     >
       <MapGL
         id={LAND_MAP_ID}
-        ref={mapRef}
         initialViewState={initialViewState}
         mapStyle={OPENFREEMAP_STYLE}
         reuseMaps
@@ -282,11 +263,14 @@ export function LandMap({
           hideVectorBasemapBuildings(map)
           const b = boundsToBboxParam(map.getBounds())
           setCurrentBbox(b)
-          setBaselineBbox((prev) => prev ?? b)
-          setMapReady(true)
+          setBaselineBbox(b)
+          if (onMapCameraChange) {
+            const c = map.getCenter()
+            onMapCameraChange([map.getZoom(), c.lat, c.lng])
+          }
         }}
-        onIdle={handleIdle}
         onMove={handleMove}
+        onMoveEnd={handleMoveEnd}
         {...schoolInteractionProps}
       >
         {landBoundary && (
@@ -321,12 +305,11 @@ export function LandMap({
       ) : null}
       {bboxToolbarEnabled && (
         <LandMapBboxToolbar
-          mapId={LAND_MAP_ID}
-          mapReady={mapReady}
-          hasUrlBbox={hasUrlBbox}
+          hasFilterBbox={hasFilterBbox}
           visible={toolbarVisible}
+          currentBbox={currentBbox}
           onApplyBbox={handleApply}
-          onClearBbox={onClearUrlBbox}
+          onClearBbox={onClearBboxFilter ?? (() => {})}
         />
       )}
     </div>
