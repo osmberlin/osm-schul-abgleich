@@ -6,19 +6,15 @@ const btnBase =
 
 export function StateMapBboxToolbar({
   hasFilterBbox,
-  visible,
   currentBbox,
   onApplyBbox,
   onClearBbox,
 }: {
   hasFilterBbox: boolean
-  visible: boolean
   currentBbox: StateMapBbox | null
   onApplyBbox: (bbox: StateMapBbox) => void
   onClearBbox: () => void
 }) {
-  if (!visible) return null
-
   const apply = () => {
     if (!currentBbox) return
     onApplyBbox(currentBbox)

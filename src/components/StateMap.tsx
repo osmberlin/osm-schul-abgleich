@@ -39,7 +39,6 @@ const STATE_MAP_ID = 'state-map'
  * `?map=` follows camera (always), `?bbox=` is explicit list filter (apply/clear only).
  */
 const LAYER_MATCH_OVERVIEW_HALO = 'match-overview-halo'
-const BBOX_EPSILON = 0.0001
 
 function isStateMatchCategory(v: unknown): v is StateMatchCategory {
   return typeof v === 'string' && (STATE_MATCH_CATEGORIES as readonly string[]).includes(v)
@@ -52,11 +51,6 @@ function lngLatBoundsFromTurfBbox(
     [b[0], b[1]],
     [b[2], b[3]],
   ]
-}
-
-function bboxChanged(a: StateMapBbox | null, b: StateMapBbox | null): boolean {
-  if (!a || !b) return false
-  return a.some((v, i) => Math.abs(v - b[i]) > BBOX_EPSILON)
 }
 
 const landMapCircleHaloPaint = {
@@ -164,15 +158,12 @@ export function StateMap({
   }, [fitTargetBounds, stateCode, mapCamera])
 
   const [currentBbox, setCurrentBbox] = useState<StateMapBbox | null>(null)
-  const [baselineBbox, setBaselineBbox] = useState<StateMapBbox | null>(null)
   const [hoveredPointEntries, setHoveredPointEntries] = useState<
     Array<{ name: string; matchCat: StateMatchCategory }>
   >([])
 
   const hasFilterBbox = bboxFilter != null
   const bboxToolbarEnabled = onApplyBboxFilter != null && onClearBboxFilter != null
-  const toolbarVisible =
-    bboxToolbarEnabled && (hasFilterBbox || bboxChanged(baselineBbox, currentBbox))
 
   const catFilter = useMemo(() => matchCategoryFilter(enabledCategories), [enabledCategories])
 
@@ -261,9 +252,7 @@ export function StateMap({
           const map = e.target
           applyFlatMapRotationLocks(map)
           hideVectorBasemapBuildings(map)
-          const b = boundsToBboxParam(map.getBounds())
-          setCurrentBbox(b)
-          setBaselineBbox(b)
+          setCurrentBbox(boundsToBboxParam(map.getBounds()))
           if (onMapCameraChange) {
             const c = map.getCenter()
             onMapCameraChange([map.getZoom(), c.lat, c.lng])
@@ -306,7 +295,6 @@ export function StateMap({
       {bboxToolbarEnabled && (
         <StateMapBboxToolbar
           hasFilterBbox={hasFilterBbox}
-          visible={toolbarVisible}
           currentBbox={currentBbox}
           onApplyBbox={handleApply}
           onClearBbox={onClearBboxFilter ?? (() => {})}
