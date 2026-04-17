@@ -98,7 +98,12 @@ export const BUNDESLAND_OFFICIAL_SOURCES = {
   ST: seed(
     'https://www.bildung-lsa.de/ajax.php?m=getSSResult&q=&lk=-1&sf=-1&so=-1&timestamp=1480082277128/',
   ),
-  SH: seed('https://opendata.schleswig-holstein.de/dataset/schulen-2024-01-31'),
+  SH: seed('https://opendata.schleswig-holstein.de/dataset/schulen-2026-03-26', {
+    officialLicense: 'CC0 1.0',
+    osmCompatible: 'yes_licence',
+    lastCheckedAt: '2026-04-17',
+    lastCheckedByGithub: 'vizsim',
+  }),
   TH: seed('https://www.schulportal-thueringen.de/start'),
 } as const satisfies Record<LandCode, BundeslandOfficialSourceRow>
 
