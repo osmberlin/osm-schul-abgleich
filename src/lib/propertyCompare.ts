@@ -70,7 +70,8 @@ function buildGrundschuleCompareGroup(
   const isced = osmMap.get('isced:level') ?? null
   const school = osmMap.get('school') ?? null
   const isEquivalentMatch =
-    tagValueEqualsProposed(isced ?? undefined, '1') || tagValueEqualsProposed(school ?? undefined, 'primary')
+    tagValueEqualsProposed(isced ?? undefined, '1') ||
+    tagValueEqualsProposed(school ?? undefined, 'primary')
 
   return {
     kind: 'grundschule',

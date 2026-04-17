@@ -176,10 +176,9 @@ export function SchoolDetailCompareBody({
                     : null
                   const isMatch =
                     normalizedOfficial != null && group.compareTargets.includes(normalizedOfficial)
-                  const rowTone = isMatch
-                    ? 'ring-1 ring-emerald-500/30'
-                    : normalizedOfficial != null && group.compareTargets.length > 0
-                      ? 'ring-1 ring-amber-500/30'
+                  const rowTone =
+                    !isMatch && normalizedOfficial != null && group.compareTargets.length > 0
+                      ? 'border-l-2 border-amber-500/40'
                       : ''
                   return (
                     <div
@@ -207,9 +206,7 @@ export function SchoolDetailCompareBody({
                   )
                 }
                 if (group.kind === 'grundschule') {
-                  const rowTone = group.isEquivalentMatch
-                    ? 'ring-1 ring-emerald-500/30'
-                    : 'ring-1 ring-amber-500/30'
+                  const rowTone = group.isEquivalentMatch ? '' : 'border-l-2 border-amber-500/40'
                   return (
                     <div
                       key={`${group.kind}-${group.officialKey}`}
