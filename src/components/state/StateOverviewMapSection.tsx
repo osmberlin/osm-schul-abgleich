@@ -1,6 +1,6 @@
 import { de } from '../../i18n/de'
+import type { OsmStyleMapTriple } from '../../lib/osmStyleMapQueryParam'
 import type { StateMatchCategory } from '../../lib/stateMatchCategories'
-import type { OsmStyleMapTriple } from '../../lib/useDetailMapParam'
 import type { StateMapBbox } from '../../lib/useStateMapBbox'
 import { StateMap } from '../StateMap'
 import { useNavigate } from '@tanstack/react-router'

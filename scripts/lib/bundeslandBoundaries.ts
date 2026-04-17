@@ -1,32 +1,10 @@
+import { PIPELINE_LAND_POLYGON_ORDER } from '../../src/lib/bundeslandPolygonOrder'
 import { type StateCode, STATE_ORDER } from '../../src/lib/stateConfig'
 import booleanPointInPolygon from '@turf/boolean-point-in-polygon'
 import { point } from '@turf/helpers'
 import type { Feature, MultiPolygon, Polygon } from 'geojson'
 import { readFileSync } from 'node:fs'
 import path from 'node:path'
-
-/**
- * Order for point-in-polygon checks (small city-states first — same as former bbox heuristic).
- * When boundaries touch, the first match wins.
- */
-const PIPELINE_LAND_POLYGON_ORDER: StateCode[] = [
-  'BE',
-  'HH',
-  'HB',
-  'SL',
-  'BW',
-  'BY',
-  'BB',
-  'HE',
-  'MV',
-  'NI',
-  'NW',
-  'RP',
-  'SN',
-  'ST',
-  'SH',
-  'TH',
-]
 
 type Loaded = Map<StateCode, Feature<Polygon | MultiPolygon>>
 

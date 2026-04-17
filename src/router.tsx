@@ -1,5 +1,7 @@
 import { AppFooter } from './components/AppFooter'
 import { AppHeader } from './components/AppHeader'
+import { parseIndexRouteMapSearch, validateIndexRouteSearch } from './lib/indexRouteSearch'
+import { resolveStateCodeForLonLat } from './lib/stateCodeForLonLatFromBoundaries'
 import { AenderungenPage } from './pages/AenderungenPage'
 import { HomePage } from './pages/HomePage'
 import { NotFoundPage } from './pages/NotFoundPage'
@@ -9,7 +11,13 @@ import { StateOverview } from './pages/StateOverview'
 import { StatusPage } from './pages/StatusPage'
 import { getOsmPendingObjectCount, useOsmAppActions } from './stores/osmAppStore'
 import { QueryClient } from '@tanstack/react-query'
-import { createRootRoute, createRoute, createRouter, Outlet } from '@tanstack/react-router'
+import {
+  createRootRoute,
+  createRoute,
+  createRouter,
+  Outlet,
+  redirect,
+} from '@tanstack/react-router'
 import { NuqsAdapter } from 'nuqs/adapters/tanstack-router'
 import { useEffect } from 'react'
 
@@ -65,7 +73,21 @@ const rootRoute = createRootRoute({
 const indexRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: '/',
+  validateSearch: validateIndexRouteSearch,
   component: HomePage,
+  beforeLoad: async ({ search }) => {
+    const triple = parseIndexRouteMapSearch(search)
+    if (!triple) return
+    const [, lat, lon] = triple
+    const code = await resolveStateCodeForLonLat(lon, lat)
+    if (!code) return
+    throw redirect({
+      to: '/bundesland/$code',
+      params: { code },
+      search: true,
+      replace: true,
+    })
+  },
 })
 
 const statusRoute = createRoute({

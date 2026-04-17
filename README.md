@@ -47,6 +47,17 @@ Wenn die Downloads schon passen und nur der Abgleich neu laufen soll:
 bun run pipeline:rebuild
 ```
 
+## Suchparameter (Query-String)
+
+### Startseite (`/`)
+
+- **`map`** (`?map=z/lat/lon`, wie bei openstreetmap.org): Leiten auf das passende `/bundesland/{code}` um.
+
+### Bundesland-Übersicht (`/bundesland/{code}`)
+
+- **`map`:** synchronisiert die **Kartenansicht** (Zoom und Mittelpunkt).
+- **`bbox`** (`?bbox=west,south,east,north`): optionaler **Listenfilter** auf den Kartenausschnitt (Setzen/Löschen über die Karte).
+
 ## Qualität
 
 ```bash

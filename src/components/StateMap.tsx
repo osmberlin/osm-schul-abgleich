@@ -11,10 +11,10 @@ import {
   hideVectorBasemapBuildings,
   OPENFREEMAP_STYLE,
 } from '../lib/openFreeMapStyle'
-import { type StateCode, STATE_BOUNDS, STATE_MAP_CENTER } from '../lib/stateConfig'
+import type { OsmStyleMapTriple } from '../lib/osmStyleMapQueryParam'
 import 'maplibre-gl/dist/maplibre-gl.css'
+import { type StateCode, STATE_BOUNDS, STATE_MAP_CENTER } from '../lib/stateConfig'
 import { STATE_MATCH_CATEGORIES, type StateMatchCategory } from '../lib/stateMatchCategories'
-import type { OsmStyleMapTriple } from '../lib/useDetailMapParam'
 import type { StateMapBbox } from '../lib/useStateMapBbox'
 import { MapPointHoverPanel } from './MapPointHoverPanel'
 import { StateMapBboxToolbar } from './StateMapBboxToolbar'

@@ -1,4 +1,5 @@
-import { osmStyleMapParamParser, type OsmStyleMapTriple } from './useDetailMapParam'
+import type { OsmStyleMapTriple } from './osmStyleMapQueryParam'
+import { osmStyleMapParamParser } from './useDetailMapParam'
 import { stateMapBboxParser, type StateMapBbox } from './useStateMapBbox'
 import { useQueryStates } from 'nuqs'
 
