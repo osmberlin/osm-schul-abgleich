@@ -380,7 +380,10 @@ async function loadSchoolsFromDump(projectRoot: string) {
   const csvPath = jedeschuleDumpAbsolutePath(projectRoot)
   const f = Bun.file(csvPath)
   if (!(await f.exists())) {
-    return { ok: false as const, error: `Fehlend: ${csvPath} (zuerst pipeline:download:jedeschule)` }
+    return {
+      ok: false as const,
+      error: `Fehlend: ${csvPath} (zuerst pipeline:download:jedeschule)`,
+    }
   }
   const text = await f.text()
   const schools = parseSchoolsFromCsvText(text, 'jedeschule')

@@ -25,7 +25,10 @@ export function schoolToOfficialProps(s: Record<string, unknown>): Record<string
 }
 
 /** Per-Bundesland slice of the JedeSchule dump (same geometry rules as nationwide). */
-export function officialGeojsonForLand(schools: JedeschuleSchool[], land: LandCode): FeatureCollection {
+export function officialGeojsonForLand(
+  schools: JedeschuleSchool[],
+  land: LandCode,
+): FeatureCollection {
   const filtered = schools.filter((s) => landCodeFromSchoolId(s.id) === land)
   return officialGeojsonNational(filtered)
 }

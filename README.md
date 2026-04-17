@@ -4,19 +4,21 @@ Vergleicht pro Bundesland Schulstammdaten von [jedeschule.codefor.de](https://je
 
 Die zentrale CSV wird **wöchentlich** aktualisiert ([Projekt](https://codefor.de/projekte/jedeschule-2/), [csv-data](https://jedeschule.codefor.de/csv-data/)); GitHub Pages CI läuft **täglich** (06:00 UTC) und lädt CSV sowie Overpass **immer gemeinsam** neu — der Abgleich läuft nur, wenn **beide** Downloads geklappt haben.
 
+**Diagramme (Mermaid):** [Pipeline (Download → pro Land)](docs/pipeline.md) · [`matchSchools` (Abgleichslogik)](docs/match-schools.md)
+
 ## Daten-Pipeline (Download → Abgleich pro Bundesland)
 
 Nach dem Download liegen die JedeSchule-CSV und das OSM-GeoJSON (nur für den Match-Schritt, unter `public/datasets/.pipeline/`, nicht im statischen Build). Der Abgleich läuft **pro Bundesland** (Gate → Dedupe → `matchSchools`) und schreibt direkt `public/datasets/{code}/…` sowie `summary.json`.
 
-| Skript                         | Aufgabe                                                                                                                                                                                                             |
-| ------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `pipeline:download:jedeschule` | CSV laden → `jedeschule-latest.csv`, `jedeschule_stats.json`, `schools_official_de.meta.json`.                                                                                                                      |
-| `pipeline:download:osm`        | Ein Overpass-Lauf für **Deutschland** → `.pipeline/schools_osm_de.geojson`, `schools_osm_de.meta.json`.                                                                                                             |
-| `pipeline:download`            | Startet **beide** Downloads **parallel**; **Exit 1**, wenn eine Quelle fehlschlägt (`ok: false` in den Meta-JSONs).                                                                                                 |
+| Skript                         | Aufgabe                                                                                                                                                                                                                                              |
+| ------------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `pipeline:download:jedeschule` | CSV laden → `jedeschule-latest.csv`, `jedeschule_stats.json`, `schools_official_de.meta.json`.                                                                                                                                                       |
+| `pipeline:download:osm`        | Ein Overpass-Lauf für **Deutschland** → `.pipeline/schools_osm_de.geojson`, `schools_osm_de.meta.json`.                                                                                                                                              |
+| `pipeline:download`            | Startet **beide** Downloads **parallel**; **Exit 1**, wenn eine Quelle fehlschlägt (`ok: false` in den Meta-JSONs).                                                                                                                                  |
 | `pipeline:match`               | Abgleich aller Länder (**ohne** nationale Zwischendateien). **Nur** wenn JedeSchule- **und** OSM-Meta `ok: true` und CSV + `.pipeline`-OSM vorliegen, sonst Skip + `runs.jsonl`. `PIPELINE_FORCE_MATCH=1` erzwingt den Lauf mit vorhandenen Dateien. |
-| `pipeline:split-lands`         | Entspricht `pipeline:match` (Alias; es gibt keinen separaten Split-Schritt mehr).                                                                                                                                   |
-| `pipeline:rebuild`             | Nur Abgleich (**ohne** Downloads), analog `pipeline:match`.                                                                                                                                                        |
-| `pipeline`                     | `pipeline:download` → `pipeline:rebuild` (z. B. CI).                                                                                                                                                               |
+| `pipeline:split-lands`         | Entspricht `pipeline:match` (Alias; es gibt keinen separaten Split-Schritt mehr).                                                                                                                                                                    |
+| `pipeline:rebuild`             | Nur Abgleich (**ohne** Downloads), analog `pipeline:match`.                                                                                                                                                                                          |
+| `pipeline`                     | `pipeline:download` → `pipeline:rebuild` (z. B. CI).                                                                                                                                                                                                 |
 
 ```bash
 bun run pipeline

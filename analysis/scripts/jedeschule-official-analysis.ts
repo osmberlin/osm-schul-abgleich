@@ -176,8 +176,7 @@ function landFromProps(p: Record<string, unknown>): string {
 }
 
 async function main() {
-  const csvPath =
-    process.env.JEDESCHULE_CSV?.trim() || jedeschuleDumpAbsolutePath(ROOT)
+  const csvPath = process.env.JEDESCHULE_CSV?.trim() || jedeschuleDumpAbsolutePath(ROOT)
 
   const text = await Bun.file(csvPath).text()
   const schoolRows = parseSchoolsFromCsvText(text, 'jedeschule')
