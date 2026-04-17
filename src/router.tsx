@@ -4,6 +4,7 @@ import { parseIndexRouteMapSearch, validateIndexRouteSearch } from './lib/indexR
 import { runOsmLocateRedirect } from './lib/osmLocateRedirect'
 import { stringifySearchPretty } from './lib/routerSearchStringify'
 import { resolveStateCodeForLonLat } from './lib/stateCodeForLonLatFromBoundaries'
+import { STATE_ORDER } from './lib/stateConfig'
 import { validateStateRouteSearch } from './lib/stateRouteSearch'
 import { AenderungenPage } from './pages/AenderungenPage'
 import { HomePage } from './pages/HomePage'
@@ -114,7 +115,14 @@ const stateRoute = createRoute({
   path: '/bundesland/$code',
   validateSearch: validateStateRouteSearch,
   component: StateLayout,
-  beforeLoad: async ({ search }) => {
+  beforeLoad: async ({ params, search }) => {
+    const code = typeof params.code === 'string' ? params.code.trim() : ''
+    if (!STATE_ORDER.includes(code as (typeof STATE_ORDER)[number])) {
+      throw redirect({
+        to: '/',
+        replace: true,
+      })
+    }
     const osm = typeof search.osm === 'string' ? search.osm.trim() : ''
     if (!osm) return
     await runOsmLocateRedirect(osm)
