@@ -1,5 +1,14 @@
 import { jedeschuleSchoolSchema, jedeschuleStatSchema } from '../../src/lib/schemas'
 import { parse } from 'csv-parse/sync'
+import { subMonths } from 'date-fns'
+import { z } from 'zod'
+
+/** `PIPELINE_KEEP_JEDESCHULE_MISSING_TIMESTAMP`: unset/empty/invalid → false; truthy per `z.stringbool()`. */
+const pipelineKeepJedeschuleMissingTimestampEnvSchema = z
+  .stringbool()
+  .optional()
+  .default(false)
+  .catch(false)
 
 export type JedeschuleSchool = (typeof jedeschuleSchoolSchema)['_output']
 
@@ -51,6 +60,82 @@ function rowToSchool(row: Record<string, string>): JedeschuleSchool {
     provider: emptyToNull(row.provider),
     update_timestamp: emptyToNull(row.update_timestamp),
   })
+}
+
+export type JedeschuleRecencyStats = {
+  removedTooOld: number
+  removedMissingTimestamp: number
+  removedUnparseableTimestamp: number
+  kept: number
+}
+
+export type FilterJedeschuleSchoolsByRecencyOptions = {
+  /** Reference instant for the 12‑month window (default: `Date.now()`). */
+  referenceMs?: number
+  /**
+   * Keep rows with missing `update_timestamp` (ignores env). When omitted, uses
+   * `PIPELINE_KEEP_JEDESCHULE_MISSING_TIMESTAMP` (truthy per `z.stringbool()`, e.g. `1`, `true`, `yes`).
+   */
+  keepMissingTimestamp?: boolean
+}
+
+function envKeepMissingTimestamp(): boolean {
+  return pipelineKeepJedeschuleMissingTimestampEnvSchema.parse(
+    process.env.PIPELINE_KEEP_JEDESCHULE_MISSING_TIMESTAMP,
+  )
+}
+
+/**
+ * Keeps schools whose `update_timestamp` parses and is not older than 12 calendar months
+ * before `referenceMs` (per `date-fns/subMonths`). Drops missing timestamps unless
+ * `keepMissingTimestamp` or `PIPELINE_KEEP_JEDESCHULE_MISSING_TIMESTAMP` is set.
+ */
+export function filterJedeschuleSchoolsByRecency(
+  schools: JedeschuleSchool[],
+  opts?: FilterJedeschuleSchoolsByRecencyOptions,
+): { schools: JedeschuleSchool[]; stats: JedeschuleRecencyStats } {
+  const referenceMs = opts?.referenceMs ?? Date.now()
+  const keepMissing =
+    opts?.keepMissingTimestamp !== undefined ? opts.keepMissingTimestamp : envKeepMissingTimestamp()
+
+  const cutoffMs = subMonths(new Date(referenceMs), 12).getTime()
+
+  let removedTooOld = 0
+  let removedMissingTimestamp = 0
+  let removedUnparseableTimestamp = 0
+  const kept: JedeschuleSchool[] = []
+
+  for (const s of schools) {
+    const raw = s.update_timestamp?.trim() ?? ''
+    if (!raw) {
+      if (keepMissing) {
+        kept.push(s)
+      } else {
+        removedMissingTimestamp++
+      }
+      continue
+    }
+    const t = Date.parse(raw)
+    if (!Number.isFinite(t)) {
+      removedUnparseableTimestamp++
+      continue
+    }
+    if (t < cutoffMs) {
+      removedTooOld++
+      continue
+    }
+    kept.push(s)
+  }
+
+  return {
+    schools: kept,
+    stats: {
+      removedTooOld,
+      removedMissingTimestamp,
+      removedUnparseableTimestamp,
+      kept: kept.length,
+    },
+  }
 }
 
 /** Lexicographic max of `update_timestamp` across schools (content freshness signal). */

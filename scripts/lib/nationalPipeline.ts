@@ -13,6 +13,7 @@ import { dedupeOfficialInputs } from './dedupeOfficialInputs'
 import {
   buildJedeschuleStatsFromDump,
   computeCsvMaxUpdateTimestamp,
+  filterJedeschuleSchoolsByRecency,
   parseJedeschuleStatsJson,
   parseSchoolsFromCsvText,
   serializeJedeschuleStatsCompact,
@@ -355,7 +356,11 @@ export async function runDownloadJedeschuleNational(projectRoot: string): Promis
     const text = await r.text()
     const csvSha256 = createHash('sha256').update(text, 'utf8').digest('hex')
     await Bun.write(outCsv, text)
-    const schools = parseSchoolsFromCsvText(text, 'jedeschule')
+    const schoolsRaw = parseSchoolsFromCsvText(text, 'jedeschule')
+    const { schools, stats: jedeschuleRecencyStats } = filterJedeschuleSchoolsByRecency(schoolsRaw)
+    console.info(
+      `[pipeline:jedeschule-recency] removedTooOld=${jedeschuleRecencyStats.removedTooOld} removedMissingTimestamp=${jedeschuleRecencyStats.removedMissingTimestamp} removedUnparseable=${jedeschuleRecencyStats.removedUnparseableTimestamp} kept=${jedeschuleRecencyStats.kept}`,
+    )
     const csvMaxUpdateTimestamp = computeCsvMaxUpdateTimestamp(schools)
     const upstreamDatasetChanged = jedeschuleUpstreamDatasetChanged(prevMeta, {
       csvSha256,
@@ -549,7 +554,11 @@ export async function runStateFirstPipeline(
     return { errors, matchSkipped: false }
   }
 
-  const schools = loaded.schools
+  const schoolsRaw = loaded.schools
+  const { schools, stats: jedeschuleRecencyStats } = filterJedeschuleSchoolsByRecency(schoolsRaw)
+  console.info(
+    `[pipeline:jedeschule-recency] removedTooOld=${jedeschuleRecencyStats.removedTooOld} removedMissingTimestamp=${jedeschuleRecencyStats.removedMissingTimestamp} removedUnparseable=${jedeschuleRecencyStats.removedUnparseableTimestamp} kept=${jedeschuleRecencyStats.kept}`,
+  )
   const pathStats = nationalPath(projectRoot, NATIONAL.jedeschuleStats)
   const statsRaw = await readJsonFile<unknown>(pathStats)
   let statRows: ReturnType<typeof parseJedeschuleStatsJson> = []
