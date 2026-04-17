@@ -54,7 +54,7 @@ export const STATE_LABEL_DE: Record<StateCode, string> = {
 export const STATE_LABEL_DE_OVERRIDES: Partial<Record<StateCode, string>> = {}
 
 /**
- * German label for `params.code` on `/bundesland/$code/...`. The state route’s `beforeLoad` only
+ * German label for `params.stateKey` on `/bundesland/$stateKey/...`. The state route’s `beforeLoad` only
  * allows codes in {@link STATE_ORDER}, aligned with {@link STATE_LABEL_DE}. Override via
  * {@link STATE_LABEL_DE_OVERRIDES} when the UI needs a different string than the canonical name.
  */

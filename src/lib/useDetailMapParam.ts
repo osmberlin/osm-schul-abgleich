@@ -29,7 +29,7 @@ function isRedundantMapParamUpdate(
  */
 export function useDetailMapParam() {
   const search = stateSchuleRouteApi.useSearch()
-  const navigate = useNavigate({ from: '/bundesland/$code/schule/$matchKey' })
+  const navigate = useNavigate({ from: '/bundesland/$stateKey/schule/$schoolKey' })
   const map = parseOsmStyleMapSearchParam(search.map)
 
   const setMap = (nextMap: OsmStyleMapTriple | null) => {

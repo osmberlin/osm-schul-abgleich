@@ -18,7 +18,7 @@ import { useNavigate } from '@tanstack/react-router'
  */
 export function useStateOverviewMapState() {
   const search = stateRouteApi.useSearch()
-  const navigate = useNavigate({ from: '/bundesland/$code' })
+  const navigate = useNavigate({ from: '/bundesland/$stateKey' })
   const mapCamera = parseOsmStyleMapSearchParam(search.map)
   const bboxFilter = parseStateMapBboxSearchParam(search.bbox)
 

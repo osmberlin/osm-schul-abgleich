@@ -87,11 +87,11 @@ const indexRoute = createRoute({
     const triple = parseIndexRouteMapSearch(search as Record<string, unknown>)
     if (!triple) return
     const [, lat, lon] = triple
-    const code = await resolveStateCodeForLonLat(lon, lat)
-    if (!code) return
+    const stateKey = await resolveStateCodeForLonLat(lon, lat)
+    if (!stateKey) return
     throw redirect({
-      to: '/bundesland/$code',
-      params: { code },
+      to: '/bundesland/$stateKey',
+      params: { stateKey },
       search: true,
       replace: true,
     })
@@ -112,12 +112,12 @@ const aenderungenRoute = createRoute({
 
 const stateRoute = createRoute({
   getParentRoute: () => rootRoute,
-  path: '/bundesland/$code',
+  path: '/bundesland/$stateKey',
   validateSearch: validateStateRouteSearch,
   component: StateLayout,
   beforeLoad: async ({ params, search }) => {
-    const code = typeof params.code === 'string' ? params.code.trim() : ''
-    if (!STATE_ORDER.includes(code as (typeof STATE_ORDER)[number])) {
+    const stateKey = typeof params.stateKey === 'string' ? params.stateKey.trim() : ''
+    if (!STATE_ORDER.includes(stateKey as (typeof STATE_ORDER)[number])) {
       throw redirect({
         to: '/',
         replace: true,
@@ -137,7 +137,7 @@ const stateIndexRoute = createRoute({
 
 const schoolRoute = createRoute({
   getParentRoute: () => stateRoute,
-  path: 'schule/$matchKey',
+  path: 'schule/$schoolKey',
   component: SchoolDetail,
 })
 

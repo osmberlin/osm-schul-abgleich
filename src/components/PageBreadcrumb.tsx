@@ -3,7 +3,7 @@ import { type StateCode, STATE_LABEL_DE } from '../lib/stateConfig'
 import { AppBreadcrumb, type AppBreadcrumbCrumb } from './AppBreadcrumb'
 import { useRouterState } from '@tanstack/react-router'
 
-function shortMatchKey(encoded: string) {
+function shortSchoolKeySegment(encoded: string) {
   const d = decodeURIComponent(encoded)
   return d.length > 40 ? `${d.slice(0, 37)}…` : d
 }
@@ -25,15 +25,15 @@ export function PageBreadcrumb() {
 
     const m = pathname.match(/^\/bundesland\/([^/]+)(?:\/schule\/(.+))?$/)
     if (m) {
-      const code = m[1]
-      const matchKeyEnc = m[2]
-      const label = STATE_LABEL_DE[code as StateCode] ?? code
-      if (matchKeyEnc) {
+      const stateKey = m[1]
+      const schoolKeyEnc = m[2]
+      const label = STATE_LABEL_DE[stateKey as StateCode] ?? stateKey
+      if (schoolKeyEnc) {
         return {
           homeCurrent: false,
           items: [
-            { name: label, to: `/bundesland/${code}` },
-            { name: shortMatchKey(matchKeyEnc), current: true },
+            { name: label, to: `/bundesland/${stateKey}` },
+            { name: shortSchoolKeySegment(schoolKeyEnc), current: true },
           ],
         }
       }

@@ -27,14 +27,14 @@ import { Link } from '@tanstack/react-router'
 import { useMemo } from 'react'
 
 export function SchoolDetail() {
-  const { code, matchKey, navigate } = useSchoolDetailRoute()
+  const { stateKey, schoolKey, navigate } = useSchoolDetailRoute()
 
   const q = useQuery({
-    queryKey: ['school-detail', code, matchKey],
-    queryFn: () => fetchStateSchoolsBundle(code),
+    queryKey: ['school-detail', stateKey, schoolKey],
+    queryFn: () => fetchStateSchoolsBundle(stateKey),
   })
 
-  const matchRow = q.data?.matches.find((r) => r.key === matchKey) ?? null
+  const matchRow = q.data?.matches.find((r) => r.key === schoolKey) ?? null
 
   const needsOsmAreas = useMemo(
     () =>
@@ -45,9 +45,9 @@ export function SchoolDetail() {
   )
 
   const areasQ = useQuery({
-    queryKey: ['state-osm-areas', code],
-    queryFn: () => fetchStateOsmAreasLookup(code),
-    enabled: !!code && needsOsmAreas,
+    queryKey: ['state-osm-areas', stateKey],
+    queryFn: () => fetchStateOsmAreasLookup(stateKey),
+    enabled: !!stateKey && needsOsmAreas,
     staleTime: Infinity,
   })
 
@@ -69,7 +69,7 @@ export function SchoolDetail() {
     }
   }
 
-  const stateLabelDe = stateLabelDeFromRouteCode(code)
+  const stateLabelDe = stateLabelDeFromRouteCode(stateKey)
 
   const mapOsmCentroid = resolveSchoolMapOsmCentroid(q.data, matchRow)
 
@@ -86,12 +86,12 @@ export function SchoolDetail() {
         isError={q.isError}
         data={q.data}
         matchRow={matchRow}
-        matchKey={matchKey}
+        schoolKey={schoolKey}
         osmAreasByKey={osmAreasByKey}
         onNavigateToOtherSchool={(nextKey) => {
           void navigate({
-            to: '/bundesland/$code/schule/$matchKey',
-            params: { code, matchKey: nextKey },
+            to: '/bundesland/$stateKey/schule/$schoolKey',
+            params: { stateKey, schoolKey: nextKey },
             search: (prev) => ({
               ...prev,
               map: undefined,
@@ -176,7 +176,7 @@ export function SchoolDetail() {
       {q.isSuccess && !matchRow && (
         <p className="text-zinc-400">
           {de.detail.notFound}{' '}
-          <Link to="/bundesland/$code" params={{ code }} className="text-emerald-300">
+          <Link to="/bundesland/$stateKey" params={{ stateKey }} className="text-emerald-300">
             ←
           </Link>
         </p>

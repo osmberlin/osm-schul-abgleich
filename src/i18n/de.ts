@@ -126,7 +126,7 @@ export const de = {
   },
   state: {
     /** Bundesland-Übersicht — ein Kopfzeilentext statt getrenntem Titel und Code. */
-    overviewTitle: 'Schulabgleich in {name} ({code})',
+    overviewTitle: 'Schulabgleich in {name} ({stateKey})',
     back: 'Alle Bundesländer',
     loading: 'Lade Daten…',
     error: 'Fehler beim Laden der Bundesland-Daten.',

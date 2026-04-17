@@ -29,7 +29,7 @@ import { useId, useMemo } from 'react'
 import { MapProvider } from 'react-map-gl/maplibre'
 
 export function StateOverview() {
-  const { code } = useParams({ strict: false }) as { code: string }
+  const { stateKey } = useParams({ strict: false }) as { stateKey: string }
   const navigate = useNavigate()
   const statsInputId = useId()
   const historyHeadingId = useId()
@@ -57,37 +57,37 @@ export function StateOverview() {
     },
   })
 
-  const stateSummary = summaryQ.data?.states.find((l) => l.code === code)
+  const stateSummary = summaryQ.data?.states.find((l) => l.code === stateKey)
 
   const stateHistoryPoints = useMemo(
-    () => (runsQ.data ? stateHistoryFromRuns(runsQ.data.runs, code) : []),
-    [runsQ.data, code],
+    () => (runsQ.data ? stateHistoryFromRuns(runsQ.data.runs, stateKey) : []),
+    [runsQ.data, stateKey],
   )
 
   const dataQ = useQuery({
-    queryKey: ['state-data', code],
-    queryFn: () => fetchStateOverviewBundle(code),
-    enabled: !!code,
+    queryKey: ['state-data', stateKey],
+    queryFn: () => fetchStateOverviewBundle(stateKey),
+    enabled: !!stateKey,
   })
 
   const metaQ = useQuery({
-    queryKey: ['state-osm-meta', code],
+    queryKey: ['state-osm-meta', stateKey],
     queryFn: async () => {
-      const r = await fetch(stateOsmMetaUrl(code))
+      const r = await fetch(stateOsmMetaUrl(stateKey))
       if (!r.ok) return null
       return r.json() as Promise<Record<string, unknown>>
     },
-    enabled: !!code,
+    enabled: !!stateKey,
   })
 
   const boundaryQ = useQuery({
-    queryKey: ['state-boundary', code],
+    queryKey: ['state-boundary', stateKey],
     queryFn: async () => {
-      const r = await fetch(stateBoundaryUrl(code))
+      const r = await fetch(stateBoundaryUrl(stateKey))
       if (!r.ok) return null
       return r.json() as Promise<Feature<Polygon | MultiPolygon>>
     },
-    enabled: !!code,
+    enabled: !!stateKey,
     staleTime: Infinity,
   })
 
@@ -242,17 +242,17 @@ export function StateOverview() {
             matchPoints={mapMatchPoints}
             height={440}
             enabledCategories={enabledSet}
-            stateCode={code}
+            stateCode={stateKey}
             stateBoundary={boundaryQ.data ?? null}
             mapCamera={mapCamera}
             onMapCameraChange={setMapCamera}
             bboxFilter={bboxFilter}
             onApplyBboxFilter={setBboxFilter}
             onClearBboxFilter={clearBboxFilter}
-            onSchoolClick={(matchKey) =>
+            onSchoolClick={(schoolKey) =>
               void navigate({
-                to: '/bundesland/$code/schule/$matchKey',
-                params: { code, matchKey },
+                to: '/bundesland/$stateKey/schule/$schoolKey',
+                params: { stateKey, schoolKey },
                 search: (prev) => ({
                   ...prev,
                   map: undefined,
@@ -265,7 +265,7 @@ export function StateOverview() {
       )}
 
       <StateOverviewMatchList
-        code={code}
+        code={stateKey}
         listMatches={listMatches}
         matchesLength={matches.length}
         enabledCategoriesLength={enabledCategories.length}
@@ -276,7 +276,7 @@ export function StateOverview() {
       />
 
       <StateOverviewHistorySection
-        code={code}
+        code={stateKey}
         historyHeadingId={historyHeadingId}
         isLoading={runsQ.isLoading}
         isError={runsQ.isError}

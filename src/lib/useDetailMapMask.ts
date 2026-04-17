@@ -4,7 +4,7 @@ import { useNavigate } from '@tanstack/react-router'
 /** URL-synced toggle for Bundesland mask on detail map (`?mask=0` to hide). */
 export function useDetailMapMask() {
   const search = stateSchuleRouteApi.useSearch()
-  const navigate = useNavigate({ from: '/bundesland/$code/schule/$matchKey' })
+  const navigate = useNavigate({ from: '/bundesland/$stateKey/schule/$schoolKey' })
   const showMapMask = search.mask ?? true
 
   const setShowMapMask = (next: boolean) => {

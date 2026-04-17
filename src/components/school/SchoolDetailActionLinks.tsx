@@ -26,8 +26,8 @@ export function SchoolDetailActionLinks({
   matchRow: StateSchoolMatchRow
   osmAreasByKey: Record<string, Feature> | undefined
 }) {
-  const { code } = useSchoolDetailRoute()
-  const { osmLicenceCompatible, licenceHash } = getSchoolDetailLicenceInfo(code)
+  const { stateKey } = useSchoolDetailRoute()
+  const { osmLicenceCompatible, licenceHash } = getSchoolDetailLicenceInfo(stateKey)
 
   const mapOsmCentroid = resolveSchoolMapOsmCentroid(data, matchRow)
   const bounds = computeSchoolDetailMapActionBounds(data, matchRow, mapOsmCentroid, osmAreasByKey)

@@ -111,7 +111,7 @@ export function StateMap({
   onApplyBboxFilter?: (bboxFilter: StateMapBbox | null) => void
   onClearBboxFilter?: () => void
   /** When set, halo points are hoverable and clickable (navigate to Schule detail). */
-  onSchoolClick?: (matchKey: string) => void
+  onSchoolClick?: (schoolKey: string) => void
 }) {
   let bounds: [number, number, number, number] | null = null
   try {
@@ -201,16 +201,16 @@ export function StateMap({
       if (hit.geometry.type !== 'Point') continue
       const name = hit.properties?.name
       const matchCat = hit.properties?.matchCat
-      const matchKey = hit.properties?.matchKey
+      const schoolKey = hit.properties?.schoolKey
       if (
         typeof name !== 'string' ||
-        typeof matchKey !== 'string' ||
+        typeof schoolKey !== 'string' ||
         !isStateMatchCategory(matchCat)
       ) {
         continue
       }
-      if (seen.has(matchKey)) continue
-      seen.add(matchKey)
+      if (seen.has(schoolKey)) continue
+      seen.add(schoolKey)
       next.push({ name, matchCat })
     }
     setHoveredPointEntries(next)
@@ -224,8 +224,8 @@ export function StateMap({
     if (!onSchoolClick) return
     const hit = e.features?.[0]
     if (!hit || hit.geometry.type !== 'Point') return
-    const matchKey = hit.properties?.matchKey
-    if (typeof matchKey === 'string' && matchKey.length > 0) onSchoolClick(matchKey)
+    const schoolKey = hit.properties?.schoolKey
+    if (typeof schoolKey === 'string' && schoolKey.length > 0) onSchoolClick(schoolKey)
   }
 
   const schoolInteractionProps = onSchoolClick

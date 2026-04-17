@@ -13,7 +13,7 @@ function mapTripleForCentroid(lon: number, lat: number): OsmStyleMapTriple {
 
 /**
  * TanStack Router `beforeLoad` helper: if `osm` is non-empty, resolve via Overpass + Bundesland
- * and **throw** `redirect` to `/bundesland/$code?map=…` or to `/?osmLocateErr=…` on failure.
+ * and **throw** `redirect` to `/bundesland/$stateKey?map=…` or to `/?osmLocateErr=…` on failure.
  * If `osm` is empty, returns normally (no-op).
  */
 export async function runOsmLocateRedirect(osmRaw: string): Promise<void> {
@@ -41,8 +41,8 @@ export async function runOsmLocateRedirect(osmRaw: string): Promise<void> {
     })
   }
 
-  const code = await resolveStateCodeForLonLat(lon, lat)
-  if (!code) {
+  const stateKey = await resolveStateCodeForLonLat(lon, lat)
+  if (!stateKey) {
     throw redirect({
       to: '/',
       search: { osmLocateErr: 'outside' },
@@ -52,8 +52,8 @@ export async function runOsmLocateRedirect(osmRaw: string): Promise<void> {
 
   const mapStr = serializeOsmStyleMapSearchParam(mapTripleForCentroid(lon, lat))
   throw redirect({
-    to: '/bundesland/$code',
-    params: { code },
+    to: '/bundesland/$stateKey',
+    params: { stateKey },
     search: { map: mapStr },
     replace: true,
   })

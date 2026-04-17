@@ -62,7 +62,7 @@ export function SchoolDetailMapSection({
   isError,
   data,
   matchRow,
-  matchKey,
+  schoolKey,
   osmAreasByKey,
   onNavigateToOtherSchool,
 }: {
@@ -70,7 +70,7 @@ export function SchoolDetailMapSection({
   isError: boolean
   data: StateSchoolsBundle | undefined
   matchRow: StateSchoolMatchRow | null
-  matchKey: string
+  schoolKey: string
   /** Deferred full OSM outlines (`schools_osm_areas.json`), keyed `way/id` / `relation/id`. */
   osmAreasByKey: Record<string, Feature> | undefined
   onNavigateToOtherSchool: (nextKey: string) => void
@@ -109,7 +109,7 @@ export function SchoolDetailMapSection({
       : null
     const seen = new Set<string>()
     for (const match of data.matches) {
-      if (match.key === matchKey) continue
+      if (match.key === schoolKey) continue
       if (seen.has(match.key)) continue
       seen.add(match.key)
       const lonLat = matchRowMapLonLat(match, officialLonLatIndex)
@@ -117,7 +117,7 @@ export function SchoolDetailMapSection({
       const [lon, lat] = lonLat
       features.push(
         point([lon, lat], {
-          matchKey: match.key,
+          schoolKey: match.key,
           name: matchRowDisplayName(match),
           matchCat: match.matchCategory ?? match.category,
         }),

@@ -67,9 +67,9 @@ describe('spreadCoincidentMapPointFeatures', () => {
       type: 'Feature' as const,
       geometry: { type: 'Point' as const, coordinates: [7, 51] },
     }
-    const a = { ...base, properties: { matchKey: 'a' } }
-    const b = { ...base, properties: { matchKey: 'b' } }
-    const c = { ...base, properties: { matchKey: 'c' } }
+    const a = { ...base, properties: { schoolKey: 'a' } }
+    const b = { ...base, properties: { schoolKey: 'b' } }
+    const c = { ...base, properties: { schoolKey: 'c' } }
     const out = spreadCoincidentMapPointFeatures([a, b, c])
     expect(out).toHaveLength(3)
     const coords = out.map(
@@ -82,7 +82,7 @@ describe('spreadCoincidentMapPointFeatures', () => {
   it('leaves a single point unchanged', () => {
     const f = {
       type: 'Feature' as const,
-      properties: { matchKey: 'x' },
+      properties: { schoolKey: 'x' },
       geometry: { type: 'Point' as const, coordinates: [10, 50] },
     }
     const out = spreadCoincidentMapPointFeatures([f])

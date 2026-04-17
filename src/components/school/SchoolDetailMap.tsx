@@ -75,7 +75,7 @@ export type HoveredMapLabel =
       lon: number
       lat: number
       name: string
-      matchKey: string
+      schoolKey: string
       matchCat: StateMatchCategory
     }
 
@@ -132,7 +132,7 @@ export function SchoolDetailMap({
   renderData: SchoolDetailMapRenderData
   onMapBboxChange: (bbox: StateMapBbox) => void
   onHoveredMapLabelChange: (next: HoveredMapLabel | null) => void
-  onOtherSchoolClick: (matchKey: string) => void
+  onOtherSchoolClick: (schoolKey: string) => void
   onOfficialPointClick: (officialId: string) => void
   onMoveEnd: (e: ViewStateChangeEvent) => void
 }) {
@@ -160,11 +160,11 @@ export function SchoolDetailMap({
     const [lon, lat] = hit.geometry.coordinates
 
     if (layerId === OTHER_SCHOOLS_LAYER_CORE || layerId === OTHER_SCHOOLS_LAYER_HALO) {
-      const matchKey = hit.properties?.matchKey
+      const schoolKey = hit.properties?.schoolKey
       const name = hit.properties?.name
       const matchCat = hit.properties?.matchCat as StateMatchCategory | undefined
       if (
-        typeof matchKey === 'string' &&
+        typeof schoolKey === 'string' &&
         typeof name === 'string' &&
         matchCat != null &&
         (matchCat === 'matched' ||
@@ -173,7 +173,7 @@ export function SchoolDetailMap({
           matchCat === 'match_ambiguous' ||
           matchCat === 'official_no_coord')
       ) {
-        onHoveredMapLabelChange({ kind: 'osm-other', lon, lat, name, matchKey, matchCat })
+        onHoveredMapLabelChange({ kind: 'osm-other', lon, lat, name, schoolKey, matchCat })
       } else {
         onHoveredMapLabelChange(null)
       }
@@ -214,7 +214,7 @@ export function SchoolDetailMap({
     const layerId = hit.layer?.id
 
     if (layerId === OTHER_SCHOOLS_LAYER_CORE || layerId === OTHER_SCHOOLS_LAYER_HALO) {
-      const nextKey = hit.properties?.matchKey
+      const nextKey = hit.properties?.schoolKey
       if (typeof nextKey === 'string' && nextKey.length > 0) {
         onOtherSchoolClick(nextKey)
       }

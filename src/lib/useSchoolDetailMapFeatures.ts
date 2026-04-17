@@ -13,7 +13,7 @@ import type { Feature, Polygon } from 'geojson'
 type HoveredMapLabelLike =
   | { kind: 'osm-reference' }
   | { kind: 'official-current'; lon: number; lat: number }
-  | { kind: 'osm-other'; matchKey: string }
+  | { kind: 'osm-other'; schoolKey: string }
   | null
 
 function resolveSchoolDetailMapFeatures(
@@ -72,7 +72,7 @@ function resolveSchoolDetailMapFeatures(
     if (!data || !row || !hoveredMapLabel) return []
     const officialFc = data.official
     if (hoveredMapLabel.kind === 'osm-other') {
-      const match = data.matches.find((m) => m.key === hoveredMapLabel.matchKey)
+      const match = data.matches.find((m) => m.key === hoveredMapLabel.schoolKey)
       if (!match) return []
       const from = parseMatchRowOsmCentroidLonLat(match)
       if (!from) return []

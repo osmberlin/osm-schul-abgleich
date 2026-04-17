@@ -7,7 +7,7 @@ import { useNavigate } from '@tanstack/react-router'
  */
 export function useStateOverviewExplorerFilter() {
   const search = stateRouteApi.useSearch()
-  const navigate = useNavigate({ from: '/bundesland/$code' })
+  const navigate = useNavigate({ from: '/bundesland/$stateKey' })
   const exploreQ = search.lq ?? ''
   const nameScope = search.lscope ?? 'both'
   const matchModes = search.lmm ?? []

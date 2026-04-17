@@ -10,8 +10,8 @@ import { Outlet, useParams, useRouterState } from '@tanstack/react-router'
 import { useMemo } from 'react'
 
 export function StateLayout() {
-  const { code } = useParams({ strict: false }) as { code: string }
-  const label = STATE_LABEL_DE[code as StateCode] ?? code
+  const { stateKey } = useParams({ strict: false }) as { stateKey: string }
+  const label = STATE_LABEL_DE[stateKey as StateCode] ?? stateKey
 
   const pathname = useRouterState({ select: (s) => s.location.pathname })
   const schuleKeyDecoded = useMemo(() => {
@@ -25,9 +25,9 @@ export function StateLayout() {
   }, [pathname])
 
   const schuleQ = useQuery({
-    queryKey: ['schule-detail', code, schuleKeyDecoded],
-    queryFn: () => fetchStateOverviewBundle(code),
-    enabled: !!code && !!schuleKeyDecoded,
+    queryKey: ['schule-detail', stateKey, schuleKeyDecoded],
+    queryFn: () => fetchStateOverviewBundle(stateKey),
+    enabled: !!stateKey && !!schuleKeyDecoded,
   })
 
   const schuleRow = useMemo(() => {
@@ -64,7 +64,7 @@ export function StateLayout() {
           <p className="mb-6 text-sm leading-snug text-zinc-400">
             {formatSchoolWhereSubtitle(
               label,
-              code,
+              stateKey,
               schuleRow.officialProperties ?? null,
               schuleRow.osmTags ?? null,
             )}
@@ -84,7 +84,7 @@ export function StateLayout() {
       )
     ) : (
       <h1 className="mb-6 min-w-0 text-2xl font-semibold text-zinc-100">
-        {de.state.overviewTitle.replace('{name}', label).replace('{code}', code)}
+        {de.state.overviewTitle.replace('{name}', label).replace('{stateKey}', stateKey)}
       </h1>
     )
 

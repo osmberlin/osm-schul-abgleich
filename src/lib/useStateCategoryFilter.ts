@@ -9,7 +9,7 @@ const DEFAULT_STATE_MATCH_CATEGORIES: StateMatchCategory[] = [...STATE_MATCH_CAT
 /** URL-synced legend / filter for Bundesland map + Trefferliste (`?cats=...`). */
 export function useStateCategoryFilter() {
   const search = stateRouteApi.useSearch()
-  const navigate = useNavigate({ from: '/bundesland/$code' })
+  const navigate = useNavigate({ from: '/bundesland/$stateKey' })
   const cats = search.cats ?? DEFAULT_STATE_MATCH_CATEGORIES
 
   const enabledSet = useMemo(() => new Set(cats), [cats])

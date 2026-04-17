@@ -54,8 +54,9 @@ export function SchoolDetailLicenceCompatibleInline({
 }
 
 export function SchoolDetailLicenceWarnings() {
-  const { code } = useSchoolDetailRoute()
-  const { officialLicenceRow, licenceHash, osmLicenceCompatible } = getSchoolDetailLicenceInfo(code)
+  const { stateKey } = useSchoolDetailRoute()
+  const { officialLicenceRow, licenceHash, osmLicenceCompatible } =
+    getSchoolDetailLicenceInfo(stateKey)
 
   return (
     <>

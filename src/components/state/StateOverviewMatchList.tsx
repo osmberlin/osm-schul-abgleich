@@ -70,8 +70,8 @@ export function StateOverviewMatchList({
               return (
                 <li key={row.key}>
                   <Link
-                    to="/bundesland/$code/schule/$matchKey"
-                    params={{ code, matchKey: row.key }}
+                    to="/bundesland/$stateKey/schule/$schoolKey"
+                    params={{ stateKey: code, schoolKey: row.key }}
                     search={(prev) => ({
                       ...prev,
                       map: undefined,

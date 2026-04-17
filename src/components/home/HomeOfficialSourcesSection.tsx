@@ -98,8 +98,8 @@ export function HomeOfficialSourcesSection() {
                     className="px-3 py-2 align-top font-medium text-zinc-200"
                   >
                     <Link
-                      to="/bundesland/$code"
-                      params={{ code }}
+                      to="/bundesland/$stateKey"
+                      params={{ stateKey: code }}
                       className="text-emerald-400/90 underline decoration-emerald-600/40 underline-offset-2 hover:text-emerald-300 focus-visible:rounded-sm focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-emerald-400"
                       aria-label={`${de.home.toState}: ${name}`}
                     >

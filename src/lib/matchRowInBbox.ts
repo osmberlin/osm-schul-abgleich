@@ -126,8 +126,8 @@ export function spreadCoincidentMapPointFeatures(features: Feature[]): Feature[]
       continue
     }
     const sorted = [...group].sort((a, b) =>
-      String(a.properties?.matchKey ?? '').localeCompare(
-        String(b.properties?.matchKey ?? ''),
+      String(a.properties?.schoolKey ?? '').localeCompare(
+        String(b.properties?.schoolKey ?? ''),
         'de',
       ),
     )
@@ -167,7 +167,7 @@ export function matchesToOverviewMapPoints(
     if (!ll) continue
     features.push(
       point(ll, {
-        matchKey: r.key,
+        schoolKey: r.key,
         name: matchRowDisplayName(r),
         matchCat: r.category,
       }),

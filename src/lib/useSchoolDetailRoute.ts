@@ -1,9 +1,12 @@
 import { stateSchuleRouteApi } from './stateRouteApi'
 import { useNavigate } from '@tanstack/react-router'
 
-/** Path params are already URI-decoded by TanStack Router; compare `matchKey` to bundle `matches[].key` as-is. */
+/**
+ * Path params are URI-decoded by TanStack Router. `schoolKey` is the bundle row id
+ * (`matches[].key` in schools_matches.json), not necessarily `officialId`.
+ */
 export function useSchoolDetailRoute() {
-  const { code, matchKey } = stateSchuleRouteApi.useParams()
-  const navigate = useNavigate({ from: '/bundesland/$code/schule/$matchKey' })
-  return { code, matchKey, navigate }
+  const { stateKey, schoolKey } = stateSchuleRouteApi.useParams()
+  const navigate = useNavigate({ from: '/bundesland/$stateKey/schule/$schoolKey' })
+  return { stateKey, schoolKey, navigate }
 }
