@@ -11,6 +11,7 @@ describe('comparePropertySections address group', () => {
     expect(res.compareGroups).toHaveLength(1)
     const g = res.compareGroups[0]
     expect(g.kind).toBe('address')
+    if (g.kind !== 'address') throw new Error('expected address')
     expect(g.officialValue).toBe('Hauptstr. 1')
     expect(g.osmValues.street).toBe('Hauptstraße')
     expect(g.osmValues.housenumber).toBe('1')
@@ -57,5 +58,77 @@ describe('comparePropertySections address group', () => {
     expect(res.both.some(([k]) => k.startsWith('_'))).toBe(false)
     expect(res.onlyO.some(([k]) => k.startsWith('_'))).toBe(false)
     expect(res.onlyS.some(([k]) => k.startsWith('_'))).toBe(false)
+  })
+})
+
+describe('comparePropertySections grundschule group', () => {
+  it('creates grundschule group, consumes keys, and matches on isced:level=1', () => {
+    const res = comparePropertySections(
+      { school_type: 'Grundschule', name: 'GS' },
+      { name: 'GS', 'isced:level': '1' },
+    )
+
+    expect(res.compareGroups).toHaveLength(1)
+    const g = res.compareGroups[0]
+    expect(g.kind).toBe('grundschule')
+    if (g.kind !== 'grundschule') throw new Error('expected grundschule')
+    expect(g.officialValue).toBe('Grundschule')
+    expect(g.osmValues['isced:level']).toBe('1')
+    expect(g.osmValues.school).toBeNull()
+    expect(g.isEquivalentMatch).toBe(true)
+
+    expect(res.both).toEqual([['name', 'GS', 'GS']])
+    expect(res.onlyO).toEqual([])
+    expect(res.onlyS).toEqual([])
+  })
+
+  it('matches on school=primary', () => {
+    const res = comparePropertySections({ school_type: 'Grundschule' }, { school: 'primary' })
+    const g = res.compareGroups[0]
+    expect(g.kind).toBe('grundschule')
+    if (g.kind !== 'grundschule') throw new Error('expected grundschule')
+    expect(g.isEquivalentMatch).toBe(true)
+    expect(res.onlyS).toEqual([])
+  })
+
+  it('does not create grundschule group when school_type is not Grundschule', () => {
+    const res = comparePropertySections(
+      { school_type: 'Gymnasium' },
+      { 'isced:level': '3', school: 'secondary' },
+    )
+    expect(res.compareGroups).toHaveLength(0)
+    expect(res.onlyO).toEqual([['school_type', 'Gymnasium']])
+    expect(res.onlyS).toEqual([
+      ['isced:level', '3'],
+      ['school', 'secondary'],
+    ])
+  })
+
+  it('creates grundschule group with isEquivalentMatch false when OSM tags do not match', () => {
+    const res = comparePropertySections(
+      { school_type: 'Grundschule' },
+      { 'isced:level': '2', school: 'secondary' },
+    )
+    const g = res.compareGroups[0]
+    expect(g.kind).toBe('grundschule')
+    if (g.kind !== 'grundschule') throw new Error('expected grundschule')
+    expect(g.isEquivalentMatch).toBe(false)
+    expect(res.onlyO).toEqual([])
+    expect(res.onlyS).toEqual([])
+  })
+
+  it('places address group before grundschule when both apply', () => {
+    const res = comparePropertySections(
+      { address: 'Hauptstr. 1', school_type: 'Grundschule', name: 'X' },
+      {
+        name: 'X',
+        'addr:street': 'Hauptstraße',
+        'addr:housenumber': '1',
+        'isced:level': '1',
+      },
+    )
+    expect(res.compareGroups).toHaveLength(2)
+    expect(res.compareGroups[0].kind).toBe('address')
+    expect(res.compareGroups[1].kind).toBe('grundschule')
   })
 })

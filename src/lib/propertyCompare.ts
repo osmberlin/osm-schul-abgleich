@@ -4,10 +4,12 @@ import {
   flattenOsmTagsForCompare,
   normalizeAddressMatchKey,
 } from './compareMatchKeys'
+import { schoolTypeStringIndicatesGrundschule, tagValueEqualsProposed } from './officialGrundschule'
 
 type CompareRowBoth = [string, string, string]
 type CompareRowSingle = [string, string]
 type AddressCompareOsmKey = 'street' | 'housenumber'
+type GrundschuleCompareOsmKey = 'isced:level' | 'school'
 
 export type AddressCompareGroup = {
   kind: 'address'
@@ -19,7 +21,17 @@ export type AddressCompareGroup = {
   consumedKeys: string[]
 }
 
-export type PropertyCompareGroup = AddressCompareGroup
+export type GrundschuleCompareGroup = {
+  kind: 'grundschule'
+  officialKey: 'school_type'
+  officialValue: string | null
+  osmKeys: readonly ['isced:level', 'school']
+  osmValues: Record<GrundschuleCompareOsmKey, string | null>
+  isEquivalentMatch: boolean
+  consumedKeys: string[]
+}
+
+export type PropertyCompareGroup = AddressCompareGroup | GrundschuleCompareGroup
 
 export { normalizeAddressCompareString } from './compareMatchKeys'
 
@@ -48,6 +60,29 @@ function buildAddressCompareGroup(
   }
 }
 
+function buildGrundschuleCompareGroup(
+  offMap: Map<string, string>,
+  osmMap: Map<string, string>,
+): GrundschuleCompareGroup | null {
+  const officialValue = offMap.get('school_type') ?? null
+  if (officialValue == null || !schoolTypeStringIndicatesGrundschule(officialValue)) return null
+
+  const isced = osmMap.get('isced:level') ?? null
+  const school = osmMap.get('school') ?? null
+  const isEquivalentMatch =
+    tagValueEqualsProposed(isced ?? undefined, '1') || tagValueEqualsProposed(school ?? undefined, 'primary')
+
+  return {
+    kind: 'grundschule',
+    officialKey: 'school_type',
+    officialValue,
+    osmKeys: ['isced:level', 'school'],
+    osmValues: { 'isced:level': isced, school },
+    isEquivalentMatch,
+    consumedKeys: ['school_type', 'isced:level', 'school'],
+  }
+}
+
 export function comparePropertySections(
   official: Record<string, unknown> | null | undefined,
   osm: Record<string, string> | null | undefined,
@@ -65,6 +100,11 @@ export function comparePropertySections(
   if (addressGroup) {
     compareGroups.push(addressGroup)
     for (const key of addressGroup.consumedKeys) consumedKeys.add(key)
+  }
+  const grundschuleGroup = buildGrundschuleCompareGroup(offMap, osmMap)
+  if (grundschuleGroup) {
+    compareGroups.push(grundschuleGroup)
+    for (const key of grundschuleGroup.consumedKeys) consumedKeys.add(key)
   }
   const keys = new Set([...offMap.keys(), ...osmMap.keys()])
   const both: CompareRowBoth[] = []
