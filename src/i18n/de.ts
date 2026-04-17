@@ -236,6 +236,8 @@ export const de = {
       'name:de': 'Abgleich über das OSM-Tag `name:de`.',
       official_name: 'Abgleich über das OSM-Tag `official_name`.',
     },
+    jedeschuleDuplicateGroupNote:
+      'Hinweis: In den aggregierten JedeSchule-Daten gab es {count} sehr ähnliche Einträge (gleicher Ort und gleiche Kernangaben). Für Karte und Abgleich nutzen wir einen Datensatz mit dem jüngsten Stand (`update_timestamp`).',
   },
   status: {
     heading: 'Pipeline-Status',

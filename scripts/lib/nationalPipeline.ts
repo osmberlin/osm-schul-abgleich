@@ -10,6 +10,7 @@ import {
   STATE_ORDER,
 } from '../../src/lib/stateConfig'
 import { initBundeslandBoundaries, landCodeForPoint } from './bundeslandBoundaries'
+import { dedupeOfficialInputs } from './dedupeOfficialInputs'
 import {
   buildJedeschuleStatsFromDump,
   computeCsvMaxUpdateTimestamp,
@@ -270,7 +271,7 @@ function rowsToJson(rows: MatchRowOut[]) {
   }))
 }
 
-function officialsFromNationalOfficialFc(fc: FeatureCollection): OfficialInput[] {
+export function officialsFromNationalOfficialFc(fc: FeatureCollection): OfficialInput[] {
   const out: OfficialInput[] = []
   for (const f of fc.features) {
     const id = String(f.id ?? (f.properties as { id?: string })?.id ?? '')
@@ -500,9 +501,13 @@ export async function runMatchNational(projectRoot: string): Promise<MatchNation
   }
 
   const officials = officialsFromNationalOfficialFc(officialFc)
+  const deduped = dedupeOfficialInputs(officials)
+  console.info(
+    `[pipeline:match] jedeschule dedupe: with-coord ${deduped.stats.withCoordBefore}→${deduped.stats.withCoordAfter} (−${deduped.stats.removedCount}), duplicate groups ${deduped.stats.groupsWithDuplicates}`,
+  )
   const osmSchools = buildOsmSchoolsFromGeoJson(osmFc)
   const osmLandByKey = buildOsmLandMap(osmFc)
-  const { rows } = matchSchools(officials, osmSchools, { osmLandByKey })
+  const { rows } = matchSchools(deduped.officials, osmSchools, { osmLandByKey })
   const enriched = enrichRowsWithPipelineLand(rows, osmLandByKey)
 
   await writeJson(pathMatches, rowsToJson(enriched))
@@ -654,14 +659,21 @@ export async function runSplitLands(
     nationalPath(projectRoot, envScopedJsonFileName(NATIONAL.schoolsOsmMeta)),
   )
 
+  const allOfficials = officialsFromNationalOfficialFc(officialFc)
+  const canonicalOfficialIds = new Set(
+    dedupeOfficialInputs(allOfficials).officials.map((o) => o.id),
+  )
+
   for (const code of codesToProcess) {
     await mkdir(path.join(datasetsDir(projectRoot), code), { recursive: true })
     const officialLand: FeatureCollection = {
       type: 'FeatureCollection',
       features: officialFc.features
         .filter((f) => {
+          const fid = String(f.id ?? (f.properties as { id?: string })?.id ?? '')
+          if (!canonicalOfficialIds.has(fid)) return false
           const p = f.properties as { land?: string } | null
-          return p?.land === code || landCodeFromSchoolId(String(f.id)) === code
+          return p?.land === code || landCodeFromSchoolId(fid) === code
         })
         .map(optimizeOfficialFeatureForUserOutput),
     }

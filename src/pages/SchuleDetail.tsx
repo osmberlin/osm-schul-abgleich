@@ -10,6 +10,7 @@ import { detailMapConnectorLines } from '../lib/detailMapConnectorLines'
 import { buildIdUrl, buildJosmLoadObject, buildOsmBrowseUrl } from '../lib/editorLinks'
 import { fetchLandSchoolsBundle } from '../lib/fetchLandSchoolsBundle'
 import { formatDeInteger } from '../lib/formatNumber'
+import { JEDESCHULE_DUPLICATE_GROUP_SIZE_KEY } from '../lib/jedeschuleDuplicateGroup'
 import { jedeschuleSchoolJsonUrl } from '../lib/jedeschuleUrls'
 import type { LandMatchCategory } from '../lib/landMatchCategories'
 import { boundsToBboxParam } from '../lib/mapBounds'
@@ -247,6 +248,14 @@ function findOfficialSchoolFeature(fc: FeatureCollection, schoolId: string): Fea
   return null
 }
 
+function officialPropsForCompare(
+  official: Record<string, unknown> | null | undefined,
+): Record<string, unknown> | null | undefined {
+  if (!official) return official
+  const { [JEDESCHULE_DUPLICATE_GROUP_SIZE_KEY]: _dup, ...rest } = official
+  return rest
+}
+
 function MatchCompareBody({
   official,
   osm,
@@ -260,7 +269,10 @@ function MatchCompareBody({
   osmTypeForHeader: 'way' | 'relation' | 'node' | null
   osmIdForHeader: string | null
 }) {
-  const { both, onlyO, onlyS, compareGroups } = comparePropertySections(official, osm)
+  const { both, onlyO, onlyS, compareGroups } = comparePropertySections(
+    officialPropsForCompare(official),
+    osm,
+  )
   const bothRows = [...both]
     .filter(([k]) => k !== 'id')
     .sort(([a], [b]) => {
@@ -488,6 +500,11 @@ export function SchuleDetail() {
     () => q.data?.matches.find((r) => r.key === keyDecoded) ?? null,
     [q.data, keyDecoded],
   )
+
+  const jedeschuleDuplicateGroupSize = useMemo(() => {
+    const raw = row?.officialProperties?.[JEDESCHULE_DUPLICATE_GROUP_SIZE_KEY]
+    return typeof raw === 'number' && raw > 1 ? raw : null
+  }, [row])
 
   /**
    * Karten-Schwerpunkt: zuerst OSM (wie Matcher), sonst OSM-Geometrie, sonst amtliche
@@ -1272,6 +1289,15 @@ export function SchuleDetail() {
       {row.category === 'official_no_coord' && (
         <p className="mb-6 text-sm leading-relaxed text-zinc-400">
           {de.detail.officialNoCoordDetailLead}
+        </p>
+      )}
+
+      {jedeschuleDuplicateGroupSize != null && (
+        <p className="mb-6 text-sm leading-relaxed text-zinc-400">
+          {de.detail.jedeschuleDuplicateGroupNote.replace(
+            '{count}',
+            formatDeInteger(jedeschuleDuplicateGroupSize),
+          )}
         </p>
       )}
 
