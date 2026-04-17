@@ -2,6 +2,7 @@ import { AppFooter } from './components/AppFooter'
 import { AppHeader } from './components/AppHeader'
 import { parseIndexRouteMapSearch, validateIndexRouteSearch } from './lib/indexRouteSearch'
 import { runOsmLocateRedirect } from './lib/osmLocateRedirect'
+import { stringifySearchPretty } from './lib/routerSearchStringify'
 import { resolveStateCodeForLonLat } from './lib/stateCodeForLonLatFromBoundaries'
 import { validateStateRouteSearch } from './lib/stateRouteSearch'
 import { AenderungenPage } from './pages/AenderungenPage'
@@ -17,6 +18,7 @@ import {
   createRootRoute,
   createRoute,
   createRouter,
+  defaultParseSearch,
   Outlet,
   redirect,
 } from '@tanstack/react-router'
@@ -147,6 +149,8 @@ export const router = createRouter({
   context: { queryClient },
   basepath: import.meta.env.BASE_URL,
   defaultPreload: 'intent',
+  parseSearch: defaultParseSearch,
+  stringifySearch: stringifySearchPretty,
 })
 
 declare module '@tanstack/react-router' {
