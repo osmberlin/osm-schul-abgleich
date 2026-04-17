@@ -35,6 +35,32 @@ function officialPropsForCompare(
   return rest
 }
 
+/** Inline `key` + sr-only `=` + `value` in one `dd` (single key in DOM for copy). Empty `dt` satisfies `dl` markup. */
+function ComparePropertyDl({
+  dlClassName,
+  tagKey,
+  value,
+  keyClassName,
+}: {
+  dlClassName: string
+  tagKey: string
+  value: ReactNode
+  keyClassName: string
+}) {
+  return (
+    <dl className={dlClassName}>
+      <dt className="hidden" aria-hidden="true" />
+      <dd className="m-0 min-w-0 text-sm leading-normal break-words">
+        <span className={`inline font-mono text-xs leading-normal ${keyClassName} mr-1.5`}>
+          {tagKey}
+        </span>
+        <span className="sr-only">=</span>
+        <span className="inline min-w-0 text-zinc-200">{value}</span>
+      </dd>
+    </dl>
+  )
+}
+
 export function SchoolDetailCompareBody({
   official,
   osm,
@@ -130,20 +156,18 @@ export function SchoolDetailCompareBody({
             <div className="divide-y divide-zinc-800">
               {nameRows.map(([k, o, s]) => (
                 <div key={k} className="grid gap-3 p-2 md:grid-cols-2 md:gap-0 md:p-0">
-                  <dl className="flex flex-col gap-0.5 sm:flex-row sm:items-center sm:gap-2 md:border-r md:border-zinc-800 md:bg-amber-950/15 md:p-3">
-                    <dt className="shrink-0 font-mono text-xs leading-normal text-amber-200">
-                      {k}
-                    </dt>
-                    <dd className="min-w-0 text-sm leading-normal text-zinc-200">
-                      {renderTagValueForKey(k, o)}
-                    </dd>
-                  </dl>
-                  <dl className="flex flex-col gap-0.5 sm:flex-row sm:items-center sm:gap-2 md:bg-blue-950/15 md:p-3">
-                    <dt className="shrink-0 font-mono text-xs leading-normal text-blue-300">{k}</dt>
-                    <dd className="min-w-0 text-sm leading-normal text-zinc-200">
-                      {renderTagValueForKey(k, s)}
-                    </dd>
-                  </dl>
+                  <ComparePropertyDl
+                    dlClassName="md:border-r md:border-zinc-800 md:bg-amber-950/15 md:p-3"
+                    tagKey={k}
+                    keyClassName="text-amber-200"
+                    value={renderTagValueForKey(k, o)}
+                  />
+                  <ComparePropertyDl
+                    dlClassName="md:bg-blue-950/15 md:p-3"
+                    tagKey={k}
+                    keyClassName="text-blue-300"
+                    value={renderTagValueForKey(k, s)}
+                  />
                 </div>
               ))}
               {compareGroups.map((group) => {
@@ -163,27 +187,21 @@ export function SchoolDetailCompareBody({
                     key={`${group.kind}-${group.officialKey}`}
                     className={`grid gap-3 p-2 md:grid-cols-2 md:gap-0 md:p-0 ${rowTone}`}
                   >
-                    <dl className="flex flex-col gap-0.5 sm:flex-row sm:items-center sm:gap-2 md:border-r md:border-zinc-800 md:bg-amber-950/15 md:p-3">
-                      <dt className="shrink-0 font-mono text-xs leading-normal text-amber-200">
-                        {group.officialKey}
-                      </dt>
-                      <dd className="min-w-0 text-sm leading-normal text-zinc-200">
-                        {group.officialValue ?? '—'}
-                      </dd>
-                    </dl>
+                    <ComparePropertyDl
+                      dlClassName="md:border-r md:border-zinc-800 md:bg-amber-950/15 md:p-3"
+                      tagKey={group.officialKey}
+                      keyClassName="text-amber-200"
+                      value={group.officialValue ?? '—'}
+                    />
                     <div className="space-y-1 md:bg-blue-950/15 md:p-3">
                       {group.osmKeys.map((k) => (
-                        <dl
+                        <ComparePropertyDl
                           key={`${group.kind}-${k}`}
-                          className="flex flex-col gap-0.5 sm:flex-row sm:items-center sm:gap-2"
-                        >
-                          <dt className="shrink-0 font-mono text-xs leading-normal text-blue-300">
-                            {k}
-                          </dt>
-                          <dd className="min-w-0 text-sm leading-normal text-zinc-200">
-                            {group.osmValues[k] ?? '—'}
-                          </dd>
-                        </dl>
+                          dlClassName=""
+                          tagKey={k}
+                          keyClassName="text-blue-300"
+                          value={group.osmValues[k] ?? '—'}
+                        />
                       ))}
                     </div>
                   </div>
@@ -191,20 +209,18 @@ export function SchoolDetailCompareBody({
               })}
               {nonNameBothRows.map(([k, o, s]) => (
                 <div key={k} className="grid gap-3 p-2 md:grid-cols-2 md:gap-0 md:p-0">
-                  <dl className="flex flex-col gap-0.5 sm:flex-row sm:items-center sm:gap-2 md:border-r md:border-zinc-800 md:bg-amber-950/15 md:p-3">
-                    <dt className="shrink-0 font-mono text-xs leading-normal text-amber-200">
-                      {k}
-                    </dt>
-                    <dd className="min-w-0 text-sm leading-normal text-zinc-200">
-                      {renderTagValueForKey(k, o)}
-                    </dd>
-                  </dl>
-                  <dl className="flex flex-col gap-0.5 sm:flex-row sm:items-center sm:gap-2 md:bg-blue-950/15 md:p-3">
-                    <dt className="shrink-0 font-mono text-xs leading-normal text-blue-300">{k}</dt>
-                    <dd className="min-w-0 text-sm leading-normal text-zinc-200">
-                      {renderTagValueForKey(k, s)}
-                    </dd>
-                  </dl>
+                  <ComparePropertyDl
+                    dlClassName="md:border-r md:border-zinc-800 md:bg-amber-950/15 md:p-3"
+                    tagKey={k}
+                    keyClassName="text-amber-200"
+                    value={renderTagValueForKey(k, o)}
+                  />
+                  <ComparePropertyDl
+                    dlClassName="md:bg-blue-950/15 md:p-3"
+                    tagKey={k}
+                    keyClassName="text-blue-300"
+                    value={renderTagValueForKey(k, s)}
+                  />
                 </div>
               ))}
             </div>
@@ -233,13 +249,14 @@ export function SchoolDetailCompareBody({
           </h2>
           <dl className="text-sm">
             {onlyO.map(([k, v]) => (
-              <div
-                key={k}
-                className="flex items-center gap-2 border-b border-zinc-800 py-1.5 sm:py-2"
-              >
-                <dt className="shrink-0 font-mono text-xs leading-normal text-amber-200">{k}</dt>
-                <dd className="min-w-0 text-sm leading-normal text-zinc-200">
-                  {renderTagValueForKey(k, v)}
+              <div key={k} className="border-b border-zinc-800 py-1.5 sm:py-2">
+                <dt className="hidden" aria-hidden="true" />
+                <dd className="m-0 min-w-0 text-sm leading-normal break-words">
+                  <span className="mr-1.5 inline font-mono text-xs leading-normal text-amber-200">
+                    {k}
+                  </span>
+                  <span className="sr-only">=</span>
+                  <span className="inline min-w-0 text-zinc-200">{renderTagValueForKey(k, v)}</span>
                 </dd>
               </div>
             ))}
@@ -255,13 +272,14 @@ export function SchoolDetailCompareBody({
           </h2>
           <dl className="text-sm">
             {onlyS.map(([k, v]) => (
-              <div
-                key={k}
-                className="flex items-center gap-2 border-b border-zinc-800 py-1.5 sm:py-2"
-              >
-                <dt className="shrink-0 font-mono text-xs leading-normal text-blue-300">{k}</dt>
-                <dd className="min-w-0 text-sm leading-normal text-zinc-200">
-                  {renderTagValueForKey(k, v)}
+              <div key={k} className="border-b border-zinc-800 py-1.5 sm:py-2">
+                <dt className="hidden" aria-hidden="true" />
+                <dd className="m-0 min-w-0 text-sm leading-normal break-words">
+                  <span className="mr-1.5 inline font-mono text-xs leading-normal text-blue-300">
+                    {k}
+                  </span>
+                  <span className="sr-only">=</span>
+                  <span className="inline min-w-0 text-zinc-200">{renderTagValueForKey(k, v)}</span>
                 </dd>
               </div>
             ))}
