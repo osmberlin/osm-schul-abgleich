@@ -32,11 +32,11 @@ flowchart TB
 
 ## NPM/Bun-Skripte
 
-| Skript | Bedeutung |
-|--------|-----------|
-| `pipeline:download` | Beide Downloads parallel; Parent prüft Meta `ok` |
-| `pipeline:rebuild` | Nur `runStateFirstPipeline` (kein Netz) |
-| `pipeline` | `download` → `rebuild` |
+| Skript                                    | Bedeutung                                                                                      |
+| ----------------------------------------- | ---------------------------------------------------------------------------------------------- |
+| `pipeline:download`                       | Beide Downloads parallel; Parent prüft Meta `ok`                                               |
+| `pipeline:rebuild`                        | Nur `runStateFirstPipeline` (kein Netz)                                                        |
+| `pipeline`                                | `download` → `rebuild`                                                                         |
 | `pipeline:match` / `pipeline:split-lands` | jeweils ein vollständiger Lauf von `runStateFirstPipeline` (Alias; kein zweiter Split-Schritt) |
 
 ## Ausgaben
