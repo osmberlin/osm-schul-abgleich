@@ -232,6 +232,33 @@ export function SchoolDetailCompareBody({
                     </div>
                   )
                 }
+                if (group.kind === 'fachschule') {
+                  const rowTone = group.isEquivalentMatch ? '' : 'border-l-2 border-amber-500/40'
+                  return (
+                    <div
+                      key={`${group.kind}-${group.officialKey}`}
+                      className={`grid gap-3 p-2 md:grid-cols-2 md:gap-0 md:p-0 ${rowTone}`}
+                    >
+                      <ComparePropertyItem
+                        listClassName="md:border-r md:border-zinc-800 md:bg-amber-950/15 md:p-3"
+                        tagKey={group.officialKey}
+                        keyClassName="text-amber-200"
+                        value={group.officialValue ?? '—'}
+                      />
+                      <div className="space-y-1 md:bg-blue-950/15 md:p-3">
+                        {group.osmKeys.map((k) => (
+                          <ComparePropertyItem
+                            key={`${group.kind}-${k}`}
+                            listClassName=""
+                            tagKey={k}
+                            keyClassName="text-blue-300"
+                            value={group.osmValues[k] ?? '—'}
+                          />
+                        ))}
+                      </div>
+                    </div>
+                  )
+                }
                 return null
               })}
               {nonNameBothRows.map(([k, o, s]) => (

@@ -132,3 +132,77 @@ describe('comparePropertySections grundschule group', () => {
     expect(res.compareGroups[1].kind).toBe('grundschule')
   })
 })
+
+describe('comparePropertySections fachschule group', () => {
+  it('creates fachschule group, consumes keys, and matches on amenity=college', () => {
+    const res = comparePropertySections(
+      { school_type: 'Landwirtschaftliche Fachschulen', name: 'X' },
+      { name: 'X', amenity: 'college' },
+    )
+
+    expect(res.compareGroups).toHaveLength(1)
+    const g = res.compareGroups[0]
+    expect(g.kind).toBe('fachschule')
+    if (g.kind !== 'fachschule') throw new Error('expected fachschule')
+    expect(g.officialValue).toBe('Landwirtschaftliche Fachschulen')
+    expect(g.osmValues.amenity).toBe('college')
+    expect(g.isEquivalentMatch).toBe(true)
+
+    expect(res.both).toEqual([['name', 'X', 'X']])
+    expect(res.onlyO).toEqual([])
+    expect(res.onlyS).toEqual([])
+  })
+
+  it('does not create fachschule group when school_type has no fachschule substring', () => {
+    const res = comparePropertySections({ school_type: 'Gymnasium' }, { amenity: 'college' })
+    expect(res.compareGroups).toHaveLength(0)
+    expect(res.onlyO).toEqual([['school_type', 'Gymnasium']])
+    expect(res.onlyS).toEqual([['amenity', 'college']])
+  })
+
+  it('creates fachschule group with isEquivalentMatch false when amenity is not college', () => {
+    const res = comparePropertySections({ school_type: 'Berufsfachschule' }, { amenity: 'school' })
+    const g = res.compareGroups[0]
+    expect(g.kind).toBe('fachschule')
+    if (g.kind !== 'fachschule') throw new Error('expected fachschule')
+    expect(g.isEquivalentMatch).toBe(false)
+    expect(res.onlyO).toEqual([])
+    expect(res.onlyS).toEqual([])
+  })
+
+  it('places address before grundschule before fachschule when all apply', () => {
+    const res = comparePropertySections(
+      {
+        address: 'Hauptstr. 1',
+        school_type: 'Grundschule; Berufsfachschule',
+        name: 'X',
+      },
+      {
+        name: 'X',
+        'addr:street': 'Hauptstraße',
+        'addr:housenumber': '1',
+        'isced:level': '1',
+        amenity: 'college',
+      },
+    )
+    expect(res.compareGroups).toHaveLength(3)
+    expect(res.compareGroups[0].kind).toBe('address')
+    expect(res.compareGroups[1].kind).toBe('grundschule')
+    expect(res.compareGroups[2].kind).toBe('fachschule')
+  })
+
+  it('places address before fachschule when grundschule does not apply', () => {
+    const res = comparePropertySections(
+      { address: 'Hauptstr. 1', school_type: 'Landwirtschaftliche Fachschulen', name: 'X' },
+      {
+        name: 'X',
+        'addr:street': 'Hauptstraße',
+        'addr:housenumber': '1',
+        amenity: 'college',
+      },
+    )
+    expect(res.compareGroups).toHaveLength(2)
+    expect(res.compareGroups[0].kind).toBe('address')
+    expect(res.compareGroups[1].kind).toBe('fachschule')
+  })
+})
