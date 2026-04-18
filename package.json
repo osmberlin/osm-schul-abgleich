@@ -20,6 +20,7 @@
     "stats:user-facing": "bun run scripts/report-user-facing-dataset-sizes.ts",
     "analysis:jedeschule": "bun run analysis/scripts/jedeschule-official-analysis.ts && bun run format",
     "analysis:osm-school-tags": "bun run analysis/scripts/osm-school-tags-analysis.ts && bun run format",
+    "analysis:matches-legal-provider": "bun run analysis/scripts/jedeschule-legal-provider-analysis.ts && bun run format",
     "build:compress": "bun run scripts/compress-dist-assets.ts dist",
     "lint": "oxlint -c oxlint.config.mjs .",
     "format": "oxfmt -c oxfmt.config.mjs --write .",
