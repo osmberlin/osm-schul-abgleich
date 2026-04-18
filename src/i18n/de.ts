@@ -263,7 +263,7 @@ export const de = {
     matchExplanationDistanceAndNamePrefix:
       'Zuordnung über Distanz und Namenspräfix (amtlicher Name setzt den OSM-Namen fort; normalisierter Vergleichsstring, siehe Pipeline):',
     matchExplanationName:
-      'Zuordnung nur über Namensgleichheit (amtlicher Datensatz ohne Koordinaten, normalisierter Vergleichsstring):',
+      'Zuordnung nur über Namensgleichheit (nach Distanzabgleich ohne eindeutigen Treffer im Bundesland, normalisierter Vergleichsstring):',
     matchExplanationNamePrefix:
       'Zuordnung nur über Namenspräfix (amtlicher Fachschul-Datensatz ohne Koordinaten, normalisierter Vergleichsstring inkl. Abkürzungen):',
     matchExplanationWebsite:
