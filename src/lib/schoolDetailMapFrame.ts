@@ -21,9 +21,9 @@ export function computeDetailMapFrameState(
     detailFeatures.length === 0
       ? []
       : [
-          ...detailFeatures,
+          ...detailFeatures.filter((f) => f.geometry != null),
           ...(compareRadiusRing ? [compareRadiusRing] : []),
-          ...connectorLineFeatures,
+          ...connectorLineFeatures.filter((f) => f.geometry != null),
         ]
 
   const boundsWsen =

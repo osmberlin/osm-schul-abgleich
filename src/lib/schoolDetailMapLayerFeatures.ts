@@ -19,18 +19,19 @@ export function buildSchoolDetailMapLayerFeatures(
   connectorLineFeatures: Feature[],
   hoverRelationLineFeatures: Feature[],
 ): SchoolDetailMapLayerFeatures {
-  if (detailFeatures.length === 0) {
+  const detailMapFeatures = [
+    ...detailFeatures,
+    ...connectorLineFeatures,
+    ...hoverRelationLineFeatures,
+  ].filter((f): f is Feature & { geometry: NonNullable<Feature['geometry']> } => f.geometry != null)
+
+  if (detailMapFeatures.length === 0) {
     return {
       detailMapFeatures: [],
       detailMapPolygonFeatures: [],
       detailMapPointFeatures: [],
     }
   }
-  const detailMapFeatures = [
-    ...detailFeatures,
-    ...connectorLineFeatures,
-    ...hoverRelationLineFeatures,
-  ]
   const detailMapPolygonFeatures = detailMapFeatures.filter((f) => f.geometry.type !== 'Point')
   const detailMapPointFeatures = detailMapFeatures.filter((f) => f.geometry.type === 'Point')
   return { detailMapFeatures, detailMapPolygonFeatures, detailMapPointFeatures }
