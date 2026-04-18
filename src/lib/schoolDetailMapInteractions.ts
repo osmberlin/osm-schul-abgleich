@@ -143,12 +143,33 @@ export function primaryHoveredHit(hits: readonly DetailMapHit[]): DetailMapHit |
   return sorted[0] ?? null
 }
 
+/** Same lon/lat as one Feature; avoids double tooltips when official + OSM centroid pins overlap. */
+const DETAIL_MAP_HIT_COORD_EPS = 1e-7
+
+/**
+ * When the official pin and the OSM centroid sit on the same coordinates, MapLibre returns both
+ * as separate hits; the hover card should list one combined preview, not two.
+ */
+export function dedupeDetailMapHitsForTooltip(hits: readonly DetailMapHit[]): DetailMapHit[] {
+  const sorted = sortDetailMapHits(hits)
+  const official = sorted.find((h) => h.kind === 'official-current')
+  const reference = sorted.find((h) => h.kind === 'reference')
+  if (!official || !reference) return sorted
+  if (
+    Math.abs(official.lon - reference.lon) > DETAIL_MAP_HIT_COORD_EPS ||
+    Math.abs(official.lat - reference.lat) > DETAIL_MAP_HIT_COORD_EPS
+  ) {
+    return sorted
+  }
+  return sorted.filter((h) => h.kind !== 'reference')
+}
+
 export function detailMapHoverEntries(args: {
   hits: readonly DetailMapHit[]
   currentSchoolCategory: StateMatchCategory
 }): DetailMapHoverEntry[] {
   const { hits, currentSchoolCategory } = args
-  const sorted = sortDetailMapHits(hits)
+  const sorted = dedupeDetailMapHitsForTooltip(hits)
   return sorted.map((hit) => {
     const cat =
       hit.kind === 'osm-other' ? (hit.matchCat ?? currentSchoolCategory) : currentSchoolCategory

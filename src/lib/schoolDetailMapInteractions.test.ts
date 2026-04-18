@@ -40,12 +40,36 @@ describe('parseDetailMapPointHits + hover', () => {
       hits,
       currentSchoolCategory: 'official_only',
     })
-    expect(entries).toHaveLength(3)
-    expect(entries.map((x) => x.name)).toEqual([
-      'Other School',
-      'Current Official',
-      'Reference Name',
-    ])
+    // Official + OSM centroid share the same coordinates → one hover row for the current school.
+    expect(entries).toHaveLength(2)
+    expect(entries.map((x) => x.name)).toEqual(['Other School', 'Current Official'])
+  })
+
+  it('dedupes official + reference centroid at the same coordinates to a single hover row', () => {
+    const hits = parseDetailMapPointHits({
+      rawFeatures: [
+        {
+          geometry: { type: 'Point', coordinates: [10.336, 47.7359] as [number, number] },
+          layer: { id: 'c-centroid-core' },
+          properties: {},
+        },
+        {
+          geometry: { type: 'Point', coordinates: [10.336, 47.7359] as [number, number] },
+          layer: { id: 'c-official-core' },
+          properties: { id: 'BY-a', name: 'Current Official' },
+        },
+      ],
+      pointerLon: 10.336,
+      pointerLat: 47.7359,
+      referenceName: 'Reference Name',
+    })
+    expect(hits).toHaveLength(2)
+    const entries = detailMapHoverEntries({
+      hits,
+      currentSchoolCategory: 'official_only',
+    })
+    expect(entries).toHaveLength(1)
+    expect(entries[0]?.name).toBe('Current Official')
   })
 
   it('resolves click target deterministically to nearest other-school key', () => {

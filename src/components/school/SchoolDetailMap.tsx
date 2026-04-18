@@ -42,17 +42,15 @@ export const DETAIL_MAP_LAYER_CENTROID_HALO = 'c-centroid-halo'
 export const DETAIL_MAP_LAYER_OFFICIAL_CORE = 'c-official-core'
 export const DETAIL_MAP_LAYER_OFFICIAL_HALO = 'c-official-halo'
 
+/** Core circles only: halos duplicate the same feature in query results (same as state overview using one layer). */
 export const DETAIL_MAP_INTERACTIVE_LAYERS_BASE: string[] = [
   DETAIL_MAP_LAYER_CENTROID_CORE,
-  DETAIL_MAP_LAYER_CENTROID_HALO,
   DETAIL_MAP_LAYER_OFFICIAL_CORE,
-  DETAIL_MAP_LAYER_OFFICIAL_HALO,
 ]
 
 export const DETAIL_MAP_INTERACTIVE_LAYERS_WITH_OTHERS: string[] = [
   ...DETAIL_MAP_INTERACTIVE_LAYERS_BASE,
   OTHER_SCHOOLS_LAYER_CORE,
-  OTHER_SCHOOLS_LAYER_HALO,
 ]
 
 /** Stable DOM id for MapGL (same idea as `state-map` in StateMap). */
