@@ -106,14 +106,18 @@ describe('matchSchools', () => {
     expect(m[0].matchedByRefNormalized).toBe('07K12')
   })
 
-  it('respects MATCH_RADIUS_KM notionally', () => {
+  it('keeps radius at 150m but allows later statewide fallback', () => {
     const far: OsmSchoolInput = {
       ...osmNear,
       osmId: '2',
       centroid: [osmNear.centroid[0] + 0.5, osmNear.centroid[1]],
     }
     const { rows } = matchSchools(officials, [far], landOpts(far, 'BE'))
-    expect(rows.some((r) => r.category === 'osm_only')).toBe(true)
+    const m = rows.filter((r) => r.category === 'matched')
+    expect(m).toHaveLength(1)
+    expect(m[0].officialId).toBe('BE-a')
+    expect(m[0].matchMode).toBe('name')
+    expect(m[0].distanceMeters).toBeNull()
     expect(MATCH_RADIUS_KM).toBe(0.15)
   })
 
@@ -494,6 +498,34 @@ describe('matchSchools', () => {
     expect(m[0].matchMode).toBe('name')
     expect(m[0].matchedByOsmNameTag).toBe('official_name')
     expect(officialNoCoordCount).toBe(0)
+  })
+
+  it('matches unmatched with-coord official by statewide name fallback and removes official_only', () => {
+    const withCoordOfficial: OfficialInput[] = [
+      {
+        id: 'BW-04105752',
+        name: 'Wilhelmi-Gymnasium',
+        lon: 8.8819,
+        lat: 49.2538,
+        properties: { id: 'BW-04105752' },
+      },
+    ]
+    const osmOnly: OsmSchoolInput = {
+      ...osmNear,
+      osmId: '47172279',
+      name: 'Wilhelmi-Gymnasium',
+      tags: { amenity: 'school', name: 'Wilhelmi-Gymnasium' },
+      centroid: [8.8841, 49.2538],
+    }
+    const { rows } = matchSchools(withCoordOfficial, [osmOnly], landOpts(osmOnly, 'BW'))
+    const m = rows.filter((r) => r.category === 'matched')
+    expect(m).toHaveLength(1)
+    expect(m[0].officialId).toBe('BW-04105752')
+    expect(m[0].matchMode).toBe('name')
+    expect(rows.some((r) => r.category === 'official_only' && r.officialId === 'BW-04105752')).toBe(
+      false,
+    )
+    expect(rows.some((r) => r.category === 'osm_only' && r.osmId === '47172279')).toBe(false)
   })
 
   it('no-coord name fallback only uses same Bundesland as OSM', () => {

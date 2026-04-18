@@ -15,7 +15,7 @@ import type { StateCode } from '../../src/lib/stateConfig'
 import { stateCodeFromSchoolId } from '../../src/lib/stateConfig'
 import distance from '@turf/distance'
 import { point } from '@turf/helpers'
-import type { FeatureCollection } from 'geojson'
+import type { FeatureCollection, Geometry } from 'geojson'
 
 export { centroidFromOsmGeometry } from '../../src/lib/osmGeometryCentroid'
 export { MATCH_RADIUS_KM }
@@ -748,8 +748,13 @@ export function matchSchools(
     })
   }
 
+  const unmatchedWithCoord = withCoord.filter(
+    (off) => !reserved.has(off.id) && !ambiguousAllIds.has(off.id),
+  )
+  const statewideFallbackOfficials = [...withoutCoord, ...unmatchedWithCoord]
+
   const noCoordByName = new Map<string, OfficialInput[]>()
-  for (const off of withoutCoord) {
+  for (const off of statewideFallbackOfficials) {
     const key = normalizeSchoolNameForMatch(off.name)
     if (!key) continue
     const arr = noCoordByName.get(key)
@@ -783,7 +788,7 @@ export function matchSchools(
     }
   }
 
-  const noCoordMatched = new Set<string>()
+  const statewideFallbackMatched = new Set<string>()
   for (const [key, officialsWithNameAll] of noCoordByName.entries()) {
     const byLand = osmOnlyByNameAndLand.get(key)
     if (!byLand) continue
@@ -797,7 +802,7 @@ export function matchSchools(
       if (officialsWithName.length === 0) continue
       if (officialsWithName.length === 1) {
         const off = officialsWithName[0]
-        if (noCoordMatched.has(off.id)) continue
+        if (statewideFallbackMatched.has(off.id)) continue
         const noCoordVariantMap = normalizedOsmNameVariantMap(base.osmTags ?? {})
         rows[targetIdx] = {
           ...base,
@@ -810,10 +815,12 @@ export function matchSchools(
           matchedByOsmNameNormalized: key,
           matchedByOsmNameTag: noCoordVariantMap.get(key),
         }
-        noCoordMatched.add(off.id)
+        statewideFallbackMatched.add(off.id)
         continue
       }
-      const ids = officialsWithName.map((off) => off.id).filter((id) => !noCoordMatched.has(id))
+      const ids = officialsWithName
+        .map((off) => off.id)
+        .filter((id) => !statewideFallbackMatched.has(id))
       if (ids.length <= 1) continue
       const byId = new Map(officialsWithName.map((off) => [off.id, off] as const))
       const snapOffs = ids.map((id) => byId.get(id)).filter((x): x is OfficialInput => x != null)
@@ -841,8 +848,8 @@ export function matchSchools(
     const rowLand = rowLandByOsmRef(base, opts)
     const variantMap = normalizedOsmNameVariantMapFachschule(base.osmTags ?? {})
     if (variantMap.size === 0) continue
-    const matches = withoutCoord.filter((off) => {
-      if (noCoordMatched.has(off.id)) return false
+    const matches = statewideFallbackOfficials.filter((off) => {
+      if (statewideFallbackMatched.has(off.id)) return false
       if (stateCodeFromSchoolId(off.id) !== rowLand) return false
       if (!isFachschuleOfficialName(off.name)) return false
       const offN = normalizeForFachschuleCollegeMatch(off.name)
@@ -875,12 +882,12 @@ export function matchSchools(
       matchedByOsmNameTag: osmNameTag,
       ...(exact ? { nameMatchVariant: 'exact' as const } : { nameMatchVariant: 'prefix' as const }),
     }
-    noCoordMatched.add(off.id)
+    statewideFallbackMatched.add(off.id)
   }
 
   const noCoordByWebsite = new Map<string, OfficialInput[]>()
-  for (const off of withoutCoord) {
-    if (noCoordMatched.has(off.id)) continue
+  for (const off of statewideFallbackOfficials) {
+    if (statewideFallbackMatched.has(off.id)) continue
     const key = officialWebsiteKey(off)
     if (!key) continue
     const arr = noCoordByWebsite.get(key)
@@ -917,7 +924,7 @@ export function matchSchools(
       if (officialsWithWebsite.length === 0) continue
       if (officialsWithWebsite.length === 1) {
         const off = officialsWithWebsite[0]
-        if (noCoordMatched.has(off.id)) continue
+        if (statewideFallbackMatched.has(off.id)) continue
         rows[targetIdx] = {
           ...base,
           key: `match-${off.id}`,
@@ -928,10 +935,12 @@ export function matchSchools(
           officialProperties: off.properties,
           matchedByWebsiteNormalized: key,
         }
-        noCoordMatched.add(off.id)
+        statewideFallbackMatched.add(off.id)
         continue
       }
-      const ids = officialsWithWebsite.map((off) => off.id).filter((id) => !noCoordMatched.has(id))
+      const ids = officialsWithWebsite
+        .map((off) => off.id)
+        .filter((id) => !statewideFallbackMatched.has(id))
       if (ids.length <= 1) continue
       const byId = new Map(officialsWithWebsite.map((off) => [off.id, off] as const))
       const snapOffs = ids.map((id) => byId.get(id)).filter((x): x is OfficialInput => x != null)
@@ -952,8 +961,8 @@ export function matchSchools(
   }
 
   const noCoordByAddress = new Map<string, OfficialInput[]>()
-  for (const off of withoutCoord) {
-    if (noCoordMatched.has(off.id)) continue
+  for (const off of statewideFallbackOfficials) {
+    if (statewideFallbackMatched.has(off.id)) continue
     const key = officialAddressKey(off)
     if (!key) continue
     const arr = noCoordByAddress.get(key)
@@ -990,7 +999,7 @@ export function matchSchools(
       if (officialsWithAddress.length === 0) continue
       if (officialsWithAddress.length === 1) {
         const off = officialsWithAddress[0]
-        if (noCoordMatched.has(off.id)) continue
+        if (statewideFallbackMatched.has(off.id)) continue
         rows[targetIdx] = {
           ...base,
           key: `match-${off.id}`,
@@ -1001,10 +1010,12 @@ export function matchSchools(
           officialProperties: off.properties,
           matchedByAddressNormalized: key,
         }
-        noCoordMatched.add(off.id)
+        statewideFallbackMatched.add(off.id)
         continue
       }
-      const ids = officialsWithAddress.map((off) => off.id).filter((id) => !noCoordMatched.has(id))
+      const ids = officialsWithAddress
+        .map((off) => off.id)
+        .filter((id) => !statewideFallbackMatched.has(id))
       if (ids.length <= 1) continue
       const byId = new Map(officialsWithAddress.map((off) => [off.id, off] as const))
       const snapOffs = ids.map((id) => byId.get(id)).filter((x): x is OfficialInput => x != null)
@@ -1023,6 +1034,16 @@ export function matchSchools(
       }
     }
   }
+  const filteredRows = rows.filter(
+    (row) =>
+      !(
+        row.category === 'official_only' &&
+        row.officialId != null &&
+        statewideFallbackMatched.has(row.officialId)
+      ),
+  )
+  rows.length = 0
+  rows.push(...filteredRows)
 
   const officialIdsOnAmbiguousRows = new Set<string>()
   for (const row of rows) {
@@ -1030,7 +1051,7 @@ export function matchSchools(
   }
 
   for (const off of withoutCoord) {
-    if (noCoordMatched.has(off.id)) continue
+    if (statewideFallbackMatched.has(off.id)) continue
     if (officialIdsOnAmbiguousRows.has(off.id)) continue
     rows.push({
       key: `official-nocoord-${off.id}`,
