@@ -3,9 +3,10 @@ import { de } from '../../i18n/de'
 import { fetchStateSchoolsBundle } from '../../lib/fetchStateSchoolsBundle'
 import {
   buildOfficialSchoolLonLatIndex,
+  filterOtherSchoolPointsForDetailMap,
   matchRowDisplayName,
   matchRowMapLonLat,
-  spreadCoincidentMapPointFeatures,
+  spreadOtherSchoolPointsAvoidingDetailPoints,
 } from '../../lib/matchRowInBbox'
 import {
   scrollToSchoolDetailCompareSection,
@@ -126,24 +127,18 @@ export function SchoolDetailMapSection({
     return features
   })()
 
-  const otherSchoolPointFeatures: Feature[] = !detailMapBbox
-    ? []
-    : (() => {
-        const [w, s, e, n] = detailMapBbox
-        const inView = allOtherSchoolPointFeatures.filter((f) => {
-          if (f.geometry?.type !== 'Point') return false
-          const [lon, lat] = f.geometry.coordinates
-          return lon >= w && lon <= e && lat >= s && lat <= n
-        })
-        return spreadCoincidentMapPointFeatures(inView)
-      })()
-
   const { detailMapFeatures, detailMapPolygonFeatures, detailMapPointFeatures } =
     buildSchoolDetailMapLayerFeatures(
       detailFeatures,
       connectorLineFeatures,
       hoverRelationLineFeatures,
     )
+
+  /** Viewport ∪ disk around current school — avoids dropping neighbours; spread uses detail pins as refs. */
+  const otherSchoolPointFeatures: Feature[] = spreadOtherSchoolPointsAvoidingDetailPoints(
+    detailMapPointFeatures,
+    filterOtherSchoolPointsForDetailMap(allOtherSchoolPointFeatures, detailMapBbox, mapOsmCentroid),
+  )
 
   const { boundsWsen } = computeDetailMapFrameState(
     detailFeatures,

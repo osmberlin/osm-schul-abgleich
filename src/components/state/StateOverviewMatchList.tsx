@@ -80,7 +80,7 @@ export function StateOverviewMatchList({
                     className="relative flex flex-col gap-y-2.5 px-3 py-2.5 hover:bg-zinc-800/50 sm:flex-row sm:items-start sm:justify-between sm:gap-x-6 sm:gap-y-0 sm:px-5 sm:py-3.5"
                     aria-label={`${de.state.detail}: ${title}`}
                   >
-                    <div className="min-w-0 w-full sm:flex-1">
+                    <div className="w-full min-w-0 sm:flex-1">
                       <p className="text-sm/5 font-semibold text-zinc-100">{title}</p>
                       <div className="mt-2 flex min-w-0 flex-wrap items-center gap-x-2 gap-y-1">
                         <CategoryLegendSwatch category={row.category} />
@@ -96,7 +96,7 @@ export function StateOverviewMatchList({
                     </div>
                     <div className="flex w-full min-w-0 shrink-0 items-start justify-end gap-x-3 sm:w-auto sm:pt-0.5">
                       {(subId !== '' || row.distanceMeters != null) && (
-                        <div className="flex min-w-0 max-w-full flex-col items-end gap-y-0.5 sm:max-w-48">
+                        <div className="flex max-w-full min-w-0 flex-col items-end gap-y-0.5 sm:max-w-48">
                           {subId !== '' && (
                             <p className="text-right font-mono text-xs/5 break-all text-zinc-400">
                               {subId}

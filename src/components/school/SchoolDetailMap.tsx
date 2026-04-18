@@ -2,7 +2,13 @@ import { de } from '../../i18n/de'
 import { formatDeInteger } from '../../lib/formatNumber'
 import { boundsToBboxParam } from '../../lib/mapBounds'
 import { LAND_BOUNDARY_LINE_PAINT, MAP_DIM_MASK_FILL } from '../../lib/mapDimMask'
-import { DETAIL_MAP_OFFICIAL, DETAIL_MAP_OSM } from '../../lib/matchCategoryTheme'
+import {
+  DETAIL_MAP_OFFICIAL,
+  DETAIL_MAP_OSM,
+  paintMatchCatCore,
+  paintMatchCatHalo,
+  paintMatchCatSortKey,
+} from '../../lib/matchCategoryTheme'
 import { MATCH_RADIUS_M } from '../../lib/matchRadius'
 import {
   applyFlatMapRotationLocks,
@@ -402,17 +408,10 @@ export function SchoolDetailMap({
             <Layer
               id={OTHER_SCHOOLS_LAYER_HALO}
               type="circle"
+              layout={{ 'circle-sort-key': paintMatchCatSortKey }}
               paint={{
                 'circle-radius': 8,
-                'circle-color': [
-                  'match',
-                  ['get', 'matchCat'],
-                  'matched',
-                  'rgba(59, 130, 246, 0.42)',
-                  'match_ambiguous',
-                  'rgba(139, 92, 246, 0.45)',
-                  'rgba(113, 113, 122, 0.38)',
-                ],
+                'circle-color': paintMatchCatHalo,
                 'circle-opacity': 1,
                 'circle-stroke-width': 0,
               }}
@@ -420,17 +419,10 @@ export function SchoolDetailMap({
             <Layer
               id={OTHER_SCHOOLS_LAYER_CORE}
               type="circle"
+              layout={{ 'circle-sort-key': paintMatchCatSortKey }}
               paint={{
                 'circle-radius': 3.5,
-                'circle-color': [
-                  'match',
-                  ['get', 'matchCat'],
-                  'matched',
-                  '#2563eb',
-                  'match_ambiguous',
-                  '#2563eb',
-                  '#71717a',
-                ],
+                'circle-color': paintMatchCatCore,
                 'circle-stroke-width': 1,
                 'circle-stroke-color': '#ffffff',
               }}

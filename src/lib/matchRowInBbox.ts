@@ -1,6 +1,7 @@
 import type { schoolsMatchRowSchema } from './schemas'
 import type { StateMapBbox } from './useStateMapBbox'
 import { parseJedeschuleLonLatFromRecord, parseMatchRowOsmCentroidLonLat } from './zodGeo'
+import distance from '@turf/distance'
 import { featureCollection, point } from '@turf/helpers'
 import type { Feature, FeatureCollection, Point } from 'geojson'
 import type { z } from 'zod'
@@ -86,6 +87,39 @@ function mapDisplayCoordGroupKey(lon: number, lat: number): string {
   return `${Math.round(lon * q) / q},${Math.round(lat * q) / q}`
 }
 
+/**
+ * Max distance from the current school to still draw another Trefferliste row on SchuleDetail,
+ * even when it falls outside the current map viewport (e.g. same campus, slight offset).
+ */
+export const DETAIL_MAP_OTHER_SCHOOLS_RADIUS_KM = 5
+
+/**
+ * Keeps other-school pins that are either visible in the map frame or near the current school.
+ * (Viewport-only filtering hid nearby rows; radius ensures neighbours stay drawable before bbox exists.)
+ */
+export function filterOtherSchoolPointsForDetailMap(
+  otherPoints: Feature[],
+  mapBbox: StateMapBbox | null,
+  centerLonLat: readonly [number, number] | null,
+  radiusKm: number = DETAIL_MAP_OTHER_SCHOOLS_RADIUS_KM,
+): Feature[] {
+  return otherPoints.filter((f) => {
+    if (f.geometry?.type !== 'Point') return false
+    const [lon, lat] = f.geometry.coordinates
+    if (mapBbox) {
+      const [w, s, e, n] = mapBbox
+      if (lon >= w && lon <= e && lat >= s && lat <= n) return true
+    }
+    if (centerLonLat) {
+      const d = distance(point([lon, lat]), point([centerLonLat[0], centerLonLat[1]]), {
+        units: 'kilometers',
+      })
+      if (d <= radiusKm) return true
+    }
+    return false
+  })
+}
+
 /** Meters → degree offset (small local tangent plane). */
 function offsetMetersAtLat(latDeg: number, eastM: number, northM: number): [number, number] {
   const dlat = northM / 111_320
@@ -138,6 +172,79 @@ export function spreadCoincidentMapPointFeatures(features: Feature[]): Feature[]
       const feat = sorted[i]
       const [glon, glat] = (feat.geometry as Point).coordinates
       const angle = (2 * Math.PI * i) / n
+      const eastM = ringRadiusM * Math.cos(angle)
+      const northM = ringRadiusM * Math.sin(angle)
+      const [dlon, dlat] = offsetMetersAtLat(refLat, eastM, northM)
+      spread.push({
+        ...feat,
+        geometry: point([glon + dlon, glat + dlat]).geometry,
+      })
+    }
+  }
+  return [...spread, ...nonPoints]
+}
+
+/**
+ * Spreads SchuleDetail "other schools" points when they share coordinates with markers already
+ * drawn in the detail layer (current school). Otherwise those pins stack and read as a single point
+ * — unlike the Bundesland map, which spreads all Treffer at once.
+ */
+export function spreadOtherSchoolPointsAvoidingDetailPoints(
+  detailPointFeatures: Feature[],
+  otherPoints: Feature[],
+): Feature[] {
+  const refCounts = new Map<string, number>()
+  for (const f of detailPointFeatures) {
+    if (f.geometry?.type !== 'Point') continue
+    const [lon, lat] = (f.geometry as Point).coordinates
+    const k = mapDisplayCoordGroupKey(lon, lat)
+    refCounts.set(k, (refCounts.get(k) ?? 0) + 1)
+  }
+
+  const nonPoints: Feature[] = []
+  const points: Feature[] = []
+  for (const f of otherPoints) {
+    if (f.geometry?.type === 'Point') points.push(f)
+    else nonPoints.push(f)
+  }
+  if (points.length === 0) return [...nonPoints]
+
+  const groups = new Map<string, Feature[]>()
+  for (const f of points) {
+    const [lon, lat] = (f.geometry as Point).coordinates
+    const k = mapDisplayCoordGroupKey(lon, lat)
+    let bucket = groups.get(k)
+    if (!bucket) {
+      bucket = []
+      groups.set(k, bucket)
+    }
+    bucket.push(f)
+  }
+
+  const spread: Feature[] = []
+  for (const group of groups.values()) {
+    const [lon0, lat0] = (group[0].geometry as Point).coordinates
+    const k = mapDisplayCoordGroupKey(lon0, lat0)
+    const refCount = refCounts.get(k) ?? 0
+    const sorted = [...group].sort((a, b) =>
+      String(a.properties?.schoolKey ?? '').localeCompare(
+        String(b.properties?.schoolKey ?? ''),
+        'de',
+      ),
+    )
+    const m = sorted.length
+    const total = refCount + m
+    if (total <= 1) {
+      spread.push(sorted[0])
+      continue
+    }
+    const ringRadiusM = (total * 6) / (2 * Math.PI)
+    const refLat = (sorted[0].geometry as Point).coordinates[1]
+    for (let i = 0; i < m; i++) {
+      const feat = sorted[i]
+      const [glon, glat] = (feat.geometry as Point).coordinates
+      const slot = refCount + i
+      const angle = (2 * Math.PI * slot) / total
       const eastM = ringRadiusM * Math.cos(angle)
       const northM = ringRadiusM * Math.sin(angle)
       const [dlon, dlat] = offsetMetersAtLat(refLat, eastM, northM)

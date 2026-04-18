@@ -1,8 +1,10 @@
 import {
   buildOfficialSchoolLonLatIndex,
+  filterOtherSchoolPointsForDetailMap,
   lonLatFromOfficialFeature,
   matchRowMapLonLat,
   spreadCoincidentMapPointFeatures,
+  spreadOtherSchoolPointsAvoidingDetailPoints,
 } from './matchRowInBbox'
 import { schoolsMatchRowSchema } from './schemas'
 import type { FeatureCollection } from 'geojson'
@@ -88,6 +90,40 @@ describe('spreadCoincidentMapPointFeatures', () => {
     const out = spreadCoincidentMapPointFeatures([f])
     expect(out).toHaveLength(1)
     expect(out[0].geometry).toMatchObject({ type: 'Point', coordinates: [10, 50] })
+  })
+})
+
+describe('spreadOtherSchoolPointsAvoidingDetailPoints', () => {
+  it('offsets an other-school pin when it shares coordinates with a detail-layer point', () => {
+    const detail = {
+      type: 'Feature' as const,
+      properties: { id: 'current-official' },
+      geometry: { type: 'Point' as const, coordinates: [7, 51] },
+    }
+    const other = {
+      type: 'Feature' as const,
+      properties: { schoolKey: 'other', matchCat: 'official_only' },
+      geometry: { type: 'Point' as const, coordinates: [7, 51] },
+    }
+    const out = spreadOtherSchoolPointsAvoidingDetailPoints([detail], [other])
+    expect(out).toHaveLength(1)
+    const c = (out[0].geometry as { type: 'Point'; coordinates: [number, number] }).coordinates
+    const moved = c[0] !== 7 || c[1] !== 51
+    expect(moved).toBe(true)
+  })
+})
+
+describe('filterOtherSchoolPointsForDetailMap', () => {
+  it('includes a point outside the bbox but within radius of center', () => {
+    const f = {
+      type: 'Feature' as const,
+      properties: { schoolKey: 'x' },
+      geometry: { type: 'Point' as const, coordinates: [10.3361, 47.7361] },
+    }
+    const bbox: [number, number, number, number] = [10.33, 47.73, 10.331, 47.731]
+    const center: [number, number] = [10.33607, 47.73588]
+    const out = filterOtherSchoolPointsForDetailMap([f], bbox, center, 5)
+    expect(out).toHaveLength(1)
   })
 })
 
