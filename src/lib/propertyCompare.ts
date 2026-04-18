@@ -275,7 +275,8 @@ export function comparePropertySections(
   official: Record<string, unknown> | null | undefined,
   osm: Record<string, string> | null | undefined,
 ): {
-  both: CompareRowBoth[]
+  bothEqual: CompareRowBoth[]
+  bothDifferent: CompareRowBoth[]
   onlyO: CompareRowSingle[]
   onlyS: CompareRowSingle[]
   compareGroups: PropertyCompareGroup[]
@@ -315,16 +316,19 @@ export function comparePropertySections(
     for (const key of legalStatusOperatorTypeGroup.consumedKeys) consumedKeys.add(key)
   }
   const keys = new Set([...offMap.keys(), ...osmMap.keys()])
-  const both: CompareRowBoth[] = []
+  const bothEqual: CompareRowBoth[] = []
+  const bothDifferent: CompareRowBoth[] = []
   const onlyO: CompareRowSingle[] = []
   const onlyS: CompareRowSingle[] = []
   for (const k of [...keys].sort((a, b) => a.localeCompare(b, 'de'))) {
     if (consumedKeys.has(k)) continue
     const os = offMap.get(k) ?? null
     const ss = osmMap.get(k) ?? null
-    if (os != null && ss != null) both.push([k, os, ss])
-    else if (os != null) onlyO.push([k, os])
+    if (os != null && ss != null) {
+      if (os === ss) bothEqual.push([k, os, ss])
+      else bothDifferent.push([k, os, ss])
+    } else if (os != null) onlyO.push([k, os])
     else if (ss != null) onlyS.push([k, ss])
   }
-  return { both, onlyO, onlyS, compareGroups }
+  return { bothEqual, bothDifferent, onlyO, onlyS, compareGroups }
 }

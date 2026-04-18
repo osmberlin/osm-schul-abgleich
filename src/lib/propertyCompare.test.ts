@@ -17,7 +17,8 @@ describe('comparePropertySections address group', () => {
     expect(g.osmValues.housenumber).toBe('1')
     expect(g.compareTargets).toEqual(expect.arrayContaining(['Hauptstraße 1', 'Hauptstr. 1']))
 
-    expect(res.both).toEqual([['name', 'Testschule', 'Testschule']])
+    expect(res.bothEqual).toEqual([['name', 'Testschule', 'Testschule']])
+    expect(res.bothDifferent).toEqual([])
     expect(res.onlyO).toEqual([['id', 'X-1']])
     expect(res.onlyS).toEqual([])
   })
@@ -55,9 +56,21 @@ describe('comparePropertySections address group', () => {
       { _meta: 'y', 'addr:street': 'Ring', 'addr:housenumber': '7' },
     )
     expect(res.compareGroups).toHaveLength(1)
-    expect(res.both.some(([k]) => k.startsWith('_'))).toBe(false)
+    expect(res.bothEqual.some(([k]) => k.startsWith('_'))).toBe(false)
+    expect(res.bothDifferent.some(([k]) => k.startsWith('_'))).toBe(false)
     expect(res.onlyO.some(([k]) => k.startsWith('_'))).toBe(false)
     expect(res.onlyS.some(([k]) => k.startsWith('_'))).toBe(false)
+  })
+
+  it('splits shared keys by equal versus different values', () => {
+    const res = comparePropertySections(
+      { name: 'Testschule', phone: '+49 30 123' },
+      { name: 'Testschule', phone: '+49 30 999' },
+    )
+    expect(res.bothEqual).toEqual([['name', 'Testschule', 'Testschule']])
+    expect(res.bothDifferent).toEqual([['phone', '+49 30 123', '+49 30 999']])
+    expect(res.onlyO).toEqual([])
+    expect(res.onlyS).toEqual([])
   })
 })
 
@@ -77,7 +90,8 @@ describe('comparePropertySections grundschule group', () => {
     expect(g.osmValues.school).toBeNull()
     expect(g.isEquivalentMatch).toBe(true)
 
-    expect(res.both).toEqual([['name', 'GS', 'GS']])
+    expect(res.bothEqual).toEqual([['name', 'GS', 'GS']])
+    expect(res.bothDifferent).toEqual([])
     expect(res.onlyO).toEqual([])
     expect(res.onlyS).toEqual([])
   })
@@ -239,7 +253,8 @@ describe('comparePropertySections fachschule group', () => {
     expect(g.osmValues.amenity).toBe('college')
     expect(g.isEquivalentMatch).toBe(true)
 
-    expect(res.both).toEqual([['name', 'X', 'X']])
+    expect(res.bothEqual).toEqual([['name', 'X', 'X']])
+    expect(res.bothDifferent).toEqual([])
     expect(res.onlyO).toEqual([])
     expect(res.onlyS).toEqual([])
   })
@@ -323,7 +338,8 @@ describe('comparePropertySections provider/operator group', () => {
     expect(g.kind).toBe('providerOperator')
     if (g.kind !== 'providerOperator') throw new Error('expected providerOperator')
     expect(g.isEquivalentMatch).toBe(true)
-    expect(res.both).toEqual([])
+    expect(res.bothEqual).toEqual([])
+    expect(res.bothDifferent).toEqual([])
     expect(res.onlyO).toEqual([])
     expect(res.onlyS).toEqual([])
   })
@@ -345,7 +361,8 @@ describe('comparePropertySections provider/operator group', () => {
     expect(g.kind).toBe('providerOperator')
     if (g.kind !== 'providerOperator') throw new Error('expected providerOperator')
     expect(g.isEquivalentMatch).toBe(false)
-    expect(res.both).toEqual([])
+    expect(res.bothEqual).toEqual([])
+    expect(res.bothDifferent).toEqual([])
     expect(res.onlyO).toEqual([])
     expect(res.onlyS).toEqual([])
   })

@@ -73,11 +73,11 @@ export function SchoolDetailCompareBody({
   osmTypeForHeader: 'way' | 'relation' | 'node' | null
   osmIdForHeader: string | null
 }) {
-  const { both, onlyO, onlyS, compareGroups } = comparePropertySections(
+  const { bothEqual, bothDifferent, onlyO, onlyS, compareGroups } = comparePropertySections(
     officialPropsForCompare(official),
     osm,
   )
-  const bothRows = [...both]
+  const equalRows = [...bothEqual]
     .filter(([k]) => k !== 'id')
     .sort(([a], [b]) => {
       const aName = a === 'name'
@@ -86,11 +86,20 @@ export function SchoolDetailCompareBody({
       if (!aName && bName) return 1
       return a.localeCompare(b, 'de')
     })
-  const nameRows = bothRows.filter(([k]) => k === 'name')
-  const nonNameBothRows = bothRows.filter(([k]) => k !== 'name')
+  const differentRows = [...bothDifferent]
+    .filter(([k]) => k !== 'id')
+    .sort(([a], [b]) => {
+      const aName = a === 'name'
+      const bName = b === 'name'
+      if (aName && !bName) return -1
+      if (!aName && bName) return 1
+      return a.localeCompare(b, 'de')
+    })
+  const nameEqualRows = equalRows.filter(([k]) => k === 'name')
+  const nonNameEqualRows = equalRows.filter(([k]) => k !== 'name')
   const osmRefLabel =
     osmTypeForHeader && osmIdForHeader ? `${osmTypeForHeader}/${osmIdForHeader}` : null
-  const hasCommonRows = bothRows.length > 0 || compareGroups.length > 0
+  const hasCommonRows = equalRows.length > 0 || compareGroups.length > 0
 
   return (
     <article aria-labelledby="school-detail-compare-both-heading">
@@ -145,7 +154,7 @@ export function SchoolDetailCompareBody({
             <p className="p-2 text-sm text-zinc-400 sm:p-3">—</p>
           ) : (
             <div className="divide-y divide-zinc-800">
-              {nameRows.map(([k, o, s]) => (
+              {nameEqualRows.map(([k, o, s]) => (
                 <div key={k} className="grid grid-cols-1 gap-3 p-2 md:grid-cols-2 md:gap-0 md:p-0">
                   <ComparePropertyItem
                     listClassName="md:border-r md:border-zinc-800 md:bg-amber-950/15 md:p-3"
@@ -320,7 +329,40 @@ export function SchoolDetailCompareBody({
                 }
                 return null
               })}
-              {nonNameBothRows.map(([k, o, s]) => (
+              {nonNameEqualRows.map(([k, o, s]) => (
+                <div key={k} className="grid grid-cols-1 gap-3 p-2 md:grid-cols-2 md:gap-0 md:p-0">
+                  <ComparePropertyItem
+                    listClassName="md:border-r md:border-zinc-800 md:bg-amber-950/15 md:p-3"
+                    tagKey={k}
+                    keyClassName="text-amber-200"
+                    value={renderTagValueForKey(k, o)}
+                  />
+                  <ComparePropertyItem
+                    listClassName="md:bg-blue-950/15 md:p-3"
+                    tagKey={k}
+                    keyClassName="text-blue-300"
+                    value={renderTagValueForKey(k, s)}
+                  />
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      </section>
+
+      <section aria-labelledby="school-detail-compare-different-heading" className="mt-10">
+        <h2
+          id="school-detail-compare-different-heading"
+          className="mb-3 font-semibold text-zinc-100"
+        >
+          {de.detail.keysDifferent}
+        </h2>
+        <div className="overflow-hidden rounded-lg border border-zinc-700">
+          {differentRows.length === 0 ? (
+            <p className="p-2 text-sm text-zinc-400 sm:p-3">—</p>
+          ) : (
+            <div className="divide-y divide-zinc-800">
+              {differentRows.map(([k, o, s]) => (
                 <div key={k} className="grid grid-cols-1 gap-3 p-2 md:grid-cols-2 md:gap-0 md:p-0">
                   <ComparePropertyItem
                     listClassName="md:border-r md:border-zinc-800 md:bg-amber-950/15 md:p-3"

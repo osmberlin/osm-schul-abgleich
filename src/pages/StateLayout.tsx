@@ -45,7 +45,7 @@ export function StateLayout() {
         </>
       ) : schuleRow ? (
         <>
-          <div className="mb-6 flex flex-col gap-2 sm:flex-row sm:flex-wrap sm:items-center sm:justify-between sm:gap-x-4">
+          <div className="mb-4 flex flex-col gap-2 sm:flex-row sm:flex-wrap sm:items-center sm:justify-between sm:gap-x-4">
             <h1 className="min-w-0 text-2xl font-semibold text-zinc-100">
               {schuleRow.officialName ?? schuleRow.osmName ?? '—'}
             </h1>

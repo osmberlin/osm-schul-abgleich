@@ -215,6 +215,7 @@ export const de = {
     official: 'Offizielle Daten',
     osm: 'OpenStreetMap',
     keysBoth: 'Gemeinsame Attribute',
+    keysDifferent: 'Unterschiedliche Werte',
     officialOnly: 'Nur in offiziellen Daten',
     osmOnly: 'Nur in OSM',
     /** Landmark für Tastatur-/Screenreader-Sprünge zu den „nur in einer Quelle“-Tabellen. */
