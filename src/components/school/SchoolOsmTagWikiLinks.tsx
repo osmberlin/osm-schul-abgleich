@@ -25,19 +25,16 @@ export function SchoolOsmTagWikiLinks({ links }: { links?: readonly SchoolOsmWik
   return (
     <p className="mt-3 text-sm text-zinc-300">
       {de.osm.schoolTagWikiLead}{' '}
-      {wikiLinks.map((link, idx) => (
-        <span key={link.href}>
-          <a
-            href={link.href}
-            target="_blank"
-            rel="noreferrer"
-            className="text-sky-400 underline underline-offset-2 hover:text-sky-300"
-          >
-            {link.label}
-          </a>
-          {idx < wikiLinks.length - 1 ? ' ' : ''}
-        </span>
-      ))}
+      <span className="text-emerald-300">
+        {wikiLinks.map((link, idx) => (
+          <span key={link.href}>
+            <a href={link.href} target="_blank" rel="noreferrer" className="underline">
+              {link.label}
+            </a>
+            {idx < wikiLinks.length - 1 ? ' ' : ''}
+          </span>
+        ))}
+      </span>
     </p>
   )
 }
