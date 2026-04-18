@@ -43,7 +43,8 @@ export function parseRunHistoryJsonl(text: string): unknown[] {
     try {
       out.push(JSON.parse(line))
     } catch {
-      throw new Error(`run history JSONL: invalid JSON on line ${i + 1}`)
+      // Keep rendering the remaining history instead of failing the whole file.
+      continue
     }
   }
   return sortRunRecordsStable(out)

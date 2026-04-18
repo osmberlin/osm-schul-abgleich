@@ -4,77 +4,86 @@ on:
   push:
     branches: [main]
   workflow_dispatch:
-  schedule:
-    # Daily ~07:00 CET / ~08:00 CEST — JedeSchule-CSV + Overpass neu laden, Abgleich nur bei beiden OK
-    - cron: '0 6 * * *'
 
 permissions:
-  contents: write
+  contents: read
   pages: write
   id-token: write
+  actions: read
 
 env:
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: 'true'
+  DATASET_ARTIFACT_NAME: datasets-last-good
 
 concurrency:
-  group: ${{ github.workflow }}-${{ github.ref }}
+  group: pages-deploy-${{ github.ref }}
   cancel-in-progress: true
 
 jobs:
   build:
-    if: github.actor != 'github-actions[bot]' && !contains(github.event.head_commit.message, '[skip ci]')
+    if: github.event_name != 'push' || (github.actor != 'github-actions[bot]' && !contains(github.event.head_commit.message || '', '[skip ci]'))
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v6
-        with:
-          fetch-depth: 0
       - uses: oven-sh/setup-bun@v2
         with:
           bun-version: latest
       - run: bun install --frozen-lockfile
         env:
-          # Skip Husky in CI; snapshot commits must not run `bun run format`.
           HUSKY: '0'
-      - name: Validate committed snapshot baseline
+
+      - name: Download latest refresh artifact
+        uses: dawidd6/action-download-artifact@v11
+        with:
+          workflow: data-refresh.yml
+          branch: main
+          name: ${{ env.DATASET_ARTIFACT_NAME }}
+          search_artifacts: true
+          path: .artifact-restore
+          if_no_artifact_found: fail
+
+      - name: Copy artifact datasets into workspace
         run: |
+          set -euo pipefail
+          SRC=""
+          if [ -f ".artifact-restore/public/datasets/summary.json" ]; then
+            SRC=".artifact-restore/public/datasets"
+          elif [ -f ".artifact-restore/datasets/summary.json" ]; then
+            SRC=".artifact-restore/datasets"
+          elif [ -f ".artifact-restore/summary.json" ]; then
+            SRC=".artifact-restore"
+          fi
+          if [ -z "$SRC" ]; then
+            echo "datasets artifact could not be resolved into public/datasets."
+            exit 1
+          fi
+          rm -rf public/datasets
+          mkdir -p public/datasets
+          cp -R "$SRC"/. public/datasets/
           test -f public/datasets/summary.json
           test -f public/datasets/status/runs.jsonl
-      - run: bun run pipeline
+
+      - name: Rebuild datasets from stored snapshot
+        run: bun run pipeline:rebuild
         env:
           GITHUB_SHA: ${{ github.sha }}
-          # Work around Bun TLS verification failing to some Overpass endpoints on ubuntu-latest
-          OVERPASS_FETCH_RELAX_TLS: 'true'
+          PIPELINE_RUN_CONTEXT: deploy_push_stored
+
       - name: Validate pipeline snapshot outputs
         run: |
           test -f public/datasets/schools_official_de.meta.json
           test -f public/datasets/schools_osm_de.meta.json
           test -f public/datasets/jedeschule_stats.json
-      - name: Commit snapshot files to main
-        run: |
-          git add public/datasets/summary.json
-          git add public/datasets/status/runs.jsonl
-          git add public/datasets/schools_official_de.meta.json
-          git add public/datasets/schools_osm_de.meta.json
-          git add public/datasets/jedeschule_stats.json
-          if git diff --cached --quiet; then
-            echo "No snapshot changes to commit."
-          else
-            git config user.name "github-actions[bot]"
-            git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-            git commit -m "Cron: update pipeline snapshot [skip ci]"
-            git push origin HEAD:main
-          fi
-      - name: Build from committed main snapshot
-        run: |
-          git fetch origin main
-          git reset --hard origin/main
+
       - name: Remove processing-only artifacts before build
         run: |
           rm -f public/datasets/jedeschule-latest.csv
           rm -rf public/datasets/.pipeline
+
       - run: bun run build
         env:
           VITE_OSM_OAUTH_CLIENT_ID: ${{ secrets.VITE_OSM_OAUTH_CLIENT_ID }}
+
       - uses: actions/upload-pages-artifact@v3
         with:
           path: dist
@@ -105,7 +114,7 @@ jobs:
           echo "--- HEAD with Accept-Encoding: br,gzip ---"
           curl -sSI -H "Accept-Encoding: br,gzip" "$DATASET_URL" | tee /tmp/headers.txt
           echo "--- Compression verdict ---"
-          if rg -i "content-encoding:\\s*(br|gzip)" /tmp/headers.txt >/dev/null; then
+          if rg -i "content-encoding:\s*(br|gzip)" /tmp/headers.txt >/dev/null; then
             echo "Compression appears active."
           else
             echo "No content-encoding header observed for this dataset URL."

@@ -188,32 +188,44 @@ const runStateEntrySchema = z.object({
   counts: stateSummarySchema.shape.counts.optional(),
 })
 
-export const runRecordSchema = z.object({
-  startedAt: z.string(),
-  finishedAt: z.string(),
-  durationMs: z.number(),
-  gitSha: z.string().optional(),
-  overallOk: z.boolean(),
-  errors: z.array(z.string()),
-  states: z.array(runStateEntrySchema),
-  matchSkipped: z.boolean().optional(),
-  matchSkipReason: z.string().optional(),
-  downloads: z
-    .object({
-      jedeschule: z.object({
-        ok: z.boolean(),
-        generatedAt: z.string().optional(),
-        errorMessage: z.string().optional(),
-        upstreamDatasetChanged: z.boolean().optional(),
-      }),
-      osm: z.object({
-        ok: z.boolean(),
-        generatedAt: z.string().optional(),
-        errorMessage: z.string().optional(),
-      }),
-    })
-    .optional(),
-})
+export const runRecordSchema = z
+  .object({
+    startedAt: z.string(),
+    finishedAt: z.string(),
+    durationMs: z.number(),
+    gitSha: z.string().optional(),
+    runContext: z.string().optional(),
+    overallOk: z.boolean(),
+    errors: z.array(z.string()),
+    states: z.array(runStateEntrySchema).optional(),
+    // Legacy alias from older snapshots
+    lands: z.array(runStateEntrySchema).optional(),
+    matchSkipped: z.boolean().optional(),
+    matchSkipReason: z.string().optional(),
+    downloads: z
+      .object({
+        jedeschule: z.object({
+          ok: z.boolean(),
+          generatedAt: z.string().optional(),
+          errorMessage: z.string().optional(),
+          upstreamDatasetChanged: z.boolean().optional(),
+          sourceMode: z.enum(['fresh', 'reused', 'failed']).optional(),
+          sourceModeReason: z.string().optional(),
+        }),
+        osm: z.object({
+          ok: z.boolean(),
+          generatedAt: z.string().optional(),
+          errorMessage: z.string().optional(),
+          sourceMode: z.enum(['fresh', 'reused', 'failed']).optional(),
+          sourceModeReason: z.string().optional(),
+        }),
+      })
+      .optional(),
+  })
+  .transform((row) => ({
+    ...row,
+    states: row.states ?? row.lands ?? [],
+  }))
 
 export const runsFileSchema = z.object({
   runs: z.array(runRecordSchema),
@@ -226,6 +238,8 @@ export const pipelineSourceMetaSchema = z.object({
   sourceUrl: z.string().optional(),
   ok: z.boolean(),
   errorMessage: z.string().optional(),
+  sourceMode: z.enum(['fresh', 'reused', 'failed']).optional(),
+  sourceModeReason: z.string().optional(),
   overpassResponseTimestamp: z.string().optional(),
   interpreterUrl: z.string().optional(),
   httpLastModified: z.string().optional(),

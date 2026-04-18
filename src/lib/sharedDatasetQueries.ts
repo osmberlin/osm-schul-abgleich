@@ -1,10 +1,10 @@
 import { DATASET_FETCH_INIT, DATASET_QUERY_GC_MS, DATASET_QUERY_STALE_MS } from './cachePolicy'
 import { nationalOfficialMetaUrl, nationalOsmMetaUrl, runsJsonlUrl, summaryJsonUrl } from './paths'
-import { runsPayloadFromHistoryText } from './runHistoryJsonl'
+import { parseRunHistoryFileText } from './runHistoryJsonl'
 import {
   type PipelineSourceMeta,
   pipelineSourceMetaSchema,
-  runsFileSchema,
+  runRecordSchema,
   summaryFileSchema,
 } from './schemas'
 import { queryOptions } from '@tanstack/react-query'
@@ -30,7 +30,21 @@ export function runsQueryOptions() {
     queryFn: async () => {
       const r = await fetch(runsJsonlUrl(), DATASET_FETCH_INIT)
       if (!r.ok) throw new Error(String(r.status))
-      return runsFileSchema.parse(runsPayloadFromHistoryText(await r.text()))
+      const rawRuns = parseRunHistoryFileText(await r.text())
+      const validRuns = rawRuns.flatMap((item) => {
+        const normalized =
+          typeof item === 'object' &&
+          item !== null &&
+          Array.isArray((item as { lands?: unknown }).lands)
+            ? { ...(item as Record<string, unknown>), states: (item as { lands: unknown[] }).lands }
+            : item
+        const parsed = runRecordSchema.safeParse(normalized)
+        return parsed.success ? [parsed.data] : []
+      })
+      return {
+        runs: validRuns,
+        droppedRuns: rawRuns.length - validRuns.length,
+      }
     },
     staleTime: DATASET_QUERY_STALE_MS,
     gcTime: DATASET_QUERY_GC_MS,

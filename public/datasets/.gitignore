@@ -12,9 +12,8 @@ schools_matches_de.json
 schools_official_de.meta.dev.json
 schools_osm_de.meta.dev.json
 
-# Local-only run history; keep committed CI history.
+# Run history from refresh/deploy workflows.
 status/*
-!status/runs.jsonl
 status/runs.dev.json
 status/runs.dev.jsonl
 
@@ -27,8 +26,3 @@ status/runs.dev.jsonl
 **/schools_matches_detail.json
 **/schools_osm.meta.json
 
-# Committed snapshot files used as build/deploy baseline.
-!summary.json
-!schools_official_de.meta.json
-!schools_osm_de.meta.json
-!jedeschule_stats.json

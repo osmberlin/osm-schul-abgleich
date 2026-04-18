@@ -7,6 +7,8 @@ export const pipelineSourceMetaSchema = z.object({
   sourceUrl: z.string().optional(),
   ok: z.boolean(),
   errorMessage: z.string().optional(),
+  sourceMode: z.enum(['fresh', 'reused', 'failed']).optional(),
+  sourceModeReason: z.string().optional(),
   /** OSM-specific (optional on JedeSchule side) */
   overpassResponseTimestamp: z.string().optional(),
   interpreterUrl: z.string().optional(),

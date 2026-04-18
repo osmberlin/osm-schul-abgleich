@@ -2,7 +2,10 @@
 
 Vergleicht pro Bundesland Schulstammdaten von [jedeschule.codefor.de](https://jedeschule.codefor.de) mit OSM (`amenity=school` und `amenity=college`, ein Overpass-Filter pro Objekttyp) als **Knoten**, **Wege** und **Relationen** (ein Overpass-Lauf mit `out geom`).
 
-Die zentrale CSV wird **wöchentlich** aktualisiert ([Projekt](https://codefor.de/projekte/jedeschule-2/), [csv-data](https://jedeschule.codefor.de/csv-data/)); GitHub Pages CI läuft **täglich** (06:00 UTC) und lädt CSV sowie Overpass **immer gemeinsam** neu — der Abgleich läuft nur, wenn **beide** Downloads geklappt haben.
+Die zentrale CSV kommt von [jedeschule.codefor.de](https://jedeschule.codefor.de) ([Projekt](https://codefor.de/projekte/jedeschule-2/), [csv-data](https://jedeschule.codefor.de/csv-data/)); die CI trennt **Daten-Refresh** und **Deploy**:
+
+- `data-refresh.yml` lädt Daten nachts um **03:00 Europe/Berlin** und aktualisiert dabei **OSM und amtliche CSV in jedem Lauf**.
+- `pages-deploy.yml` nutzt den letzten erfolgreichen Datensatz-Artefaktstand und deployt ohne frischen Download.
 
 **Diagramme (Mermaid):** [Pipeline (Download → pro Land)](docs/pipeline.md) · [`matchSchools` (Abgleichslogik)](docs/match-schools.md)
 
@@ -67,8 +70,11 @@ bun run test
 bun run build
 ```
 
-GitHub Actions (`.github/workflows/pages.yml`): `bun run pipeline` → Build (täglicher Schedule, Push `main`, manuell). Schlägt ein Download fehl, bricht die Pipeline ab (kein neuer Deploy aus diesem Lauf).
+GitHub Actions:
+
+- `.github/workflows/data-refresh.yml`: geplanter/manueller Daten-Refresh, schreibt `datasets-last-good` (Artifact).
+- `.github/workflows/pages-deploy.yml`: Push-Deploy aus `datasets-last-good` + `pipeline:rebuild` + Pages-Deploy.
 
 ## See also
 
-* https://community.openstreetmap.org/t/art-der-schulen-uber-isced-level-school-oder-school-de/104643
+- https://community.openstreetmap.org/t/art-der-schulen-uber-isced-level-school-oder-school-de/104643

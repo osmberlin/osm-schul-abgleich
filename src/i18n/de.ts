@@ -310,6 +310,13 @@ export const de = {
     sourceJedeschule: 'JedeSchule (offiziell)',
     sourceOsmDe: 'OSM Deutschland',
     refreshedAt: 'Stand',
+    lastPullAt: 'Letzter erfolgreicher Datenabruf',
+    sourceModeFresh: 'Frisch geladen',
+    sourceModeReused: 'Vorheriger Stand wiederverwendet',
+    sourceModeFailed: 'Abruf fehlgeschlagen',
+    sourceModeReasonScheduledNonFriday:
+      'Wöchentliche Amtlich-Aktualisierung erfolgt am Freitag; heute wird der vorige Stand genutzt.',
+    sourceModeReasonManualReuse: 'Manueller Lauf ohne neuen Amtlich-Abruf.',
     jedeschuleHttpLastModified: 'HTTP Last-Modified (Quelle)',
     jedeschuleCsvMaxUpdate: 'Max. update_timestamp (CSV-Zeilen)',
     jedeschuleUpstreamChanged: 'Neuer Datenstand ggü. letztem Lauf',
@@ -324,6 +331,19 @@ export const de = {
     errors: 'Fehler',
     states: 'Bundesländer',
     runDownloads: 'Downloads im Lauf',
+    runsDroppedWarning:
+      '{count} ältere oder ungültige Einträge konnten nicht gelesen werden und werden ausgeblendet.',
+    runContextScheduledWeeklyOfficial:
+      'Geplanter Nachtlauf (Freitag, inkl. amtlicher Aktualisierung)',
+    runContextScheduledDailyReuse: 'Geplanter Nachtlauf (amtliche Daten wiederverwendet)',
+    runContextScheduledBootstrap:
+      'Geplanter Nachtlauf (Bootstrap: amtliche Daten neu geladen, da kein Snapshot vorhanden)',
+    runContextScheduledNightly: 'Geplanter Nachtlauf (frische OSM- und Amtlich-Daten)',
+    runContextManualFull: 'Manueller Lauf (frische Daten geladen)',
+    runContextManualOsmOnly: 'Manueller Lauf (amtliche Daten wiederverwendet)',
+    runContextManualNightly: 'Manueller Nachtlauf (frische OSM- und Amtlich-Daten)',
+    runContextPushStored: 'Push-Deploy (verwendet gespeicherten Datenstand)',
+    runContextUnknown: 'Laufkontext nicht angegeben',
     matchRan: 'Abgleich ausgeführt',
     matchSkipped: 'Abgleich übersprungen',
     matchNotRunMissingInputs: 'Abgleich nicht gelaufen (fehlende oder ungültige Eingaben).',

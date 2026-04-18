@@ -400,6 +400,7 @@ export async function runDownloadJedeschuleNational(projectRoot: string): Promis
       generatedAt,
       sourceUrl: JEDESCHULE_WEEKLY_CSV_URL,
       ok: true,
+      sourceMode: 'fresh',
       httpLastModified,
       httpEtag,
       csvSha256,
@@ -418,6 +419,7 @@ export async function runDownloadJedeschuleNational(projectRoot: string): Promis
       generatedAt,
       sourceUrl: JEDESCHULE_WEEKLY_CSV_URL,
       ok: false,
+      sourceMode: 'failed',
       errorMessage: err,
     }
     await writeJson(pathMeta, meta)
@@ -441,6 +443,7 @@ export async function runDownloadOsmNational(projectRoot: string): Promise<void>
       pipelineStep: 'pipeline:download:osm',
       generatedAt: queried,
       ok: true,
+      sourceMode: 'fresh',
       overpassResponseTimestamp: ok.responseTimestamp,
       interpreterUrl: ok.interpreterUrl,
     }
@@ -453,6 +456,7 @@ export async function runDownloadOsmNational(projectRoot: string): Promise<void>
       pipelineStep: 'pipeline:download:osm',
       generatedAt,
       ok: false,
+      sourceMode: 'failed',
       errorMessage: err,
     }
     await writeJson(pathMeta, meta)
@@ -517,11 +521,15 @@ export async function runStateFirstPipeline(
       generatedAt: officialMeta?.generatedAt,
       errorMessage: officialMeta?.errorMessage,
       upstreamDatasetChanged: officialMeta?.upstreamDatasetChanged,
+      sourceMode: officialMeta?.sourceMode,
+      sourceModeReason: officialMeta?.sourceModeReason,
     },
     osm: {
       ok: osmMeta?.ok ?? false,
       generatedAt: osmMeta?.generatedAt,
       errorMessage: osmMeta?.errorMessage,
+      sourceMode: osmMeta?.sourceMode,
+      sourceModeReason: osmMeta?.sourceModeReason,
     },
   }
 
@@ -874,7 +882,8 @@ async function appendRunRecord(
     if (text.trim() !== '') prior = parseRunHistoryFileText(text)
   }
   const gitSha = process.env.GITHUB_SHA ?? 'local'
-  const newRun = { ...record, gitSha }
+  const runContext = process.env.PIPELINE_RUN_CONTEXT?.trim()
+  const newRun = { ...record, gitSha, ...(runContext ? { runContext } : {}) }
   const startedAt = record.startedAt
   const dayKey =
     typeof startedAt === 'string' && startedAt.trim() !== '' ? berlinCalendarDateKey(startedAt) : ''

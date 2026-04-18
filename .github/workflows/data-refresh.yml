@@ -1,0 +1,111 @@
+name: Refresh Datasets
+
+on:
+  workflow_dispatch:
+  schedule:
+    # DST-safe for 03:00 Europe/Berlin: one of these two UTC slots matches local 03:00.
+    - cron: '0 1 * * *'
+    - cron: '0 2 * * *'
+
+permissions:
+  contents: read
+  actions: read
+
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: 'true'
+  DATASET_ARTIFACT_NAME: datasets-last-good
+
+concurrency:
+  group: refresh-datasets-main
+  cancel-in-progress: true
+
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+      - run: bun install --frozen-lockfile
+        env:
+          HUSKY: '0'
+
+      - name: Decide nightly refresh slot
+        id: mode
+        env:
+          EVENT_NAME: ${{ github.event_name }}
+        run: |
+          set -euo pipefail
+          SHOULD_RUN=false
+          RUN_CONTEXT=""
+
+          if [ "$EVENT_NAME" = "workflow_dispatch" ]; then
+            SHOULD_RUN=true
+            RUN_CONTEXT="refresh_manual_nightly"
+          else
+            BERLIN_HOUR="$(TZ=Europe/Berlin date +%H)"
+            if [ "$BERLIN_HOUR" = "03" ]; then
+              SHOULD_RUN=true
+              RUN_CONTEXT="refresh_scheduled_nightly"
+            fi
+          fi
+
+          echo "should_run=$SHOULD_RUN" >> "$GITHUB_OUTPUT"
+          echo "run_context=$RUN_CONTEXT" >> "$GITHUB_OUTPUT"
+
+      - name: Skip duplicate DST cron slot
+        if: steps.mode.outputs.should_run != 'true'
+        run: echo "Current UTC cron slot is outside 03:00 Europe/Berlin. Skipping."
+
+      - name: Refresh official source (JedeSchule)
+        if: steps.mode.outputs.should_run == 'true'
+        run: bun run pipeline:download:jedeschule
+        env:
+          GITHUB_SHA: ${{ github.sha }}
+
+      - name: Refresh OSM source
+        if: steps.mode.outputs.should_run == 'true'
+        run: bun run pipeline:download:osm
+        env:
+          GITHUB_SHA: ${{ github.sha }}
+          OVERPASS_FETCH_RELAX_TLS: 'true'
+
+      - name: Validate source metadata before rebuild
+        if: steps.mode.outputs.should_run == 'true'
+        run: |
+          set -euo pipefail
+          test -f public/datasets/schools_official_de.meta.json
+          test -f public/datasets/schools_osm_de.meta.json
+          bun --eval '
+            const official = await Bun.file("public/datasets/schools_official_de.meta.json").json()
+            const osm = await Bun.file("public/datasets/schools_osm_de.meta.json").json()
+            if (official?.ok !== true) throw new Error("official meta not ok")
+            if (osm?.ok !== true) throw new Error("osm meta not ok")
+          '
+
+      - name: Rebuild derived datasets
+        if: steps.mode.outputs.should_run == 'true'
+        run: bun run pipeline:rebuild
+        env:
+          GITHUB_SHA: ${{ github.sha }}
+          PIPELINE_RUN_CONTEXT: ${{ steps.mode.outputs.run_context }}
+
+      - name: Validate rebuilt snapshot
+        if: steps.mode.outputs.should_run == 'true'
+        run: |
+          test -f public/datasets/summary.json
+          test -f public/datasets/status/runs.jsonl
+          test -f public/datasets/schools_official_de.meta.json
+          test -f public/datasets/schools_osm_de.meta.json
+          test -f public/datasets/jedeschule_stats.json
+
+      - name: Upload reusable dataset artifact
+        if: steps.mode.outputs.should_run == 'true'
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ env.DATASET_ARTIFACT_NAME }}
+          path: public/datasets
+          include-hidden-files: true
+          if-no-files-found: error
+          retention-days: 21
