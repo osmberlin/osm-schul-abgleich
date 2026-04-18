@@ -3,9 +3,11 @@ import { cn } from '../../lib/cn'
 import { formatDeInteger } from '../../lib/formatNumber'
 import {
   STATE_FACET_MATCH_MODES,
+  STATE_FACET_OSM_AMENITY,
   STATE_MATCH_FACET_MATCH_MODE_NONE,
   STATE_MATCH_FACET_SCHOOL_KIND_NONE,
   type StateFacetMatchMode,
+  type StateFacetOsmAmenity,
 } from '../../lib/stateOverviewItemsSearch'
 import { ChevronDownIcon } from '@heroicons/react/20/solid'
 import { useEffect, useId, useState } from 'react'
@@ -30,6 +32,13 @@ function schoolKindLabel(key: string): string {
   return key === STATE_MATCH_FACET_SCHOOL_KIND_NONE ? de.state.explorer.schoolKindNone : key
 }
 
+function osmAmenityLabel(key: string): string {
+  if (key === 'school') return de.state.explorer.osmAmenitySchool
+  if (key === 'college') return de.state.explorer.osmAmenityCollege
+  if (key === 'none') return de.state.explorer.osmAmenityNone
+  return key
+}
+
 export function StateOverviewFiltersDisclosure({
   exploreQ,
   setExploreQ,
@@ -43,6 +52,8 @@ export function StateOverviewFiltersDisclosure({
   toggleGeoBoundaryIssue,
   schoolKinds,
   toggleSchoolKind,
+  osmAmenities,
+  toggleOsmAmenity,
   resetExplorer,
   aggregations,
   filteredCount,
@@ -60,6 +71,8 @@ export function StateOverviewFiltersDisclosure({
   toggleGeoBoundaryIssue: (v: 'yes' | 'no', on: boolean) => void
   schoolKinds: string[]
   toggleSchoolKind: (kind: string, on: boolean) => void
+  osmAmenities: string[]
+  toggleOsmAmenity: (v: StateFacetOsmAmenity, on: boolean) => void
   resetExplorer: () => void
   aggregations: Aggregations | undefined
   filteredCount: number
@@ -82,6 +95,7 @@ export function StateOverviewFiltersDisclosure({
   const iscedBuckets = aggregations?.iscedLevel?.buckets ?? []
   const geoBoundaryBuckets = aggregations?.geoBoundaryIssue?.buckets ?? []
   const schoolBuckets = sortBuckets(aggregations?.schoolKindDe?.buckets ?? [])
+  const osmAmenityBuckets = aggregations?.osmAmenity?.buckets ?? []
 
   const hasActiveExplorer =
     exploreQ.trim() !== '' ||
@@ -89,7 +103,8 @@ export function StateOverviewFiltersDisclosure({
     matchModes.length > 0 ||
     iscedLevels.length > 0 ||
     geoBoundaryIssues.length > 0 ||
-    schoolKinds.length > 0
+    schoolKinds.length > 0 ||
+    osmAmenities.length > 0
 
   return (
     <details className="group mb-6 rounded-lg border border-zinc-700 bg-zinc-900/50 outline outline-zinc-100/10">
@@ -215,6 +230,38 @@ export function StateOverviewFiltersDisclosure({
                     {level === 'yes' ? de.state.explorer.iscedYes : de.state.explorer.iscedNo}
                   </span>
                   <span className="text-zinc-400 tabular-nums">{formatDeInteger(count)}</span>
+                </label>
+              )
+            })}
+          </div>
+        </fieldset>
+
+        <fieldset className="mb-5">
+          <legend className="mb-2 text-xs font-medium text-zinc-300">
+            {de.state.explorer.osmAmenityHeading}
+          </legend>
+          <div className="flex flex-col gap-2 sm:flex-row sm:flex-wrap">
+            {STATE_FACET_OSM_AMENITY.map((v) => {
+              const bucket = osmAmenityBuckets.find((b) => String(b.key) === v)
+              const count = bucket?.doc_count ?? 0
+              const checked = osmAmenities.includes(v)
+              return (
+                <label
+                  key={v}
+                  className="flex min-w-[140px] flex-1 cursor-pointer items-center justify-between gap-3 rounded-md border border-zinc-700/80 bg-zinc-950/60 px-3 py-2 text-xs has-[:checked]:border-emerald-800"
+                >
+                  <span className="inline-flex min-w-0 items-center gap-2">
+                    <input
+                      type="checkbox"
+                      checked={checked}
+                      onChange={(e) => toggleOsmAmenity(v, e.target.checked)}
+                      className="rounded border-zinc-500 text-emerald-600 focus:ring-emerald-500"
+                    />
+                    <span className="truncate">{osmAmenityLabel(v)}</span>
+                  </span>
+                  <span className="shrink-0 text-zinc-400 tabular-nums">
+                    {formatDeInteger(count)}
+                  </span>
                 </label>
               )
             })}

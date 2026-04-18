@@ -47,7 +47,10 @@ function resolveSchoolAmbiguousCandidates(
         : parseJedeschuleLonLatFromRecord(props)
 
     const showDistance =
-      row.matchMode !== 'name' && mapOsmCentroid != null && officialLonLat != null
+      row.matchMode !== 'name' &&
+      row.matchMode !== 'name_prefix' &&
+      mapOsmCentroid != null &&
+      officialLonLat != null
     let distM: number | null = null
     if (showDistance) {
       const [clon, clat] = mapOsmCentroid

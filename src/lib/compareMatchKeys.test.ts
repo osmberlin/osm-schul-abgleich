@@ -1,6 +1,8 @@
 import {
   addressCompareTargetsFromOsmParts,
+  isFachschuleOfficialName,
   normalizeAddressMatchKey,
+  normalizeForFachschuleCollegeMatch,
   normalizeSchoolNameForMatch,
   normalizeWebsiteMatchKey,
 } from './compareMatchKeys'
@@ -34,5 +36,15 @@ describe('address compare keys', () => {
     expect(targets).toEqual(expect.arrayContaining(['Musterstraße 9', 'Musterstr. 9']))
     const keys = targets.map((x) => normalizeAddressMatchKey(x))
     expect(keys).toContain(normalizeAddressMatchKey('Musterstr. 9'))
+  })
+})
+
+describe('normalizeForFachschuleCollegeMatch', () => {
+  it('folds Staatl. and f. abbreviations after base school-name normalization', () => {
+    const a = normalizeForFachschuleCollegeMatch('Staatl. Fachschule f. Agrarwirtschaft')
+    const b = normalizeForFachschuleCollegeMatch('Staatliche Fachschule für Agrarwirtschaft')
+    expect(a).toBe(b)
+    expect(isFachschuleOfficialName('Staatl. Fachschule f. Agrarwirtschaft')).toBe(true)
+    expect(isFachschuleOfficialName('Grundschule Nord')).toBe(false)
   })
 })

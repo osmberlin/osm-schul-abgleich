@@ -14,7 +14,9 @@ export type StateMatchRow = z.infer<typeof schoolsMatchRowSchema>
 export const STATE_FACET_MATCH_MODES = [
   'distance',
   'distance_and_name',
+  'distance_and_name_prefix',
   'name',
+  'name_prefix',
   'website',
   'address',
   'ref',
@@ -22,6 +24,10 @@ export const STATE_FACET_MATCH_MODES = [
 ] as const
 
 export type StateFacetMatchMode = (typeof STATE_FACET_MATCH_MODES)[number]
+
+export const STATE_FACET_OSM_AMENITY = ['school', 'college', 'none'] as const
+
+export type StateFacetOsmAmenity = (typeof STATE_FACET_OSM_AMENITY)[number]
 
 function namePartsForSearch(row: StateMatchRow): string[] {
   const out: string[] = []
@@ -57,6 +63,14 @@ export function hasOfficialGeoOutsideBoundaryFlag(row: StateMatchRow): boolean {
   return false
 }
 
+export function osmAmenityFacetForMatchRow(row: StateMatchRow): StateFacetOsmAmenity {
+  if (!row.osmId || !row.osmTags) return 'none'
+  const a = row.osmTags.amenity
+  if (a === 'college') return 'college'
+  if (a === 'school') return 'school'
+  return 'none'
+}
+
 export function matchRowToItemsJsDoc(row: StateMatchRow) {
   const hasIsced = !!row.osmTags?.['isced:level']?.trim()
   return {
@@ -68,6 +82,7 @@ export function matchRowToItemsJsDoc(row: StateMatchRow) {
     hasOfficial: row.officialId ? 'yes' : 'no',
     hasOsm: row.osmId ? 'yes' : 'no',
     geoBoundaryIssue: hasOfficialGeoOutsideBoundaryFlag(row) ? 'yes' : 'no',
+    osmAmenity: osmAmenityFacetForMatchRow(row),
   }
 }
 
@@ -89,6 +104,7 @@ export function createStateMatchItemsJsEngine(rows: StateMatchRow[]) {
         order: 'desc',
         hide_zero_doc_count: true,
       },
+      osmAmenity: { title: 'OSM-Objekt', size: 5 },
     },
   })
 }
@@ -100,6 +116,7 @@ export type ExplorerFilterState = {
   iscedLevels: string[]
   geoBoundaryIssues: string[]
   schoolKinds: string[]
+  osmAmenities: string[]
 }
 
 export function searchStateMatchesWithExplorer(
@@ -111,6 +128,7 @@ export function searchStateMatchesWithExplorer(
   if (state.iscedLevels.length > 0) filters.iscedLevel = state.iscedLevels
   if (state.geoBoundaryIssues.length > 0) filters.geoBoundaryIssue = state.geoBoundaryIssues
   if (state.schoolKinds.length > 0) filters.schoolKindDe = state.schoolKinds
+  if (state.osmAmenities.length > 0) filters.osmAmenity = state.osmAmenities
 
   return engine.search({
     query: state.query.trim() || undefined,

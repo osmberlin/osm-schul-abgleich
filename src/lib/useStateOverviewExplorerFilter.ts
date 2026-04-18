@@ -1,4 +1,4 @@
-import { STATE_FACET_MATCH_MODES } from './stateOverviewItemsSearch'
+import { STATE_FACET_MATCH_MODES, STATE_FACET_OSM_AMENITY } from './stateOverviewItemsSearch'
 import { stateRouteApi } from './stateRouteApi'
 import { useNavigate } from '@tanstack/react-router'
 
@@ -14,6 +14,7 @@ export function useStateOverviewExplorerFilter() {
   const iscedLevels = search.lisc ?? []
   const geoBoundaryIssues = search.lgeo ?? []
   const schoolKinds = search.lsk ?? []
+  const osmAmenities = search.loa ?? []
 
   function setExploreQ(nextValue: string) {
     void navigate({
@@ -109,6 +110,26 @@ export function useStateOverviewExplorerFilter() {
     })
   }
 
+  function toggleOsmAmenity(v: (typeof STATE_FACET_OSM_AMENITY)[number], on: boolean) {
+    void navigate({
+      unsafeRelative: 'path',
+      replace: true,
+      search: (prev) => {
+        const cur = prev.loa ?? []
+        const next = new Set(cur)
+        if (on) next.add(v)
+        else next.delete(v)
+        const arr = [...next].filter((x): x is (typeof STATE_FACET_OSM_AMENITY)[number] =>
+          STATE_FACET_OSM_AMENITY.includes(x as (typeof STATE_FACET_OSM_AMENITY)[number]),
+        )
+        return {
+          ...prev,
+          loa: arr.length === 0 ? undefined : arr,
+        }
+      },
+    })
+  }
+
   function resetExplorer() {
     void navigate({
       unsafeRelative: 'path',
@@ -121,6 +142,7 @@ export function useStateOverviewExplorerFilter() {
         lisc: undefined,
         lgeo: undefined,
         lsk: undefined,
+        loa: undefined,
       }),
     })
   }
@@ -138,6 +160,8 @@ export function useStateOverviewExplorerFilter() {
     toggleGeoBoundaryIssue,
     schoolKinds,
     toggleSchoolKind,
+    osmAmenities,
+    toggleOsmAmenity,
     resetExplorer,
   }
 }

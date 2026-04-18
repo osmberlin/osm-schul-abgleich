@@ -3,7 +3,12 @@ import {
   serializeOsmStyleMapSearchParam,
 } from './osmStyleMapQueryParam'
 import { STATE_MATCH_CATEGORIES, type StateMatchCategory } from './stateMatchCategories'
-import { STATE_FACET_MATCH_MODES, type StateFacetMatchMode } from './stateOverviewItemsSearch'
+import {
+  STATE_FACET_MATCH_MODES,
+  STATE_FACET_OSM_AMENITY,
+  type StateFacetMatchMode,
+  type StateFacetOsmAmenity,
+} from './stateOverviewItemsSearch'
 import { parseStateMapBboxSearchParam, serializeStateMapBboxSearchParam } from './useStateMapBbox'
 import { z } from 'zod'
 
@@ -28,6 +33,8 @@ type StateRouteSearch = {
   lisc?: YesNo[]
   lgeo?: YesNo[]
   lsk?: string[]
+  /** Facet: OSM amenity (school / college / none). */
+  loa?: StateFacetOsmAmenity[]
   mask?: boolean
 }
 
@@ -99,6 +106,9 @@ export function validateStateRouteSearch(search: Record<string, unknown>): State
 
   const lsk = stringList(search.lsk).filter((x) => x !== '')
   if (lsk.length > 0) out.lsk = lsk
+
+  const loa = normalizeEnumArray(stringList(search.loa), STATE_FACET_OSM_AMENITY)
+  if (loa.length > 0) out.loa = loa
 
   return out
 }

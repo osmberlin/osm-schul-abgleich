@@ -2,8 +2,10 @@ import {
   flattenOfficialForCompare,
   flattenOsmTagsForCompare,
   normalizeAddressMatchKey,
+  normalizeForFachschuleCollegeMatch,
   normalizeSchoolNameForMatch,
   normalizeWebsiteMatchKey,
+  isFachschuleOfficialName,
 } from '../../src/lib/compareMatchKeys'
 import { MATCH_RADIUS_KM } from '../../src/lib/matchRadius'
 import { centroidFromOsmGeometry } from '../../src/lib/osmGeometryCentroid'
@@ -37,6 +39,36 @@ export function normalizedOsmNameVariantMap(
     if (!out.has(key)) out.set(key, tag)
   }
   return out
+}
+
+/** Like {@link normalizedOsmNameVariantMap} but keys use {@link normalizeForFachschuleCollegeMatch} for college OSM matching. */
+function normalizedOsmNameVariantMapFachschule(
+  tags: Record<string, string>,
+): Map<string, OsmNameMatchTag> {
+  const out = new Map<string, OsmNameMatchTag>()
+  for (const tag of OSM_SCHOOL_NAME_TAGS_IN_ORDER) {
+    const raw = tags[tag]
+    if (raw == null || String(raw).trim() === '') continue
+    const key = normalizeForFachschuleCollegeMatch(raw)
+    if (!key) continue
+    if (!out.has(key)) out.set(key, tag)
+  }
+  return out
+}
+
+function osmAmenityIsCollege(tags: Record<string, string>): boolean {
+  return tags.amenity === 'college'
+}
+
+function officialsNearOsmFachschule(
+  o: OsmSchoolInput,
+  withCoord: OfficialInput[],
+  osmState: StateCode,
+  excludeReserved?: Set<string>,
+): OfficialInput[] {
+  return officialsNearOsm(o, withCoord, osmState, excludeReserved).filter((off) =>
+    isFachschuleOfficialName(off.name),
+  )
 }
 
 /**
@@ -85,7 +117,17 @@ export type AmbiguousOfficialSnapshot = {
 export type MatchRowOut = {
   key: string
   category: 'matched' | 'official_only' | 'osm_only' | 'match_ambiguous' | 'official_no_coord'
-  matchMode?: 'distance' | 'distance_and_name' | 'name' | 'website' | 'address' | 'ref'
+  matchMode?:
+    | 'distance'
+    | 'distance_and_name'
+    | 'distance_and_name_prefix'
+    | 'name'
+    | 'name_prefix'
+    | 'website'
+    | 'address'
+    | 'ref'
+  /** Fachschule/college name match: exact string vs official-longer prefix (see pipeline). */
+  nameMatchVariant?: 'exact' | 'prefix'
   officialId: string | null
   officialName: string | null
   officialProperties: Record<string, unknown> | null
@@ -206,13 +248,49 @@ function officialsNearOsm(
   })
 }
 
-/** Exactly one official in `officials` matches any normalized OSM name tag; otherwise null. */
-function uniqueNameOfficialIn(officials: OfficialInput[], o: OsmSchoolInput): OfficialInput | null {
-  const variantMap = normalizedOsmNameVariantMap(o.tags)
+/** OSM tag used for name match when exact match on map key, else longest prefix key. */
+function osmNameTagForExactOrPrefixMatch(
+  variantMap: Map<string, OsmNameMatchTag>,
+  offNorm: string,
+  exact: boolean,
+): OsmNameMatchTag | undefined {
+  if (exact) return variantMap.get(offNorm)
+  let bestK = ''
+  for (const K of variantMap.keys()) {
+    if (offNorm.startsWith(K) && K.length > bestK.length) bestK = K
+  }
+  return bestK ? variantMap.get(bestK) : undefined
+}
+
+function matchModeDistanceAndName(
+  variant: 'exact' | 'prefix',
+): 'distance_and_name' | 'distance_and_name_prefix' {
+  return variant === 'prefix' ? 'distance_and_name_prefix' : 'distance_and_name'
+}
+
+/**
+ * Unique official by exact or prefix match (official normalized name equals a variant key, or starts with one).
+ */
+function uniqueNameOfficialInExactOrPrefix(
+  officials: OfficialInput[],
+  variantMap: Map<string, OsmNameMatchTag>,
+  normalizeOff: (name: string | null | undefined) => string,
+  officialFilter?: (off: OfficialInput) => boolean,
+): { winner: OfficialInput; nameMatchVariant: 'exact' | 'prefix' } | null {
   if (variantMap.size === 0) return null
-  const matches = officials.filter((x) => variantMap.has(normalizeSchoolNameForMatch(x.name)))
+  const filt = officialFilter ? officials.filter(officialFilter) : officials
+  const matches = filt.filter((x) => {
+    const offN = normalizeOff(x.name)
+    for (const K of variantMap.keys()) {
+      if (offN === K || offN.startsWith(K)) return true
+    }
+    return false
+  })
   if (matches.length !== 1) return null
-  return matches[0]
+  const winner = matches[0]!
+  const offN = normalizeOff(winner.name)
+  const exact = variantMap.has(offN)
+  return { winner, nameMatchVariant: exact ? 'exact' : 'prefix' }
 }
 
 export function buildOsmSchoolsFromGeoJson(fc: FeatureCollection): OsmSchoolInput[] {
@@ -330,6 +408,8 @@ function extractRefMatches(
     .sort((i, j) => {
       const a = osmSchools[i]!
       const b = osmSchools[j]!
+      const amenityOrder = Number(osmAmenityIsCollege(a.tags)) - Number(osmAmenityIsCollege(b.tags))
+      if (amenityOrder !== 0) return amenityOrder
       const rd = refMatchOsmSortKey(a) - refMatchOsmSortKey(b)
       if (rd !== 0) return rd
       return osmSchoolInputKey(a).localeCompare(osmSchoolInputKey(b), 'en')
@@ -348,6 +428,7 @@ function extractRefMatches(
     const off = index.get(refKey)
     if (!off) continue
     if (reservedOfficialIds.has(off.id)) continue
+    if (osmAmenityIsCollege(o.tags) && !isFachschuleOfficialName(off.name)) continue
 
     reservedOfficialIds.add(off.id)
     consumedOsmKeys.add(landKey)
@@ -404,7 +485,7 @@ export function matchSchools(
     fullCandsByOsm.set(landKey, officialsNearOsm(o, withCoord, osmState))
   }
 
-  /** Global pass: unique distance+name among ≥2 nearby officials — closest matches claim officials first. */
+  /** Global pass: unique distance+name among ≥2 nearby officials — school OSM first, then college (Fachschule). */
   type Phase1Proposal = {
     landKey: string
     o: OsmSchoolInput
@@ -412,27 +493,48 @@ export function matchSchools(
     distKm: number
     nameKey: string
     osmNameTag: OsmNameMatchTag | undefined
+    matchMode: 'distance_and_name' | 'distance_and_name_prefix'
+    nameMatchVariant: 'exact' | 'prefix'
   }
   const phase1Proposals: Phase1Proposal[] = []
-  for (const o of osmRemaining) {
+  const osmPhase1Order = [...osmRemaining].sort((a, b) => {
+    const t = Number(osmAmenityIsCollege(a.tags)) - Number(osmAmenityIsCollege(b.tags))
+    if (t !== 0) return t
+    return osmSchoolInputKey(a).localeCompare(osmSchoolInputKey(b), 'en')
+  })
+  for (const o of osmPhase1Order) {
     const landKey = osmSchoolInputKey(o)
     const full = fullCandsByOsm.get(landKey) ?? []
     if (full.length < 2) continue
-    const winner = uniqueNameOfficialIn(full, o)
-    if (!winner) continue
+    const college = osmAmenityIsCollege(o.tags)
+    const variantMap = college
+      ? normalizedOsmNameVariantMapFachschule(o.tags)
+      : normalizedOsmNameVariantMap(o.tags)
+    const uniq = uniqueNameOfficialInExactOrPrefix(
+      full,
+      variantMap,
+      college ? normalizeForFachschuleCollegeMatch : normalizeSchoolNameForMatch,
+      college ? (off) => isFachschuleOfficialName(off.name) : undefined,
+    )
+    if (!uniq) continue
+    const { winner, nameMatchVariant } = uniq
     const [lon, lat] = o.centroid
     const distKm = distance(point([winner.lon, winner.lat]), point([lon, lat]), {
       units: 'kilometers',
     })
-    const winnerNorm = normalizeSchoolNameForMatch(winner.name)!
-    const variantMap = normalizedOsmNameVariantMap(o.tags)
+    const winnerNorm = college
+      ? normalizeForFachschuleCollegeMatch(winner.name)
+      : normalizeSchoolNameForMatch(winner.name)!
+    const exact = nameMatchVariant === 'exact'
     phase1Proposals.push({
       landKey,
       o,
       winner,
       distKm,
       nameKey: winnerNorm,
-      osmNameTag: variantMap.get(winnerNorm),
+      osmNameTag: osmNameTagForExactOrPrefixMatch(variantMap, winnerNorm, exact),
+      matchMode: matchModeDistanceAndName(nameMatchVariant),
+      nameMatchVariant,
     })
   }
   phase1Proposals.sort((a, b) => a.distKm - b.distKm || a.landKey.localeCompare(b.landKey, 'en'))
@@ -448,7 +550,7 @@ export function matchSchools(
     phase1RowByLandKey.set(p.landKey, {
       key: `match-${p.winner.id}`,
       category: 'matched',
-      matchMode: 'distance_and_name',
+      matchMode: p.matchMode,
       officialId: p.winner.id,
       officialName: p.winner.name,
       officialProperties: p.winner.properties,
@@ -462,10 +564,17 @@ export function matchSchools(
       ...schoolKindFromOsmTags(p.o.tags),
       matchedByOsmNameNormalized: p.nameKey,
       matchedByOsmNameTag: p.osmNameTag,
+      nameMatchVariant: p.nameMatchVariant,
     })
   }
 
-  for (const o of osmRemaining) {
+  const osmRemainingSorted = [...osmRemaining].sort((a, b) => {
+    const c = Number(osmAmenityIsCollege(a.tags)) - Number(osmAmenityIsCollege(b.tags))
+    if (c !== 0) return c
+    return osmSchoolInputKey(a).localeCompare(osmSchoolInputKey(b), 'en')
+  })
+
+  for (const o of osmRemainingSorted) {
     const [lon, lat] = o.centroid
     const landKey = osmSchoolInputKey(o)
     const osmState = opts.osmStateByKey.get(landKey)
@@ -478,7 +587,9 @@ export function matchSchools(
       continue
     }
 
-    const cands = officialsNearOsm(o, withCoord, osmState, reserved)
+    const cands = osmAmenityIsCollege(o.tags)
+      ? officialsNearOsmFachschule(o, withCoord, osmState, reserved)
+      : officialsNearOsm(o, withCoord, osmState, reserved)
 
     if (cands.length === 0) {
       rows.push({
@@ -550,21 +661,32 @@ export function matchSchools(
     withDist.sort((a, b) => a.distKm - b.distKm)
     const closestKm = withDist[0].distKm
 
-    const variantMapMulti = normalizedOsmNameVariantMap(o.tags)
+    const college = osmAmenityIsCollege(o.tags)
+    const variantMapMulti = college
+      ? normalizedOsmNameVariantMapFachschule(o.tags)
+      : normalizedOsmNameVariantMap(o.tags)
+    const normOff = college ? normalizeForFachschuleCollegeMatch : normalizeSchoolNameForMatch
     if (variantMapMulti.size > 0) {
-      const nameMatches = withDist.filter((x) =>
-        variantMapMulti.has(normalizeSchoolNameForMatch(x.off.name)),
-      )
+      const nameMatches = withDist.filter((x) => {
+        if (college && !isFachschuleOfficialName(x.off.name)) return false
+        const offN = normOff(x.off.name)
+        for (const K of variantMapMulti.keys()) {
+          if (offN === K || offN.startsWith(K)) return true
+        }
+        return false
+      })
       if (nameMatches.length === 1) {
-        const win = nameMatches[0]
+        const win = nameMatches[0]!
         const winner = win.off
         reserved.add(winner.id)
         const dM = win.distKm * 1000
-        const offNorm = normalizeSchoolNameForMatch(winner.name)!
+        const offNorm = normOff(winner.name)
+        const exact = variantMapMulti.has(offNorm)
+        const nameMatchVariant: 'exact' | 'prefix' = exact ? 'exact' : 'prefix'
         rows.push({
           key: `match-${winner.id}`,
           category: 'matched',
-          matchMode: 'distance_and_name',
+          matchMode: matchModeDistanceAndName(nameMatchVariant),
           officialId: winner.id,
           officialName: winner.name,
           officialProperties: winner.properties,
@@ -577,7 +699,8 @@ export function matchSchools(
           osmTags: o.tags,
           ...schoolKindFromOsmTags(o.tags),
           matchedByOsmNameNormalized: offNorm,
-          matchedByOsmNameTag: variantMapMulti.get(offNorm),
+          matchedByOsmNameTag: osmNameTagForExactOrPrefixMatch(variantMapMulti, offNorm, exact),
+          nameMatchVariant,
         })
         continue
       }
@@ -638,6 +761,7 @@ export function matchSchools(
   for (let idx = 0; idx < rows.length; idx++) {
     const row = rows[idx]
     if (row.category !== 'osm_only') continue
+    if (row.osmTags?.amenity === 'college') continue
     const rowLand = rowLandByOsmRef(row, opts)
     const tags = row.osmTags
     const keys =
@@ -711,6 +835,49 @@ export function matchSchools(
     }
   }
 
+  for (let idx = 0; idx < rows.length; idx++) {
+    const base = rows[idx]
+    if (base.category !== 'osm_only' || base.osmTags?.amenity !== 'college') continue
+    const rowLand = rowLandByOsmRef(base, opts)
+    const variantMap = normalizedOsmNameVariantMapFachschule(base.osmTags ?? {})
+    if (variantMap.size === 0) continue
+    const matches = withoutCoord.filter((off) => {
+      if (noCoordMatched.has(off.id)) return false
+      if (stateCodeFromSchoolId(off.id) !== rowLand) return false
+      if (!isFachschuleOfficialName(off.name)) return false
+      const offN = normalizeForFachschuleCollegeMatch(off.name)
+      for (const K of variantMap.keys()) {
+        if (offN === K || offN.startsWith(K)) return true
+      }
+      return false
+    })
+    if (matches.length !== 1) continue
+    const off = matches[0]!
+    const offN = normalizeForFachschuleCollegeMatch(off.name)
+    const exact = variantMap.has(offN)
+    let osmNameTag: OsmNameMatchTag | undefined = variantMap.get(offN)
+    if (!exact) {
+      let bestK = ''
+      for (const K of variantMap.keys()) {
+        if (offN.startsWith(K) && K.length > bestK.length) bestK = K
+      }
+      osmNameTag = bestK ? variantMap.get(bestK) : undefined
+    }
+    rows[idx] = {
+      ...base,
+      key: `match-${off.id}`,
+      category: 'matched',
+      matchMode: exact ? 'name' : 'name_prefix',
+      officialId: off.id,
+      officialName: off.name,
+      officialProperties: off.properties,
+      matchedByOsmNameNormalized: offN,
+      matchedByOsmNameTag: osmNameTag,
+      ...(exact ? { nameMatchVariant: 'exact' as const } : { nameMatchVariant: 'prefix' as const }),
+    }
+    noCoordMatched.add(off.id)
+  }
+
   const noCoordByWebsite = new Map<string, OfficialInput[]>()
   for (const off of withoutCoord) {
     if (noCoordMatched.has(off.id)) continue
@@ -724,6 +891,7 @@ export function matchSchools(
   for (let idx = 0; idx < rows.length; idx++) {
     const row = rows[idx]
     if (row.category !== 'osm_only') continue
+    if (row.osmTags?.amenity === 'college') continue
     const rowLand = rowLandByOsmRef(row, opts)
     const key = osmRowWebsiteKey(row)
     if (!key) continue
@@ -796,6 +964,7 @@ export function matchSchools(
   for (let idx = 0; idx < rows.length; idx++) {
     const row = rows[idx]
     if (row.category !== 'osm_only') continue
+    if (row.osmTags?.amenity === 'college') continue
     const rowLand = rowLandByOsmRef(row, opts)
     const key = osmRowAddressKey(row)
     if (!key) continue

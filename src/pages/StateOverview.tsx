@@ -115,6 +115,7 @@ export function StateOverview() {
         [...explorer.iscedLevels].sort().join('|'),
         [...explorer.geoBoundaryIssues].sort().join('|'),
         JSON.stringify([...explorer.schoolKinds].sort()),
+        [...explorer.osmAmenities].sort().join('|'),
       ].join('\n'),
     [
       explorer.exploreQ,
@@ -123,6 +124,7 @@ export function StateOverview() {
       explorer.iscedLevels,
       explorer.geoBoundaryIssues,
       explorer.schoolKinds,
+      explorer.osmAmenities,
     ],
   )
 
@@ -140,6 +142,7 @@ export function StateOverview() {
       iscedLevels: explorer.iscedLevels,
       geoBoundaryIssues: explorer.geoBoundaryIssues,
       schoolKinds: explorer.schoolKinds,
+      osmAmenities: explorer.osmAmenities,
     })
   }, [itemsEngine, matchesAfterBbox, explorerKey])
 
@@ -216,6 +219,8 @@ export function StateOverview() {
         toggleGeoBoundaryIssue={explorer.toggleGeoBoundaryIssue}
         schoolKinds={explorer.schoolKinds}
         toggleSchoolKind={explorer.toggleSchoolKind}
+        osmAmenities={explorer.osmAmenities}
+        toggleOsmAmenity={explorer.toggleOsmAmenity}
         resetExplorer={explorer.resetExplorer}
         aggregations={exploreResult?.data.aggregations}
         filteredCount={matchesAfterExplorer.length}

@@ -1,4 +1,8 @@
-import { normalizeAddressMatchKey, normalizeWebsiteMatchKey } from '../../src/lib/compareMatchKeys'
+import {
+  normalizeAddressMatchKey,
+  normalizeForFachschuleCollegeMatch,
+  normalizeWebsiteMatchKey,
+} from '../../src/lib/compareMatchKeys'
 import type { StateCode } from '../../src/lib/stateConfig'
 import {
   MATCH_RADIUS_KM,
@@ -761,6 +765,59 @@ describe('matchSchools', () => {
     expect(amb?.matchMode).toBe('address')
     expect(amb?.matchedByAddressNormalized).toBe(normalizeAddressMatchKey('Ringstraße 1'))
     expect((amb?.ambiguousOfficialIds ?? []).sort()).toEqual(['NI-addr-a', 'NI-addr-b'])
+  })
+
+  it('does not apply ref match to amenity=college when the official is not a Fachschule by name', () => {
+    const off: OfficialInput = {
+      id: 'BE-NOREF',
+      name: 'Grundschule Nord',
+      lon: 13.4,
+      lat: 52.52,
+      properties: {},
+    }
+    const osmCollege: OsmSchoolInput = {
+      osmType: 'way',
+      osmId: 'col1',
+      name: 'Campus',
+      tags: { amenity: 'college', name: 'Campus', ref: 'NOREF' },
+      geometry: { type: 'Point', coordinates: [13.4, 52.52] },
+      centroid: [13.4, 52.52],
+    }
+    const { rows } = matchSchools([off], [osmCollege], landOpts(osmCollege, 'BE'))
+    expect(rows.filter((r) => r.category === 'matched')).toHaveLength(0)
+    expect(rows.some((r) => r.category === 'osm_only' && r.osmId === 'col1')).toBe(true)
+  })
+
+  it('matches amenity=college with distance_and_name_prefix when the official Fachschule name extends the OSM name', () => {
+    const offLong: OfficialInput = {
+      id: 'BE-FS1',
+      name: 'Staatl. Fachschule für Agrarwirtschaft Kempten Fachrichtung Milchwirtschaft und Molkereiwesen',
+      lon: 13.4001,
+      lat: 52.5201,
+      properties: {},
+    }
+    const offOther: OfficialInput = {
+      id: 'BE-FS2',
+      name: 'Staatl. Fachschule für Bäckerei Sonstwo',
+      lon: 13.401,
+      lat: 52.521,
+      properties: {},
+    }
+    const osmCollege: OsmSchoolInput = {
+      osmType: 'way',
+      osmId: 'c2',
+      name: 'Staatl. Fachschule für Agrarwirtschaft',
+      tags: { amenity: 'college', name: 'Staatl. Fachschule für Agrarwirtschaft' },
+      geometry: { type: 'Point', coordinates: [13.4, 52.52] },
+      centroid: [13.4, 52.52],
+    }
+    const { rows } = matchSchools([offLong, offOther], [osmCollege], landOpts(osmCollege, 'BE'))
+    const m = rows.filter((r) => r.category === 'matched')
+    expect(m).toHaveLength(1)
+    expect(m[0]?.officialId).toBe('BE-FS1')
+    expect(m[0]?.matchMode).toBe('distance_and_name_prefix')
+    expect(m[0]?.nameMatchVariant).toBe('prefix')
+    expect(m[0]?.matchedByOsmNameNormalized).toBe(normalizeForFachschuleCollegeMatch(offLong.name))
   })
 })
 

@@ -161,6 +161,10 @@ export const de = {
       geoBoundaryNo: 'Kein Rand-Hinweis',
       schoolKindHeading: 'Schulart (OSM school / school:de)',
       schoolKindNone: 'Keine Schulart ermittelbar',
+      osmAmenityHeading: 'OSM-Objekt (amenity)',
+      osmAmenitySchool: 'Schule (amenity=school)',
+      osmAmenityCollege: 'Berufliche Einrichtung (amenity=college)',
+      osmAmenityNone: 'Kein OSM-Objekt / sonstiges',
       reset: 'Zurücksetzen',
       openHint: 'Filter wirken auf Kennzahlen, Karte und Trefferliste.',
     },
@@ -239,8 +243,12 @@ export const de = {
       'Zuordnung über Distanz: ein einziger amtlicher Schuldatensatz lag im Vergleichsradius um den OSM-Schwerpunkt.',
     matchExplanationDistanceAndName:
       'Zuordnung über Distanz und Namensgleichheit (normalisierter Vergleichsstring, siehe Pipeline):',
+    matchExplanationDistanceAndNamePrefix:
+      'Zuordnung über Distanz und Namenspräfix (amtlicher Name setzt den OSM-Namen fort; normalisierter Vergleichsstring, siehe Pipeline):',
     matchExplanationName:
       'Zuordnung nur über Namensgleichheit (amtlicher Datensatz ohne Koordinaten, normalisierter Vergleichsstring):',
+    matchExplanationNamePrefix:
+      'Zuordnung nur über Namenspräfix (amtlicher Fachschul-Datensatz ohne Koordinaten, normalisierter Vergleichsstring inkl. Abkürzungen):',
     matchExplanationWebsite:
       'Zuordnung nur über Website-Gleichheit (amtlicher Datensatz ohne Koordinaten, normalisierte URL):',
     matchExplanationAddress:
@@ -250,7 +258,9 @@ export const de = {
     matchModeLabel: {
       distance: 'Distanz',
       distance_and_name: 'Distanz + Name',
+      distance_and_name_prefix: 'Distanz + Namenspräfix',
       name: 'Name',
+      name_prefix: 'Namenspräfix',
       website: 'Website',
       address: 'Adresse',
       ref: 'Referenz (ref)',

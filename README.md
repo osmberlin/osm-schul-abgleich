@@ -1,6 +1,6 @@
 # OSM Schulabgleich
 
-Vergleicht pro Bundesland Schulstammdaten von [jedeschule.codefor.de](https://jedeschule.codefor.de) mit OSM-Schulen (`amenity=school`) als **Knoten**, **Wege** und **Relationen** (ein Overpass-Lauf mit `out geom`).
+Vergleicht pro Bundesland Schulstammdaten von [jedeschule.codefor.de](https://jedeschule.codefor.de) mit OSM (`amenity=school` und `amenity=college`, ein Overpass-Filter pro Objekttyp) als **Knoten**, **Wege** und **Relationen** (ein Overpass-Lauf mit `out geom`).
 
 Die zentrale CSV wird **wöchentlich** aktualisiert ([Projekt](https://codefor.de/projekte/jedeschule-2/), [csv-data](https://jedeschule.codefor.de/csv-data/)); GitHub Pages CI läuft **täglich** (06:00 UTC) und lädt CSV sowie Overpass **immer gemeinsam** neu — der Abgleich läuft nur, wenn **beide** Downloads geklappt haben.
 

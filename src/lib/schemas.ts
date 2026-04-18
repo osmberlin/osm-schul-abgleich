@@ -52,8 +52,18 @@ export const schoolsMatchRowSchema = z
     category: matchCategorySchema.optional(),
     matchCategory: matchCategorySchema.optional(),
     matchMode: z
-      .enum(['distance', 'distance_and_name', 'name', 'website', 'address', 'ref'])
+      .enum([
+        'distance',
+        'distance_and_name',
+        'distance_and_name_prefix',
+        'name',
+        'name_prefix',
+        'website',
+        'address',
+        'ref',
+      ])
       .optional(),
+    nameMatchVariant: z.enum(['exact', 'prefix']).optional(),
     officialId: z.string().nullable(),
     officialName: z.string().nullable(),
     officialProperties: z.record(z.string(), z.unknown()).nullable().optional(),

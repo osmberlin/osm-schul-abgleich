@@ -133,7 +133,9 @@ export function SchoolDetail() {
           {ambiguousCandidates.length > 0 ? (
             <div className="space-y-6">
               <SchoolDetailAmbiguousAlert
-                showNameNoGeoText={matchRow.matchMode === 'name'}
+                showNameNoGeoText={
+                  matchRow.matchMode === 'name' || matchRow.matchMode === 'name_prefix'
+                }
                 showNoLocalGeoText={ambiguousNoLocalGeoFeature}
               />
               <h2 className="flex flex-row flex-wrap items-center gap-x-2 text-base font-semibold text-zinc-100">

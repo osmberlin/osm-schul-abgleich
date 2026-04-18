@@ -80,6 +80,23 @@ export function normalizeSchoolNameForMatch(name: string | null | undefined): st
   return s.replace(/\s+/g, ' ').trim()
 }
 
+/**
+ * Extra normalization for Fachschule ↔ `amenity=college` matching only (does not affect `normalizeSchoolNameForMatch`).
+ * Collapses common German abbreviations so OSM and official long names can match (full or prefix).
+ */
+export function normalizeForFachschuleCollegeMatch(name: string | null | undefined): string {
+  let s = normalizeSchoolNameForMatch(name)
+  if (!s) return ''
+  s = s.replace(/\bstaatl\./g, 'staatliche')
+  s = s.replace(/\bf\./g, 'fuer')
+  return s.replace(/\s+/g, ' ').trim()
+}
+
+/** Whether the official name is treated as a Fachschule row for college OSM matching. */
+export function isFachschuleOfficialName(name: string | null | undefined): boolean {
+  return normalizeForFachschuleCollegeMatch(name).includes('fachschule')
+}
+
 export function normalizeAddressCompareString(s: string): string {
   return s.trim().replace(/\s+/g, ' ')
 }

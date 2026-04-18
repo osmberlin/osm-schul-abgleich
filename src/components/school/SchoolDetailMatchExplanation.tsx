@@ -10,11 +10,18 @@ export function SchoolDetailMatchExplanation({ row }: { row: StateSchoolMatchRow
     <p className="mb-6 text-sm leading-relaxed text-zinc-400">
       {row.matchMode === 'distance' ? (
         de.detail.matchExplanationDistance
-      ) : row.matchMode === 'distance_and_name' || row.matchMode === 'name' ? (
+      ) : row.matchMode === 'distance_and_name' ||
+        row.matchMode === 'distance_and_name_prefix' ||
+        row.matchMode === 'name' ||
+        row.matchMode === 'name_prefix' ? (
         <>
           {row.matchMode === 'distance_and_name'
             ? de.detail.matchExplanationDistanceAndName
-            : de.detail.matchExplanationName}
+            : row.matchMode === 'distance_and_name_prefix'
+              ? de.detail.matchExplanationDistanceAndNamePrefix
+              : row.matchMode === 'name_prefix'
+                ? de.detail.matchExplanationNamePrefix
+                : de.detail.matchExplanationName}
           {row.matchedByOsmNameNormalized ? ' ' : ''}
           {row.matchedByOsmNameNormalized ? (
             <code className="rounded bg-zinc-900 px-1.5 py-0.5 font-mono text-[0.9em] text-zinc-200">
