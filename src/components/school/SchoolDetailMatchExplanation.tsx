@@ -1,5 +1,11 @@
 import { de } from '../../i18n/de'
+import { formatDeInteger } from '../../lib/formatNumber'
 import type { StateSchoolsMatchRow } from '../../lib/stateDatasetQueries'
+
+function matchExplanationDistanceText(row: StateSchoolsMatchRow): string {
+  const distancePart = row.distanceMeters != null ? `${formatDeInteger(row.distanceMeters)} m` : '—'
+  return de.detail.matchExplanationDistance.replace('{distance}', distancePart)
+}
 
 export function SchoolDetailMatchExplanation({ row }: { row: StateSchoolsMatchRow }) {
   if (row.category !== 'matched') return null
@@ -7,7 +13,7 @@ export function SchoolDetailMatchExplanation({ row }: { row: StateSchoolsMatchRo
   return (
     <p className="mb-6 text-sm leading-relaxed text-zinc-400">
       {row.matchMode === 'distance' ? (
-        de.detail.matchExplanationDistance
+        matchExplanationDistanceText(row)
       ) : row.matchMode === 'distance_and_name' ||
         row.matchMode === 'distance_and_name_prefix' ||
         row.matchMode === 'name' ||
@@ -52,7 +58,13 @@ export function SchoolDetailMatchExplanation({ row }: { row: StateSchoolsMatchRo
           </code>
         </>
       ) : (
-        de.detail.matchExplanationDistance
+        matchExplanationDistanceText(row)
+      )}
+      {row.distanceMeters != null && row.matchMode !== 'distance' && (
+        <>
+          {' \u00B7 '}
+          {de.detail.abstand}: {formatDeInteger(row.distanceMeters)} m
+        </>
       )}
     </p>
   )

@@ -1,7 +1,5 @@
 import { CategoryLegendSwatch } from '../components/CategoryLegendSwatch'
 import { de } from '../i18n/de'
-import { formatDeInteger } from '../lib/formatNumber'
-import { formatSchoolWhereSubtitle } from '../lib/schoolWhere'
 import { type StateCode, STATE_LABEL_DE } from '../lib/stateConfig'
 import { stateListSearchQueryOptions } from '../lib/stateDatasetQueries'
 import type { StateMatchCategory } from '../lib/stateMatchCategories'
@@ -47,7 +45,7 @@ export function StateLayout() {
         </>
       ) : schuleRow ? (
         <>
-          <div className="mb-2 flex flex-col gap-2 sm:flex-row sm:flex-wrap sm:items-center sm:justify-between sm:gap-x-4">
+          <div className="mb-6 flex flex-col gap-2 sm:flex-row sm:flex-wrap sm:items-center sm:justify-between sm:gap-x-4">
             <h1 className="min-w-0 text-2xl font-semibold text-zinc-100">
               {schuleRow.officialName ?? schuleRow.osmName ?? '—'}
             </h1>
@@ -59,20 +57,6 @@ export function StateLayout() {
               </span>
             </div>
           </div>
-          <p className="mb-6 text-sm leading-snug text-zinc-400">
-            {formatSchoolWhereSubtitle(
-              label,
-              stateKey,
-              schuleRow.officialProperties ?? null,
-              schuleRow.osmTags ?? null,
-            )}
-            {schuleRow.category === 'matched' && schuleRow.distanceMeters != null && (
-              <>
-                {' \u00B7 '}
-                {de.detail.abstand}: {formatDeInteger(schuleRow.distanceMeters)} m
-              </>
-            )}
-          </p>
         </>
       ) : (
         <>

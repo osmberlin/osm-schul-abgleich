@@ -261,8 +261,9 @@ export const de = {
       official_no_coord: 'Schule amtlich ohne Koordinaten',
     },
     mapMask: 'Maskierung',
+    /** `{distance}` z. B. `36 m` */
     matchExplanationDistance:
-      'Zuordnung über Distanz: ein einziger amtlicher Schuldatensatz lag im Vergleichsradius um den OSM-Schwerpunkt.',
+      'Zuordnung über Distanz ({distance}) – ein einzelner amtlicher Schuldatensatz lag im Vergleichsradius.',
     matchExplanationDistanceAndName:
       'Zuordnung über Distanz und Namensgleichheit (normalisierter Vergleichsstring, siehe Pipeline):',
     matchExplanationDistanceAndNamePrefix:
