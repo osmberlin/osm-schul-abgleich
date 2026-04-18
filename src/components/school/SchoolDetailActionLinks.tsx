@@ -1,9 +1,9 @@
 import { de } from '../../i18n/de'
 import { buildIdUrl, buildJosmLoadObject, buildOsmBrowseUrl } from '../../lib/editorLinks'
-import { fetchStateSchoolsBundle } from '../../lib/fetchStateSchoolsBundle'
 import { jedeschuleSchoolJsonUrl } from '../../lib/jedeschuleUrls'
 import { computeSchoolDetailMapActionBounds } from '../../lib/schoolDetailMapActionBounds'
 import { resolveSchoolMapOsmCentroid } from '../../lib/schoolDetailMapOsmCentroid'
+import type { StateSchoolsBundle, StateSchoolsMatchRow } from '../../lib/stateDatasetQueries'
 import { useSchoolDetailRoute } from '../../lib/useSchoolDetailRoute'
 import {
   getSchoolDetailLicenceInfo,
@@ -14,16 +14,13 @@ import type { Feature } from 'geojson'
 const EDIT_LINK_CLASS_NAME =
   'inline-flex items-center rounded-md bg-brand-800 px-3 py-1.5 text-sm font-medium text-white hover:bg-brand-900'
 
-type StateSchoolsBundle = Awaited<ReturnType<typeof fetchStateSchoolsBundle>>
-type StateSchoolMatchRow = StateSchoolsBundle['matches'][number]
-
 export function SchoolDetailActionLinks({
   data,
   matchRow,
   osmAreasByKey,
 }: {
   data: StateSchoolsBundle
-  matchRow: StateSchoolMatchRow
+  matchRow: StateSchoolsMatchRow
   osmAreasByKey: Record<string, Feature> | undefined
 }) {
   const { stateKey } = useSchoolDetailRoute()

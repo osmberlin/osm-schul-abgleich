@@ -1,12 +1,9 @@
-import { fetchStateSchoolsBundle } from './fetchStateSchoolsBundle'
 import { findOfficialSchoolFeature } from './findOfficialSchoolFeature'
 import { nameFromOfficialProperties } from './matchRowInBbox'
+import type { StateSchoolsBundle, StateSchoolsMatchRow } from './stateDatasetQueries'
 import { parseJedeschuleLonLatFromRecord } from './zodGeo'
 import distance from '@turf/distance'
 import { point } from '@turf/helpers'
-
-type StateSchoolsBundle = Awaited<ReturnType<typeof fetchStateSchoolsBundle>>
-type StateSchoolMatchRow = StateSchoolsBundle['matches'][number]
 
 export type SchoolAmbiguousCandidate = {
   id: string
@@ -25,7 +22,7 @@ export type SchoolAmbiguousCandidatesResult = {
 
 function resolveSchoolAmbiguousCandidates(
   data: StateSchoolsBundle | undefined,
-  row: StateSchoolMatchRow | null,
+  row: StateSchoolsMatchRow | null,
   mapOsmCentroid: readonly [number, number] | null,
 ): SchoolAmbiguousCandidate[] {
   if (!data || !row?.ambiguousOfficialIds?.length || row.category !== 'match_ambiguous') return []
@@ -76,7 +73,7 @@ function resolveSchoolAmbiguousCandidates(
 
 export function deriveSchoolAmbiguousCandidates(
   data: StateSchoolsBundle | undefined,
-  row: StateSchoolMatchRow | null,
+  row: StateSchoolsMatchRow | null,
   mapOsmCentroid: readonly [number, number] | null,
 ): SchoolAmbiguousCandidatesResult {
   const ambiguousCandidates = resolveSchoolAmbiguousCandidates(data, row, mapOsmCentroid)

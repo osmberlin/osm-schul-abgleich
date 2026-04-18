@@ -1,29 +1,19 @@
-import { fetchStateSchoolsBundle } from './fetchStateSchoolsBundle'
 import { findOfficialSchoolFeature } from './findOfficialSchoolFeature'
-import { findOsmFeature } from './osmFeatureLookup'
 import { centroidFromOsmGeometry } from './osmGeometryCentroid'
+import type { StateSchoolsBundle, StateSchoolsMatchRow } from './stateDatasetQueries'
 import { parseJedeschuleLonLatFromRecord, parseMatchRowOsmCentroidLonLat } from './zodGeo'
 
-type StateSchoolsBundle = Awaited<ReturnType<typeof fetchStateSchoolsBundle>>
-type StateSchoolMatchRow = StateSchoolsBundle['matches'][number]
-
 /**
- * Map focus: OSM centroid (matcher order), else OSM geometry, else official coordinates —
- * so markers work without a stored centroid in JSON.
+ * Map focus: OSM centroid from match row (matcher order), else official coordinates.
  */
 export function resolveSchoolMapOsmCentroid(
   data: StateSchoolsBundle | undefined,
-  matchRow: StateSchoolMatchRow | null,
+  matchRow: StateSchoolsMatchRow | null,
 ): readonly [number, number] | null {
   if (!data || !matchRow) return null
 
   const fromRow = parseMatchRowOsmCentroidLonLat(matchRow)
   if (fromRow) return fromRow
-
-  const fromOsmFeature = findOsmFeature(data.osm, matchRow.osmType, matchRow.osmId)
-  if (fromOsmFeature?.geometry) {
-    return centroidFromOsmGeometry(fromOsmFeature.geometry)
-  }
 
   const fromOfficialProps = parseJedeschuleLonLatFromRecord(
     matchRow.officialProperties ?? undefined,

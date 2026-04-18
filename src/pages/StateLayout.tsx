@@ -1,39 +1,37 @@
 import { CategoryLegendSwatch } from '../components/CategoryLegendSwatch'
 import { de } from '../i18n/de'
-import { fetchStateOverviewBundle } from '../lib/fetchStateOverviewBundle'
 import { formatDeInteger } from '../lib/formatNumber'
 import { formatSchoolWhereSubtitle } from '../lib/schoolWhere'
 import { type StateCode, STATE_LABEL_DE } from '../lib/stateConfig'
+import { stateListSearchQueryOptions } from '../lib/stateDatasetQueries'
 import type { StateMatchCategory } from '../lib/stateMatchCategories'
 import { useQuery } from '@tanstack/react-query'
 import { Outlet, useParams, useRouterState } from '@tanstack/react-router'
-import { useMemo } from 'react'
 
 export function StateLayout() {
   const { stateKey } = useParams({ strict: false }) as { stateKey: string }
   const label = STATE_LABEL_DE[stateKey as StateCode] ?? stateKey
 
   const pathname = useRouterState({ select: (s) => s.location.pathname })
-  const schuleKeyDecoded = useMemo(() => {
-    const m = pathname.match(/^\/bundesland\/[^/]+\/schule\/(.+)$/)
-    if (!m?.[1]) return null
+  const m = pathname.match(/^\/bundesland\/[^/]+\/schule\/(.+)$/)
+  let schuleKeyDecoded: string | null = null
+  if (m?.[1]) {
     try {
-      return decodeURIComponent(m[1])
+      schuleKeyDecoded = decodeURIComponent(m[1])
     } catch {
-      return m[1]
+      schuleKeyDecoded = m[1]
     }
-  }, [pathname])
+  }
 
   const schuleQ = useQuery({
-    queryKey: ['schule-detail', stateKey, schuleKeyDecoded],
-    queryFn: () => fetchStateOverviewBundle(stateKey),
+    ...stateListSearchQueryOptions(stateKey),
     enabled: !!stateKey && !!schuleKeyDecoded,
   })
 
-  const schuleRow = useMemo(() => {
-    if (!schuleKeyDecoded || !schuleQ.data) return null
-    return schuleQ.data.matches.find((r) => r.key === schuleKeyDecoded) ?? null
-  }, [schuleQ.data, schuleKeyDecoded])
+  const schuleRow =
+    !schuleKeyDecoded || !schuleQ.data
+      ? null
+      : (schuleQ.data.find((r) => r.key === schuleKeyDecoded) ?? null)
 
   const titleBlock =
     schuleKeyDecoded != null ? (
@@ -65,8 +63,16 @@ export function StateLayout() {
             {formatSchoolWhereSubtitle(
               label,
               stateKey,
-              schuleRow.officialProperties ?? null,
-              schuleRow.osmTags ?? null,
+              {
+                address: schuleRow.officialAddress ?? null,
+                zip: schuleRow.officialZip ?? null,
+                city: schuleRow.officialCity ?? null,
+              },
+              {
+                'addr:city': schuleRow.osmAddrCity ?? '',
+                'addr:street': schuleRow.osmAddrStreet ?? '',
+                'addr:housenumber': schuleRow.osmAddrHousenumber ?? '',
+              },
             )}
             {schuleRow.category === 'matched' && schuleRow.distanceMeters != null && (
               <>

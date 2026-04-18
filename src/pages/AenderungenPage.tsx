@@ -13,7 +13,7 @@ import bbox from '@turf/bbox'
 import { featureCollection, point } from '@turf/helpers'
 import { getFeature, getAuthToken, configure, uploadChangeset, isLoggedIn } from 'osm-api'
 import 'maplibre-gl/dist/maplibre-gl.css'
-import { useMemo, useState } from 'react'
+import { useState } from 'react'
 import MapGL, { Layer, Source } from 'react-map-gl/maplibre'
 
 function syncOsmAuthHeader() {
@@ -29,40 +29,31 @@ export function AenderungenPage() {
   const [uploadBusy, setUploadBusy] = useState(false)
   const [feedback, setFeedback] = useState<{ kind: 'ok' | 'err'; text: string } | null>(null)
 
-  const list = useMemo(() => Object.entries(pendingByKey), [pendingByKey])
+  const list = Object.entries(pendingByKey)
 
-  const pendingEdits = useMemo(() => list.map(([, p]) => p), [list])
+  const pendingEdits = list.map(([, p]) => p)
 
-  const changesetTagsPreview = useMemo(
-    () => buildOsmUploadChangesetTags(pendingEdits),
-    [pendingEdits],
+  const changesetTagsPreview = buildOsmUploadChangesetTags(pendingEdits)
+
+  const sourceTagEntries = Object.entries(changesetTagsPreview)
+    .filter(([k]) => k.startsWith('source:'))
+    .sort((a, b) => {
+      const na = Number(a[0].replace('source:', ''))
+      const nb = Number(b[0].replace('source:', ''))
+      return na - nb
+    })
+
+  const mapFc = featureCollection(
+    list.map(([, p]) =>
+      point([p.lon, p.lat], { key: `${p.osmType}/${p.osmId}`, label: `${p.osmType}/${p.osmId}` }),
+    ),
   )
 
-  const sourceTagEntries = useMemo(() => {
-    return Object.entries(changesetTagsPreview)
-      .filter(([k]) => k.startsWith('source:'))
-      .sort((a, b) => {
-        const na = Number(a[0].replace('source:', ''))
-        const nb = Number(b[0].replace('source:', ''))
-        return na - nb
-      })
-  }, [changesetTagsPreview])
-
-  const mapFc = useMemo(() => {
-    const features = list.map(([, p]) =>
-      point([p.lon, p.lat], { key: `${p.osmType}/${p.osmId}`, label: `${p.osmType}/${p.osmId}` }),
-    )
-    return featureCollection(features)
-  }, [list])
-
-  const initialViewState = useMemo(() => {
-    if (mapFc.features.length === 0) {
-      return { longitude: 10.45, latitude: 51.16, zoom: 5.2 }
-    }
-    if (mapFc.features.length === 1) {
-      const c = mapFc.features[0].geometry.coordinates
-      return { longitude: c[0], latitude: c[1], zoom: 14 }
-    }
+  let initialViewState = { longitude: 10.45, latitude: 51.16, zoom: 5.2 }
+  if (mapFc.features.length === 1) {
+    const c = mapFc.features[0].geometry.coordinates
+    initialViewState = { longitude: c[0], latitude: c[1], zoom: 14 }
+  } else if (mapFc.features.length > 1) {
     const b = bbox(mapFc)
     const [minX, minY, maxX, maxY] = b
     const lon = (minX + maxX) / 2
@@ -70,8 +61,8 @@ export function AenderungenPage() {
     const pad = 0.02
     const maxDelta = Math.max(maxX - minX, maxY - minY) + pad * 2
     const zoom = maxDelta > 2 ? 7 : maxDelta > 0.5 ? 10 : maxDelta > 0.1 ? 12 : 14
-    return { longitude: lon, latitude: lat, zoom }
-  }, [mapFc])
+    initialViewState = { longitude: lon, latitude: lat, zoom }
+  }
 
   async function onUpload() {
     setFeedback(null)

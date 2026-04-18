@@ -43,7 +43,7 @@ import { feature, featureCollection, point } from '@turf/helpers'
 import simplify from '@turf/simplify'
 import type { Feature, FeatureCollection, Geometry } from 'geojson'
 import { createHash } from 'node:crypto'
-import { mkdir } from 'node:fs/promises'
+import { mkdir, rm } from 'node:fs/promises'
 import path from 'node:path'
 
 function envScopedJsonFileName(fileName: string): string {
@@ -198,7 +198,7 @@ function buildOsmUserPointFeatureAndArea(f: Feature): {
   const geom = promoteClosedLineStringsToPolygons(f.geometry ?? null) ?? f.geometry
   if (!geom || geometryIsPointLikeOnly(geom)) {
     return {
-      point: feature(simplifyOsmGeometryForUser(geom), { hasPolygonGeometry: false }, { id: f.id }),
+      point: feature(simplifyOsmGeometryForUser(geom), { hasArea: false }, { id: f.id }),
       areaEntry: null,
     }
   }
@@ -206,7 +206,7 @@ function buildOsmUserPointFeatureAndArea(f: Feature): {
   const areaFeature = feature(normalizeOsmGeometryForAreasFile(geom), null, { id: f.id })
   if (!key) {
     return {
-      point: feature(simplifyOsmGeometryForUser(geom), { hasPolygonGeometry: false }, { id: f.id }),
+      point: feature(simplifyOsmGeometryForUser(geom), { hasArea: false }, { id: f.id }),
       areaEntry: null,
     }
   }
@@ -215,7 +215,7 @@ function buildOsmUserPointFeatureAndArea(f: Feature): {
   return {
     point: point(
       [roundToDecimals(lon, R), roundToDecimals(lat, R)],
-      { hasPolygonGeometry: true },
+      { hasArea: true },
       { id: f.id },
     ),
     areaEntry: [key, areaFeature],
@@ -233,6 +233,129 @@ function optimizeMatchRowForUserOutput(
   if (typeof out.osmCentroidLat === 'number') {
     out.osmCentroidLat = roundToDecimals(out.osmCentroidLat, USER_FACING_COORD_DECIMALS)
   }
+  return out
+}
+
+const OVERVIEW_MATCH_MODE_NONE = '(none)'
+const OVERVIEW_SCHOOL_KIND_NONE = '(keine)'
+
+function toNonEmptyString(v: unknown): string | null {
+  if (typeof v !== 'string') return null
+  const t = v.trim()
+  return t.length > 0 ? t : null
+}
+
+function normalizeSearchToken(v: string): string {
+  return v.trim().toLowerCase().replace(/\s+/g, ' ')
+}
+
+function overviewSearchQForRow(row: Record<string, unknown>): string {
+  const tokens: string[] = []
+  const officialName = toNonEmptyString(row.officialName)
+  if (officialName) tokens.push(officialName)
+  const osmName = toNonEmptyString(row.osmName)
+  if (osmName) tokens.push(osmName)
+  const tags = (row.osmTags ?? null) as Record<string, unknown> | null
+  if (tags) {
+    for (const k of Object.keys(tags)) {
+      if (!k.includes('name')) continue
+      const v = toNonEmptyString(tags[k])
+      if (v) tokens.push(v)
+    }
+  }
+  const dedup = new Set(tokens.map(normalizeSearchToken))
+  return [...dedup].join(' ')
+}
+
+function hasGeoBoundaryIssue(row: Record<string, unknown>): boolean {
+  const props = (row.officialProperties ?? null) as Record<string, unknown> | null
+  if (props?._error_outside_boundary != null) return true
+  const snaps = Array.isArray(row.ambiguousOfficialSnapshots) ? row.ambiguousOfficialSnapshots : []
+  for (const snap of snaps) {
+    const p = (snap as { properties?: Record<string, unknown> }).properties
+    if (p?._error_outside_boundary != null) return true
+  }
+  return false
+}
+
+function optimizeMapMatchRowForUserOutput(row: Record<string, unknown>): Record<string, unknown> {
+  const officialProps = (row.officialProperties ?? null) as Record<string, unknown> | null
+  return {
+    key: row.key,
+    category: row.category,
+    officialId: row.officialId ?? null,
+    officialName: row.officialName ?? null,
+    officialLon:
+      typeof officialProps?.longitude === 'number'
+        ? roundToDecimals(officialProps.longitude, R)
+        : null,
+    officialLat:
+      typeof officialProps?.latitude === 'number'
+        ? roundToDecimals(officialProps.latitude, R)
+        : null,
+    osmId: row.osmId ?? null,
+    osmType: row.osmType ?? null,
+    osmCentroidLon:
+      typeof row.osmCentroidLon === 'number' ? roundToDecimals(row.osmCentroidLon, R) : null,
+    osmCentroidLat:
+      typeof row.osmCentroidLat === 'number' ? roundToDecimals(row.osmCentroidLat, R) : null,
+    osmName: row.osmName ?? null,
+  }
+}
+
+function optimizeListSearchMatchRowForUserOutput(
+  row: Record<string, unknown>,
+): Record<string, unknown> {
+  const tags = (row.osmTags ?? null) as Record<string, unknown> | null
+  const officialProps = (row.officialProperties ?? null) as Record<string, unknown> | null
+  const matchMode = toNonEmptyString(row.matchMode) ?? OVERVIEW_MATCH_MODE_NONE
+  const schoolKindDe = toNonEmptyString(row.schoolKindDe) ?? OVERVIEW_SCHOOL_KIND_NONE
+  const amenity = toNonEmptyString(tags?.amenity)
+  const osmAmenity = amenity === 'school' || amenity === 'college' ? amenity : 'none'
+  const hasIscedLevel = toNonEmptyString(tags?.['isced:level']) != null
+  const hasOfficial = toNonEmptyString(row.officialId) != null
+  const hasOsm = toNonEmptyString(row.osmId) != null
+  const out: Record<string, unknown> = {
+    key: row.key,
+    category: row.category,
+    officialId: row.officialId ?? null,
+    officialName: row.officialName ?? null,
+    officialLon:
+      typeof officialProps?.longitude === 'number'
+        ? roundToDecimals(officialProps.longitude, R)
+        : null,
+    officialLat:
+      typeof officialProps?.latitude === 'number'
+        ? roundToDecimals(officialProps.latitude, R)
+        : null,
+    officialAddress: toNonEmptyString(officialProps?.address),
+    officialZip: toNonEmptyString(officialProps?.zip),
+    officialCity: toNonEmptyString(officialProps?.city),
+    osmId: row.osmId ?? null,
+    osmType: row.osmType ?? null,
+    osmCentroidLon:
+      typeof row.osmCentroidLon === 'number' ? roundToDecimals(row.osmCentroidLon, R) : null,
+    osmCentroidLat:
+      typeof row.osmCentroidLat === 'number' ? roundToDecimals(row.osmCentroidLat, R) : null,
+    distanceMeters: row.distanceMeters ?? null,
+    osmName: row.osmName ?? null,
+    osmAddrCity: toNonEmptyString(tags?.['addr:city']),
+    osmAddrStreet: toNonEmptyString(tags?.['addr:street']),
+    osmAddrHousenumber: toNonEmptyString(tags?.['addr:housenumber']),
+    search: {
+      q: overviewSearchQForRow(row),
+      facets: {
+        matchMode,
+        iscedLevel: hasIscedLevel ? 'yes' : 'no',
+        schoolKindDe,
+        osmAmenity,
+        geoBoundaryIssue: hasGeoBoundaryIssue(row) ? 'yes' : 'no',
+        hasOfficial: hasOfficial ? 'yes' : 'no',
+        hasOsm: hasOsm ? 'yes' : 'no',
+      },
+    },
+  }
+  if (typeof row.matchMode === 'string') out.matchMode = row.matchMode
   return out
 }
 
@@ -609,6 +732,15 @@ export async function runStateFirstPipeline(
 
   const summaryUpdates = new Map<string, StateSummaryOut>()
 
+  // Clean legacy per-state artifacts that are no longer part of the route-split dataset model.
+  for (const code of STATE_ORDER) {
+    await rm(path.join(datasetsDir(projectRoot), code, 'schools_osm.geojson'), { force: true })
+    await rm(path.join(datasetsDir(projectRoot), code, 'schools_matches.json'), { force: true })
+    await rm(path.join(datasetsDir(projectRoot), code, 'schools_matches_overview.json'), {
+      force: true,
+    })
+  }
+
   for (const code of codesToProcess) {
     const officialFcState = officialGeojsonForState(schools, code)
     const gated = gateOfficialFeatureCollection(officialFcState)
@@ -634,7 +766,6 @@ export async function runStateFirstPipeline(
         .map(optimizeOfficialFeatureForUserOutput),
     )
     const osmPointsAndAreas = osmStateFc.features.map(buildOsmUserPointFeatureAndArea)
-    const osmStateUser: FeatureCollection = featureCollection(osmPointsAndAreas.map((x) => x.point))
     const osmAreasByKey: Record<string, Feature> = {}
     for (const { areaEntry } of osmPointsAndAreas) {
       if (areaEntry) {
@@ -642,28 +773,83 @@ export async function runStateFirstPipeline(
         osmAreasByKey[k] = feat
       }
     }
-    const rowsStateUser = enriched.map((r) =>
-      optimizeMatchRowForUserOutput(
+    const rowsStateDetailUser = enriched.map((r) =>
+      optimizeMatchRowForUserOutput({
+        ...(r as Record<string, unknown>),
+        hasArea:
+          typeof r.osmType === 'string' &&
+          typeof r.osmId === 'string' &&
+          !!osmAreasByKey[`${r.osmType}/${r.osmId}`],
+      } as Record<string, unknown> & {
+        osmCentroidLon?: number | null
+        osmCentroidLat?: number | null
+      }),
+    )
+    const rowsStateMapUser = enriched.map((r) =>
+      optimizeMapMatchRowForUserOutput(
         r as Record<string, unknown> & {
           osmCentroidLon?: number | null
           osmCentroidLat?: number | null
         },
       ),
     )
+    const rowsStateListSearchUser = enriched.map((r) =>
+      optimizeListSearchMatchRowForUserOutput(
+        r as Record<string, unknown> & {
+          osmCentroidLon?: number | null
+          osmCentroidLat?: number | null
+        },
+      ),
+    )
+    const rowsStateDetailByKey = Object.fromEntries(
+      rowsStateDetailUser
+        .map((r) => [String((r as { key?: unknown }).key ?? ''), r] as const)
+        .filter((x) => x[0] !== ''),
+    )
+    const officialPointsById: Record<string, [number, number]> = {}
+    for (const f of officialStateOut.features) {
+      const id = String(f.id ?? (f.properties as { id?: unknown })?.id ?? '')
+      if (!id) continue
+      if (f.geometry?.type === 'Point') {
+        const [lon, lat] = f.geometry.coordinates
+        if (Number.isFinite(lon) && Number.isFinite(lat)) {
+          officialPointsById[id] = [
+            roundToDecimals(lon, USER_FACING_COORD_DECIMALS),
+            roundToDecimals(lat, USER_FACING_COORD_DECIMALS),
+          ]
+        }
+      }
+    }
 
     await mkdir(path.join(datasetsDir(projectRoot), code), { recursive: true })
     await writeJson(
       path.join(datasetsDir(projectRoot), code, 'schools_official.geojson'),
       officialStateOut,
     )
-    await writeJson(path.join(datasetsDir(projectRoot), code, 'schools_osm.geojson'), osmStateUser)
+    await writeJson(
+      path.join(datasetsDir(projectRoot), code, 'schools_official_points.json'),
+      officialPointsById,
+    )
+    await rm(path.join(datasetsDir(projectRoot), code, 'schools_osm.geojson'), { force: true })
+    await rm(path.join(datasetsDir(projectRoot), code, 'schools_matches.json'), { force: true })
+    await rm(path.join(datasetsDir(projectRoot), code, 'schools_matches_overview.json'), {
+      force: true,
+    })
     await writeJson(
       path.join(datasetsDir(projectRoot), code, 'schools_osm_areas.json'),
       osmAreasByKey,
     )
     await writeJson(
-      path.join(datasetsDir(projectRoot), code, 'schools_matches.json'),
-      rowsStateUser,
+      path.join(datasetsDir(projectRoot), code, 'schools_matches_map.json'),
+      rowsStateMapUser,
+    )
+    await writeJson(
+      path.join(datasetsDir(projectRoot), code, 'schools_matches_list_search.json'),
+      rowsStateListSearchUser,
+    )
+    await writeJson(
+      path.join(datasetsDir(projectRoot), code, 'schools_matches_detail.json'),
+      rowsStateDetailByKey,
     )
 
     const osmMetaState: Record<string, unknown> = {

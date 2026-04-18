@@ -75,8 +75,6 @@ jobs:
       - run: bun run build
         env:
           VITE_OSM_OAUTH_CLIENT_ID: ${{ secrets.VITE_OSM_OAUTH_CLIENT_ID }}
-      - name: Create gzip/brotli sidecars in dist (experiment)
-        run: bun run build:compress
       - uses: actions/upload-pages-artifact@v3
         with:
           path: dist
@@ -102,7 +100,7 @@ jobs:
           PAGE_URL: ${{ needs.deploy.outputs.page_url }}
         run: |
           set -e
-          DATASET_URL="${PAGE_URL%/}/datasets/BW/schools_matches.json"
+          DATASET_URL="${PAGE_URL%/}/datasets/BW/schools_matches_map.json"
           echo "Testing ${DATASET_URL}"
           echo "--- HEAD with Accept-Encoding: br,gzip ---"
           curl -sSI -H "Accept-Encoding: br,gzip" "$DATASET_URL" | tee /tmp/headers.txt

@@ -1,39 +1,11 @@
-import { readdir, stat } from 'node:fs/promises'
+import {
+  collectPerLandUserFacingDatasets,
+  formatMiB,
+  type DatasetTotals,
+} from './lib/userFacingDatasetSizes'
 import path from 'node:path'
 
-const LAND_CODES = [
-  'BW',
-  'BY',
-  'BE',
-  'BB',
-  'HB',
-  'HH',
-  'HE',
-  'MV',
-  'NI',
-  'NW',
-  'RP',
-  'SL',
-  'SN',
-  'ST',
-  'SH',
-  'TH',
-] as const
-const USER_FACING_FILES = [
-  'schools_official.geojson',
-  'schools_osm.geojson',
-  'schools_osm_areas.json',
-  'schools_matches.json',
-  'schools_osm.meta.json',
-] as const
-
-type Totals = {
-  totalBytes: number
-  byFile: Record<string, number>
-  byExt: Record<string, number>
-}
-
-type TotalsCompat = Totals & {
+type TotalsCompat = DatasetTotals & {
   total_bytes?: number
   by_file?: Record<string, number>
   by_ext?: Record<string, number>
@@ -45,10 +17,6 @@ function parseArg(flag: string): string | null {
   return process.argv[idx + 1] ?? null
 }
 
-function formatMiB(bytes: number): string {
-  return `${(bytes / (1024 * 1024)).toFixed(2)} MiB`
-}
-
 async function readJsonIfExists<T>(p: string): Promise<T | null> {
   try {
     const text = await Bun.file(p).text()
@@ -58,32 +26,7 @@ async function readJsonIfExists<T>(p: string): Promise<T | null> {
   }
 }
 
-async function collect(rootDir: string): Promise<Totals> {
-  const totals: Totals = { totalBytes: 0, byFile: {}, byExt: {} }
-  for (const code of LAND_CODES) {
-    const dir = path.join(rootDir, code)
-    try {
-      await readdir(dir)
-    } catch {
-      continue
-    }
-    for (const name of USER_FACING_FILES) {
-      const p = path.join(dir, name)
-      try {
-        const s = await stat(p)
-        totals.totalBytes += s.size
-        totals.byFile[name] = (totals.byFile[name] ?? 0) + s.size
-        const ext = path.extname(name) || '(none)'
-        totals.byExt[ext] = (totals.byExt[ext] ?? 0) + s.size
-      } catch {
-        // Optional: file can be missing for partial datasets.
-      }
-    }
-  }
-  return totals
-}
-
-function normalizeTotals(input: TotalsCompat | null): Totals | null {
+function normalizeTotals(input: TotalsCompat | null): DatasetTotals | null {
   if (!input) return null
   return {
     totalBytes: input.totalBytes ?? input.total_bytes ?? 0,
@@ -105,7 +48,7 @@ async function main() {
   const baselinePath = parseArg('--baseline')
   const jsonOut = parseArg('--json-out')
 
-  const current = await collect(datasetsRoot)
+  const current = await collectPerLandUserFacingDatasets(datasetsRoot)
   const baselineRaw = baselinePath ? await readJsonIfExists<TotalsCompat>(baselinePath) : null
   const baseline = normalizeTotals(baselineRaw)
 

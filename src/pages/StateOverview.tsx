@@ -4,16 +4,19 @@ import { StateOverviewMatchList } from '../components/state/StateOverviewMatchLi
 import { StateOverviewStats } from '../components/state/StateOverviewStats'
 import { StateMap } from '../components/StateMap'
 import { de } from '../i18n/de'
-import { fetchStateOverviewBundle } from '../lib/fetchStateOverviewBundle'
 import { stateHistoryFromRuns } from '../lib/matchHistoryFromRuns'
 import {
-  buildOfficialSchoolLonLatIndex,
+  buildOfficialSchoolLonLatIndexFromPoints,
   matchesToOverviewMapPoints,
   matchRowIncludedWhenStateMapBboxActive,
 } from '../lib/matchRowInBbox'
-import { stateBoundaryUrl, stateOsmMetaUrl, runsJsonlUrl, summaryJsonUrl } from '../lib/paths'
-import { runsPayloadFromHistoryText } from '../lib/runHistoryJsonl'
-import { runsFileSchema, summaryFileSchema } from '../lib/schemas'
+import { runsQueryOptions, summaryQueryOptions } from '../lib/sharedDatasetQueries'
+import {
+  stateBoundaryQueryOptions,
+  stateListSearchQueryOptions,
+  stateOsmMetaQueryOptions,
+  stateOverviewQueryOptions,
+} from '../lib/stateDatasetQueries'
 import {
   collectFilteredIdsFromSearchResult,
   createStateMatchItemsJsEngine,
@@ -24,8 +27,7 @@ import { useStateOverviewExplorerFilter } from '../lib/useStateOverviewExplorerF
 import { useStateOverviewMapState } from '../lib/useStateOverviewMapState'
 import { useQuery } from '@tanstack/react-query'
 import { useNavigate, useParams } from '@tanstack/react-router'
-import type { Feature, FeatureCollection, MultiPolygon, Polygon } from 'geojson'
-import { useId, useMemo } from 'react'
+import { useId, useState } from 'react'
 import { MapProvider } from 'react-map-gl/maplibre'
 
 export function StateOverview() {
@@ -38,146 +40,90 @@ export function StateOverview() {
   const { mapCamera, setMapCamera, bboxFilter, setBboxFilter, clearBboxFilter } =
     useStateOverviewMapState()
   const explorer = useStateOverviewExplorerFilter()
+  const hasExplorerSearchParams =
+    explorer.exploreQ.trim() !== '' ||
+    explorer.nameScope !== 'both' ||
+    explorer.matchModes.length > 0 ||
+    explorer.iscedLevels.length > 0 ||
+    explorer.geoBoundaryIssues.length > 0 ||
+    explorer.schoolKinds.length > 0 ||
+    explorer.osmAmenities.length > 0
+  const [listSearchRequested, setListSearchRequested] = useState(false)
+  const showSearch = listSearchRequested || hasExplorerSearchParams
+  const showList = listSearchRequested
 
-  const summaryQ = useQuery({
-    queryKey: ['summary'],
-    queryFn: async () => {
-      const r = await fetch(summaryJsonUrl())
-      if (!r.ok) throw new Error(String(r.status))
-      return summaryFileSchema.parse(await r.json())
-    },
-  })
-
-  const runsQ = useQuery({
-    queryKey: ['runs'],
-    queryFn: async () => {
-      const r = await fetch(runsJsonlUrl())
-      if (!r.ok) throw new Error(String(r.status))
-      return runsFileSchema.parse(runsPayloadFromHistoryText(await r.text()))
-    },
-  })
+  const summaryQ = useQuery(summaryQueryOptions())
+  const runsQ = useQuery(runsQueryOptions())
 
   const stateSummary = summaryQ.data?.states.find((l) => l.code === stateKey)
 
-  const stateHistoryPoints = useMemo(
-    () => (runsQ.data ? stateHistoryFromRuns(runsQ.data.runs, stateKey) : []),
-    [runsQ.data, stateKey],
-  )
+  const stateHistoryPoints = runsQ.data ? stateHistoryFromRuns(runsQ.data.runs, stateKey) : []
 
-  const dataQ = useQuery({
-    queryKey: ['state-data', stateKey],
-    queryFn: () => fetchStateOverviewBundle(stateKey),
-    enabled: !!stateKey,
+  const dataQ = useQuery({ ...stateOverviewQueryOptions(stateKey), enabled: !!stateKey })
+  const boundaryQ = useQuery({ ...stateBoundaryQueryOptions(stateKey), enabled: !!stateKey })
+  const listSearchQ = useQuery({
+    ...stateListSearchQueryOptions(stateKey),
+    enabled: !!stateKey && showSearch,
   })
+  const metaQ = useQuery({ ...stateOsmMetaQueryOptions(stateKey), enabled: !!stateKey })
 
-  const metaQ = useQuery({
-    queryKey: ['state-osm-meta', stateKey],
-    queryFn: async () => {
-      const r = await fetch(stateOsmMetaUrl(stateKey))
-      if (!r.ok) return null
-      return r.json() as Promise<Record<string, unknown>>
-    },
-    enabled: !!stateKey,
-  })
+  const mapMatches = dataQ.data?.matches ?? []
+  const listSearchMatches = listSearchQ.data ?? []
 
-  const boundaryQ = useQuery({
-    queryKey: ['state-boundary', stateKey],
-    queryFn: async () => {
-      const r = await fetch(stateBoundaryUrl(stateKey))
-      if (!r.ok) return null
-      return r.json() as Promise<Feature<Polygon | MultiPolygon>>
-    },
-    enabled: !!stateKey,
-    staleTime: Infinity,
-  })
+  const officialPoints = dataQ.data?.officialPoints
+  const officialLonLatIndex =
+    !officialPoints || Object.keys(officialPoints).length === 0
+      ? null
+      : buildOfficialSchoolLonLatIndexFromPoints(officialPoints)
 
-  const matches = dataQ.data?.matches ?? []
+  const mapMatchesAfterBbox = !bboxFilter
+    ? mapMatches
+    : mapMatches.filter((r) =>
+        matchRowIncludedWhenStateMapBboxActive(r, bboxFilter, officialLonLatIndex),
+      )
+  const listSearchMatchesAfterBbox = !bboxFilter
+    ? listSearchMatches
+    : listSearchMatches.filter((r) =>
+        matchRowIncludedWhenStateMapBboxActive(r, bboxFilter, officialLonLatIndex),
+      )
 
-  const officialLonLatIndex = useMemo((): Map<string, [number, number]> | null => {
-    const o = dataQ.data?.official as FeatureCollection | undefined
-    if (!o?.features?.length) return null
-    return buildOfficialSchoolLonLatIndex(o)
-  }, [dataQ.data?.official])
+  const itemsEngine = createStateMatchItemsJsEngine(listSearchMatchesAfterBbox)
+  const exploreResult =
+    !showSearch || listSearchMatchesAfterBbox.length === 0
+      ? null
+      : searchStateMatchesWithExplorer(itemsEngine, {
+          query: explorer.exploreQ,
+          nameScope: explorer.nameScope,
+          matchModes: explorer.matchModes,
+          iscedLevels: explorer.iscedLevels,
+          geoBoundaryIssues: explorer.geoBoundaryIssues,
+          schoolKinds: explorer.schoolKinds,
+          osmAmenities: explorer.osmAmenities,
+        })
+  const explorerIds = exploreResult ? collectFilteredIdsFromSearchResult(exploreResult) : null
 
-  const matchesAfterBbox = useMemo(() => {
-    if (!bboxFilter) return matches
-    return matches.filter((r) =>
-      matchRowIncludedWhenStateMapBboxActive(r, bboxFilter, officialLonLatIndex),
-    )
-  }, [matches, bboxFilter, officialLonLatIndex])
+  const mapMatchesAfterExplorer = !explorerIds
+    ? mapMatchesAfterBbox
+    : mapMatchesAfterBbox.filter((r) => explorerIds.has(r.key))
+  const listSearchMatchesAfterExplorer = !explorerIds
+    ? listSearchMatchesAfterBbox
+    : listSearchMatchesAfterBbox.filter((r) => explorerIds.has(r.key))
 
-  const explorerKey = useMemo(
-    () =>
-      [
-        explorer.exploreQ,
-        explorer.nameScope,
-        [...explorer.matchModes].sort().join('|'),
-        [...explorer.iscedLevels].sort().join('|'),
-        [...explorer.geoBoundaryIssues].sort().join('|'),
-        JSON.stringify([...explorer.schoolKinds].sort()),
-        [...explorer.osmAmenities].sort().join('|'),
-      ].join('\n'),
-    [
-      explorer.exploreQ,
-      explorer.nameScope,
-      explorer.matchModes,
-      explorer.iscedLevels,
-      explorer.geoBoundaryIssues,
-      explorer.schoolKinds,
-      explorer.osmAmenities,
-    ],
-  )
+  const catCounts = {
+    matched: 0,
+    official_only: 0,
+    osm_only: 0,
+    match_ambiguous: 0,
+    official_no_coord: 0,
+  }
+  for (const r of mapMatchesAfterExplorer) {
+    catCounts[r.category]++
+  }
 
-  const itemsEngine = useMemo(
-    () => createStateMatchItemsJsEngine(matchesAfterBbox),
-    [matchesAfterBbox],
-  )
+  const visibleMapMatches = mapMatchesAfterExplorer.filter((r) => enabledSet.has(r.category))
+  const listMatches = listSearchMatchesAfterExplorer.filter((r) => enabledSet.has(r.category))
 
-  const exploreResult = useMemo(() => {
-    if (matchesAfterBbox.length === 0) return null
-    return searchStateMatchesWithExplorer(itemsEngine, {
-      query: explorer.exploreQ,
-      nameScope: explorer.nameScope,
-      matchModes: explorer.matchModes,
-      iscedLevels: explorer.iscedLevels,
-      geoBoundaryIssues: explorer.geoBoundaryIssues,
-      schoolKinds: explorer.schoolKinds,
-      osmAmenities: explorer.osmAmenities,
-    })
-  }, [itemsEngine, matchesAfterBbox, explorerKey])
-
-  const matchesAfterExplorer = useMemo(() => {
-    if (matchesAfterBbox.length === 0) return []
-    if (!exploreResult) return matchesAfterBbox
-    const ids = collectFilteredIdsFromSearchResult(exploreResult)
-    return matchesAfterBbox.filter((r) => ids.has(r.key))
-  }, [matchesAfterBbox, exploreResult])
-
-  const catCounts = useMemo(() => {
-    const z = {
-      matched: 0,
-      official_only: 0,
-      osm_only: 0,
-      match_ambiguous: 0,
-      official_no_coord: 0,
-    }
-    for (const r of matchesAfterExplorer) {
-      z[r.category]++
-    }
-    return z
-  }, [matchesAfterExplorer])
-
-  const visibleMatches = useMemo(
-    () => matchesAfterExplorer.filter((r) => enabledSet.has(r.category)),
-    [matchesAfterExplorer, enabledSet],
-  )
-
-  const listMatches = visibleMatches
-
-  const mapMatchPoints = useMemo(
-    () => matchesToOverviewMapPoints(listMatches, officialLonLatIndex),
-    [listMatches, officialLonLatIndex],
-  )
+  const mapMatchPoints = matchesToOverviewMapPoints(visibleMapMatches, officialLonLatIndex)
 
   if (dataQ.isLoading || summaryQ.isLoading) {
     return <p className="text-zinc-400">{de.state.loading}</p>
@@ -202,37 +148,56 @@ export function StateOverview() {
         </div>
       )}
 
-      <StateOverviewFiltersDisclosure
-        exploreQ={explorer.exploreQ}
-        setExploreQ={(q) => {
-          void explorer.setExploreQ(q)
-        }}
-        nameScope={explorer.nameScope}
-        setNameScope={(s) => {
-          void explorer.setNameScope(s)
-        }}
-        matchModes={explorer.matchModes}
-        toggleMatchMode={explorer.toggleMatchMode}
-        iscedLevels={explorer.iscedLevels}
-        toggleIscedLevel={explorer.toggleIscedLevel}
-        geoBoundaryIssues={explorer.geoBoundaryIssues}
-        toggleGeoBoundaryIssue={explorer.toggleGeoBoundaryIssue}
-        schoolKinds={explorer.schoolKinds}
-        toggleSchoolKind={explorer.toggleSchoolKind}
-        osmAmenities={explorer.osmAmenities}
-        toggleOsmAmenity={explorer.toggleOsmAmenity}
-        resetExplorer={explorer.resetExplorer}
-        aggregations={exploreResult?.data.aggregations}
-        filteredCount={matchesAfterExplorer.length}
-        bboxTotalCount={matchesAfterBbox.length}
-      />
-
       <StateOverviewStats
         catCounts={catCounts}
         statsInputId={statsInputId}
         isCategoryEnabled={isCategoryEnabled}
         setCategoryEnabled={setCategoryEnabled}
       />
+      <div className="mt-4 mb-6 flex flex-wrap gap-2">
+        {!showSearch && (
+          <button
+            type="button"
+            onClick={() => setListSearchRequested(true)}
+            className="rounded-md border border-emerald-700 bg-emerald-950/40 px-3 py-2 text-xs font-medium text-emerald-100 hover:bg-emerald-900/40"
+          >
+            {de.state.showSearchButton}
+          </button>
+        )}
+      </div>
+
+      {showSearch && (
+        <>
+          {listSearchQ.isLoading ? (
+            <p className="mb-4 text-sm text-zinc-400">{de.state.loadingListSearch}</p>
+          ) : (
+            <StateOverviewFiltersDisclosure
+              exploreQ={explorer.exploreQ}
+              setExploreQ={(q) => {
+                void explorer.setExploreQ(q)
+              }}
+              nameScope={explorer.nameScope}
+              setNameScope={(s) => {
+                void explorer.setNameScope(s)
+              }}
+              matchModes={explorer.matchModes}
+              toggleMatchMode={explorer.toggleMatchMode}
+              iscedLevels={explorer.iscedLevels}
+              toggleIscedLevel={explorer.toggleIscedLevel}
+              geoBoundaryIssues={explorer.geoBoundaryIssues}
+              toggleGeoBoundaryIssue={explorer.toggleGeoBoundaryIssue}
+              schoolKinds={explorer.schoolKinds}
+              toggleSchoolKind={explorer.toggleSchoolKind}
+              osmAmenities={explorer.osmAmenities}
+              toggleOsmAmenity={explorer.toggleOsmAmenity}
+              resetExplorer={explorer.resetExplorer}
+              aggregations={exploreResult?.data.aggregations}
+              filteredCount={listSearchMatchesAfterExplorer.length}
+              bboxTotalCount={listSearchMatchesAfterBbox.length}
+            />
+          )}
+        </>
+      )}
 
       {enabledCategories.length === 0 ? (
         <div
@@ -269,16 +234,36 @@ export function StateOverview() {
         </MapProvider>
       )}
 
-      <StateOverviewMatchList
-        code={stateKey}
-        listMatches={listMatches}
-        matchesLength={matches.length}
-        enabledCategoriesLength={enabledCategories.length}
-        visibleMatchesLength={visibleMatches.length}
-        listBboxActive={bboxFilter != null}
-        matchesAfterBboxCount={matchesAfterBbox.length}
-        exploreFilteredCount={matchesAfterExplorer.length}
-      />
+      {!showList && (
+        <div className="mt-8">
+          <button
+            type="button"
+            onClick={() => setListSearchRequested(true)}
+            className="rounded-md border border-zinc-600 bg-zinc-800 px-3 py-2 text-xs font-medium text-zinc-100 hover:bg-zinc-700"
+          >
+            {de.state.showListButton}
+          </button>
+        </div>
+      )}
+
+      {showList && (
+        <>
+          {listSearchQ.isLoading ? (
+            <p className="mt-8 text-sm text-zinc-400">{de.state.loadingListSearch}</p>
+          ) : (
+            <StateOverviewMatchList
+              code={stateKey}
+              listMatches={listMatches}
+              matchesLength={listSearchMatches.length}
+              enabledCategoriesLength={enabledCategories.length}
+              visibleMatchesLength={listMatches.length}
+              listBboxActive={bboxFilter != null}
+              matchesAfterBboxCount={listSearchMatchesAfterBbox.length}
+              exploreFilteredCount={listSearchMatchesAfterExplorer.length}
+            />
+          )}
+        </>
+      )}
 
       <StateOverviewHistorySection
         code={stateKey}

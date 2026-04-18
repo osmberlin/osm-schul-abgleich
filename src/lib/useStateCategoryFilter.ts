@@ -1,7 +1,6 @@
 import { STATE_MATCH_CATEGORIES, type StateMatchCategory } from './stateMatchCategories'
 import { stateRouteApi } from './stateRouteApi'
 import { useNavigate } from '@tanstack/react-router'
-import { useMemo } from 'react'
 
 /** Mutable full list + stable reference for default / “all categories” URL value. */
 const DEFAULT_STATE_MATCH_CATEGORIES: StateMatchCategory[] = [...STATE_MATCH_CATEGORIES]
@@ -12,7 +11,7 @@ export function useStateCategoryFilter() {
   const navigate = useNavigate({ from: '/bundesland/$stateKey' })
   const cats = search.cats ?? DEFAULT_STATE_MATCH_CATEGORIES
 
-  const enabledSet = useMemo(() => new Set(cats), [cats])
+  const enabledSet = new Set(cats)
 
   function setCategoryEnabled(c: StateMatchCategory, enabled: boolean) {
     void navigate({

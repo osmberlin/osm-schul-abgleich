@@ -1,6 +1,5 @@
 import 'maplibre-gl/dist/maplibre-gl.css'
 import { de } from '../../i18n/de'
-import { fetchStateSchoolsBundle } from '../../lib/fetchStateSchoolsBundle'
 import {
   buildOfficialSchoolLonLatIndex,
   filterOtherSchoolPointsForDetailMap,
@@ -16,6 +15,11 @@ import { computeDetailMapFrameState } from '../../lib/schoolDetailMapFrame'
 import { buildSchoolDetailMapLayerFeatures } from '../../lib/schoolDetailMapLayerFeatures'
 import { resolveSchoolMapOsmCentroid } from '../../lib/schoolDetailMapOsmCentroid'
 import { detailMapReferenceName } from '../../lib/schoolDetailMapReference'
+import {
+  stateBoundaryQueryOptions,
+  type StateSchoolsBundle,
+  type StateSchoolsMatchRow,
+} from '../../lib/stateDatasetQueries'
 import { useDetailMapParam } from '../../lib/useDetailMapParam'
 import { deriveSchoolDetailMapFeatures } from '../../lib/useSchoolDetailMapFeatures'
 import type { StateMapBbox } from '../../lib/useStateMapBbox'
@@ -26,13 +30,11 @@ import {
   type SchoolDetailMapRenderData,
   SchoolDetailMapLegend,
 } from './SchoolDetailMap'
+import { useQuery } from '@tanstack/react-query'
 import { point } from '@turf/helpers'
 import type { Feature, FeatureCollection } from 'geojson'
 import { useState } from 'react'
 import { MapProvider, type ViewStateChangeEvent } from 'react-map-gl/maplibre'
-
-type StateSchoolsBundle = Awaited<ReturnType<typeof fetchStateSchoolsBundle>>
-type StateSchoolMatchRow = StateSchoolsBundle['matches'][number]
 
 const MAP_BOX_CLASS = 'relative h-[360px] overflow-hidden rounded-lg border border-zinc-700'
 
@@ -60,6 +62,7 @@ function SchoolDetailMapAreaError() {
  * Query state, URL map camera, hover, bbox filtering, and layer build for the detail map.
  */
 export function SchoolDetailMapSection({
+  stateKey,
   isLoading,
   isError,
   data,
@@ -68,10 +71,11 @@ export function SchoolDetailMapSection({
   osmAreasByKey,
   onNavigateToOtherSchool,
 }: {
+  stateKey: string
   isLoading: boolean
   isError: boolean
   data: StateSchoolsBundle | undefined
-  matchRow: StateSchoolMatchRow | null
+  matchRow: StateSchoolsMatchRow | null
   schoolKey: string
   /** Deferred full OSM outlines (`schools_osm_areas.json`), keyed `way/id` / `relation/id`. */
   osmAreasByKey: Record<string, Feature> | undefined
@@ -80,6 +84,7 @@ export function SchoolDetailMapSection({
   const { map: detailMapSearch, setMap: setDetailMapSearch } = useDetailMapParam()
   const [detailMapBbox, setDetailMapBbox] = useState<StateMapBbox | null>(null)
   const [hoveredMapLabel, setHoveredMapLabel] = useState<HoveredMapLabel | null>(null)
+  const boundaryQ = useQuery({ ...stateBoundaryQueryOptions(stateKey), enabled: !!stateKey })
 
   if (isLoading) {
     return <SchoolDetailMapAreaLoading />
@@ -177,7 +182,7 @@ export function SchoolDetailMapSection({
     detailMapPolygonFeatures,
     connectorLineFeatures,
     hoverRelationLineFeatures,
-    boundary: (data.boundary as Feature | null) ?? null,
+    boundary: boundaryQ.data ?? null,
     detailMapPointFeatures,
     otherSchoolPointFeatures,
   }

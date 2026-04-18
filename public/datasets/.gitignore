@@ -20,9 +20,12 @@ status/runs.dev.jsonl
 
 # Per-state generated artifacts.
 **/schools_official.geojson
+**/schools_official_points.json
 **/schools_osm.geojson
 **/schools_osm_areas.json
-**/schools_matches.json
+**/schools_matches_map.json
+**/schools_matches_list_search.json
+**/schools_matches_detail.json
 **/schools_osm.meta.json
 
 # Committed snapshot files used as build/deploy baseline.

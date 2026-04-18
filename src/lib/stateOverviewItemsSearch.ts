@@ -1,15 +1,11 @@
-import { substantivesFromNames } from './nameSubstantivesDe'
-import { OSM_SCHOOL_NAME_TAGS_IN_ORDER } from './osmNameMatchTags'
-import { canonicalSchoolKindDe } from './osmSchoolKindDe'
-import { schoolsMatchRowSchema } from './schemas'
-import { parseErrorOutsideBoundaryFromOfficialProps } from './zodGeo'
+import { schoolsMatchListSearchRowSchema } from './schemas'
 import itemsjs from 'itemsjs'
 import type { z } from 'zod'
 
 export const STATE_MATCH_FACET_SCHOOL_KIND_NONE = '(keine)'
 export const STATE_MATCH_FACET_MATCH_MODE_NONE = '(none)'
 
-export type StateMatchRow = z.infer<typeof schoolsMatchRowSchema>
+export type StateMatchRow = z.infer<typeof schoolsMatchListSearchRowSchema>
 
 export const STATE_FACET_MATCH_MODES = [
   'distance',
@@ -29,67 +25,25 @@ export const STATE_FACET_OSM_AMENITY = ['school', 'college', 'none'] as const
 
 export type StateFacetOsmAmenity = (typeof STATE_FACET_OSM_AMENITY)[number]
 
-function namePartsForSearch(row: StateMatchRow): string[] {
-  const out: string[] = []
-  if (row.officialName) out.push(row.officialName)
-  if (row.osmName) out.push(row.osmName)
-  const t = row.osmTags
-  if (t) {
-    for (const k of OSM_SCHOOL_NAME_TAGS_IN_ORDER) {
-      const v = t[k]?.trim()
-      if (v) out.push(v)
-    }
-  }
-  return out
-}
-
-export function effectiveSchoolKindDeForMatchRow(row: StateMatchRow): string {
-  if (row.schoolKindDe != null && row.schoolKindDe !== '') return row.schoolKindDe
-  const tags = row.osmTags
-  if (!tags) return STATE_MATCH_FACET_SCHOOL_KIND_NONE
-  const r = canonicalSchoolKindDe({
-    school: tags.school,
-    schoolDe: tags['school:de'],
-  })
-  return r.canonicalDe ?? STATE_MATCH_FACET_SCHOOL_KIND_NONE
-}
-
-/** Pipeline `_error_outside_boundary` on amtliche Daten (voided Point outside declared Bundesland). */
-export function hasOfficialGeoOutsideBoundaryFlag(row: StateMatchRow): boolean {
-  if (parseErrorOutsideBoundaryFromOfficialProps(row.officialProperties ?? null)) return true
-  for (const s of row.ambiguousOfficialSnapshots ?? []) {
-    if (parseErrorOutsideBoundaryFromOfficialProps(s.properties ?? null)) return true
-  }
-  return false
-}
-
-export function osmAmenityFacetForMatchRow(row: StateMatchRow): StateFacetOsmAmenity {
-  if (!row.osmId || !row.osmTags) return 'none'
-  const a = row.osmTags.amenity
-  if (a === 'college') return 'college'
-  if (a === 'school') return 'school'
-  return 'none'
-}
-
 export function matchRowToItemsJsDoc(row: StateMatchRow) {
-  const hasIsced = !!row.osmTags?.['isced:level']?.trim()
+  const facets = row.search.facets
   return {
     id: row.key,
-    nameSubstantives: substantivesFromNames(namePartsForSearch(row)),
-    matchMode: (row.matchMode ?? STATE_MATCH_FACET_MATCH_MODE_NONE) as string,
-    iscedLevel: hasIsced ? 'yes' : 'no',
-    schoolKindDe: effectiveSchoolKindDeForMatchRow(row),
-    hasOfficial: row.officialId ? 'yes' : 'no',
-    hasOsm: row.osmId ? 'yes' : 'no',
-    geoBoundaryIssue: hasOfficialGeoOutsideBoundaryFlag(row) ? 'yes' : 'no',
-    osmAmenity: osmAmenityFacetForMatchRow(row),
+    searchQ: row.search.q,
+    matchMode: (facets.matchMode ?? STATE_MATCH_FACET_MATCH_MODE_NONE) as string,
+    iscedLevel: facets.iscedLevel,
+    schoolKindDe: facets.schoolKindDe || STATE_MATCH_FACET_SCHOOL_KIND_NONE,
+    hasOfficial: facets.hasOfficial,
+    hasOsm: facets.hasOsm,
+    geoBoundaryIssue: facets.geoBoundaryIssue,
+    osmAmenity: facets.osmAmenity as StateFacetOsmAmenity,
   }
 }
 
 export function createStateMatchItemsJsEngine(rows: StateMatchRow[]) {
   const data = rows.map(matchRowToItemsJsDoc)
   return itemsjs(data, {
-    searchableFields: ['nameSubstantives'],
+    searchableFields: ['searchQ'],
     sortings: {
       id_asc: { field: 'id', order: 'asc' },
     },

@@ -6,61 +6,47 @@ import { HomeStateList } from '../components/home/HomeStateList'
 import { OsmLocateErrBanner } from '../components/OsmLocateErrBanner'
 import { de } from '../i18n/de'
 import { germanyHistoryFromRuns } from '../lib/matchHistoryFromRuns'
-import { runsJsonlUrl, summaryJsonUrl } from '../lib/paths'
-import { runsPayloadFromHistoryText } from '../lib/runHistoryJsonl'
-import { runsFileSchema, summaryFileSchema } from '../lib/schemas'
+import { runsQueryOptions, summaryQueryOptions } from '../lib/sharedDatasetQueries'
 import { STATE_ORDER } from '../lib/stateConfig'
 import { useQuery } from '@tanstack/react-query'
-import { useMemo } from 'react'
 
 export function HomePage() {
   const q = useQuery({
-    queryKey: ['summary'],
-    queryFn: async () => {
-      const r = await fetch(summaryJsonUrl())
-      if (!r.ok) throw new Error(String(r.status))
-      return summaryFileSchema.parse(await r.json())
-    },
+    ...summaryQueryOptions(),
     retry: 1,
   })
 
   const runsQ = useQuery({
-    queryKey: ['runs'],
-    queryFn: async () => {
-      const r = await fetch(runsJsonlUrl())
-      if (!r.ok) throw new Error(String(r.status))
-      return runsFileSchema.parse(runsPayloadFromHistoryText(await r.text()))
-    },
+    ...runsQueryOptions(),
     retry: 1,
   })
 
-  const germanyHistoryPoints = useMemo(
-    () => (runsQ.data ? germanyHistoryFromRuns(runsQ.data.runs, STATE_ORDER) : []),
-    [runsQ.data],
-  )
+  const germanyHistoryPoints = runsQ.data
+    ? germanyHistoryFromRuns(runsQ.data.runs, STATE_ORDER)
+    : []
 
   const byCode = new Map((q.data?.states ?? []).map((l) => [l.code, l]))
 
-  const germanyTotals = useMemo(() => {
-    const states = q.data?.states ?? []
-    if (states.length === 0) return null
-    return states.reduce(
-      (acc, l) => ({
-        matched: acc.matched + l.counts.matched,
-        official_only: acc.official_only + l.counts.official_only,
-        osm_only: acc.osm_only + l.counts.osm_only,
-        match_ambiguous: acc.match_ambiguous + l.counts.ambiguous,
-        official_no_coord: acc.official_no_coord + l.counts.official_no_coord,
-      }),
-      {
-        matched: 0,
-        official_only: 0,
-        osm_only: 0,
-        match_ambiguous: 0,
-        official_no_coord: 0,
-      },
-    )
-  }, [q.data?.states])
+  const states = q.data?.states ?? []
+  const germanyTotals =
+    states.length === 0
+      ? null
+      : states.reduce(
+          (acc, l) => ({
+            matched: acc.matched + l.counts.matched,
+            official_only: acc.official_only + l.counts.official_only,
+            osm_only: acc.osm_only + l.counts.osm_only,
+            match_ambiguous: acc.match_ambiguous + l.counts.ambiguous,
+            official_no_coord: acc.official_no_coord + l.counts.official_no_coord,
+          }),
+          {
+            matched: 0,
+            official_only: 0,
+            osm_only: 0,
+            match_ambiguous: 0,
+            official_no_coord: 0,
+          },
+        )
 
   return (
     <div className="mx-auto max-w-5xl px-4 pt-6 pb-16">

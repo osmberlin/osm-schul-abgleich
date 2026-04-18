@@ -14,43 +14,33 @@ import { SchoolDetailMapSection } from '../components/school/SchoolDetailMapSect
 import { SchoolDetailMatchExplanation } from '../components/school/SchoolDetailMatchExplanation'
 import { SecondarySchoolOsmSuggest } from '../components/school/SecondarySchoolOsmSuggest'
 import { de } from '../i18n/de'
-import { fetchStateOsmAreasLookup } from '../lib/fetchStateOsmAreasLookup'
-import { fetchStateSchoolsBundle } from '../lib/fetchStateSchoolsBundle'
 import { formatDeInteger } from '../lib/formatNumber'
 import { schoolMatchRowNeedsOsmAreasFetch } from '../lib/osmSchoolDetailGeometry'
 import { schoolDetailCompareSectionId } from '../lib/schoolDetailCompareSectionIds'
 import { resolveSchoolMapOsmCentroid } from '../lib/schoolDetailMapOsmCentroid'
 import { stateLabelDeFromRouteCode } from '../lib/stateConfig'
+import {
+  stateOsmAreasQueryOptions,
+  stateSchoolsDetailQueryOptions,
+} from '../lib/stateDatasetQueries'
 import { deriveSchoolAmbiguousCandidates } from '../lib/useSchoolAmbiguousCandidates'
 import { useSchoolDetailRoute } from '../lib/useSchoolDetailRoute'
 import { parseErrorOutsideBoundaryFromOfficialProps } from '../lib/zodGeo'
 import { useQuery } from '@tanstack/react-query'
 import { Link } from '@tanstack/react-router'
-import { useMemo } from 'react'
 
 export function SchoolDetail() {
   const { stateKey, schoolKey, navigate } = useSchoolDetailRoute()
 
-  const q = useQuery({
-    queryKey: ['school-detail', stateKey, schoolKey],
-    queryFn: () => fetchStateSchoolsBundle(stateKey),
-  })
+  const q = useQuery({ ...stateSchoolsDetailQueryOptions(stateKey), enabled: !!stateKey })
 
   const matchRow = q.data?.matches.find((r) => r.key === schoolKey) ?? null
 
-  const needsOsmAreas = useMemo(
-    () =>
-      q.data && matchRow
-        ? schoolMatchRowNeedsOsmAreasFetch(q.data.osm, matchRow.osmType, matchRow.osmId)
-        : false,
-    [q.data, matchRow],
-  )
+  const needsOsmAreas = matchRow ? schoolMatchRowNeedsOsmAreasFetch(matchRow) : false
 
   const areasQ = useQuery({
-    queryKey: ['state-osm-areas', stateKey],
-    queryFn: () => fetchStateOsmAreasLookup(stateKey),
+    ...stateOsmAreasQueryOptions(stateKey),
     enabled: !!stateKey && needsOsmAreas,
-    staleTime: Infinity,
   })
 
   const osmAreasByKey = areasQ.data
@@ -84,6 +74,7 @@ export function SchoolDetail() {
   return (
     <>
       <SchoolDetailMapSection
+        stateKey={stateKey}
         isLoading={q.isLoading}
         isError={q.isError}
         data={q.data}

@@ -1,9 +1,7 @@
 import { de } from '../../i18n/de'
-import { fetchStateSchoolsBundle } from '../../lib/fetchStateSchoolsBundle'
+import type { StateSchoolsMatchRow } from '../../lib/stateDatasetQueries'
 
-type StateSchoolMatchRow = Awaited<ReturnType<typeof fetchStateSchoolsBundle>>['matches'][number]
-
-export function SchoolDetailMatchExplanation({ row }: { row: StateSchoolMatchRow }) {
+export function SchoolDetailMatchExplanation({ row }: { row: StateSchoolsMatchRow }) {
   if (row.category !== 'matched') return null
 
   return (

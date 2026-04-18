@@ -1,20 +1,9 @@
 import { de } from '../i18n/de'
 import { cn } from '../lib/cn'
 import { formatDurationMs } from '../lib/formatDuration'
-import { nationalOfficialMetaUrl, nationalOsmMetaUrl, runsJsonlUrl } from '../lib/paths'
-import { runsPayloadFromHistoryText } from '../lib/runHistoryJsonl'
-import { type PipelineSourceMeta, pipelineSourceMetaSchema, runsFileSchema } from '../lib/schemas'
+import type { PipelineSourceMeta } from '../lib/schemas'
+import { nationalPipelineMetaQueryOptions, runsQueryOptions } from '../lib/sharedDatasetQueries'
 import { useQuery } from '@tanstack/react-query'
-
-async function fetchNationalMeta(
-  url: string,
-): Promise<{ present: false } | { present: true; data: PipelineSourceMeta }> {
-  const r = await fetch(url)
-  if (!r.ok) return { present: false }
-  const parsed = pipelineSourceMetaSchema.safeParse(await r.json())
-  if (!parsed.success) return { present: false }
-  return { present: true, data: parsed.data }
-}
 
 function SourceMetaCard({
   title,
@@ -77,25 +66,9 @@ function SourceMetaCard({
 }
 
 export function StatusPage() {
-  const runsQ = useQuery({
-    queryKey: ['runs'],
-    queryFn: async () => {
-      const r = await fetch(runsJsonlUrl())
-      if (!r.ok) throw new Error(String(r.status))
-      return runsFileSchema.parse(runsPayloadFromHistoryText(await r.text()))
-    },
-  })
+  const runsQ = useQuery(runsQueryOptions())
 
-  const metaQ = useQuery({
-    queryKey: ['national-pipeline-meta'],
-    queryFn: async () => {
-      const [jedeschule, osm] = await Promise.all([
-        fetchNationalMeta(nationalOfficialMetaUrl()),
-        fetchNationalMeta(nationalOsmMetaUrl()),
-      ])
-      return { jedeschule, osm }
-    },
-  })
+  const metaQ = useQuery(nationalPipelineMetaQueryOptions())
 
   return (
     <div className="mx-auto max-w-4xl p-6 pb-16">

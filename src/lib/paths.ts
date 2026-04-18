@@ -16,13 +16,18 @@ export const nationalOsmMetaUrl = () =>
   datasetsUrl(`/datasets/${envScopedJsonFileName('schools_osm_de.meta.json')}`)
 export const stateOfficialUrl = (code: string) =>
   datasetsUrl(`/datasets/${code}/schools_official.geojson`)
-export const stateOsmUrl = (code: string) => datasetsUrl(`/datasets/${code}/schools_osm.geojson`)
 export const stateOsmAreasUrl = (code: string) =>
   datasetsUrl(`/datasets/${code}/schools_osm_areas.json`)
 export const stateOsmMetaUrl = (code: string) =>
   datasetsUrl(`/datasets/${code}/schools_osm.meta.json`)
-export const stateMatchesUrl = (code: string) =>
-  datasetsUrl(`/datasets/${code}/schools_matches.json`)
+export const stateMatchesMapUrl = (code: string) =>
+  datasetsUrl(`/datasets/${code}/schools_matches_map.json`)
+export const stateMatchesListSearchUrl = (code: string) =>
+  datasetsUrl(`/datasets/${code}/schools_matches_list_search.json`)
+export const stateMatchesDetailUrl = (code: string) =>
+  datasetsUrl(`/datasets/${code}/schools_matches_detail.json`)
+export const stateOfficialPointsUrl = (code: string) =>
+  datasetsUrl(`/datasets/${code}/schools_official_points.json`)
 
 /** Simplified Bundesland outline (GeoJSON Feature) for map overlay; checked in under `public/bundesland-boundaries/`. */
 export const stateBoundaryUrl = (code: string) =>

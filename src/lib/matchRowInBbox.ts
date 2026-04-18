@@ -1,4 +1,8 @@
-import type { schoolsMatchRowSchema } from './schemas'
+import type {
+  schoolsMatchListSearchRowSchema,
+  schoolsMatchMapRowSchema,
+  schoolsMatchRowSchema,
+} from './schemas'
 import type { StateMapBbox } from './useStateMapBbox'
 import { parseJedeschuleLonLatFromRecord, parseMatchRowOsmCentroidLonLat } from './zodGeo'
 import distance from '@turf/distance'
@@ -6,7 +10,10 @@ import { featureCollection, point } from '@turf/helpers'
 import type { Feature, FeatureCollection, Point } from 'geojson'
 import type { z } from 'zod'
 
-type Row = z.infer<typeof schoolsMatchRowSchema>
+type Row =
+  | z.infer<typeof schoolsMatchRowSchema>
+  | z.infer<typeof schoolsMatchMapRowSchema>
+  | z.infer<typeof schoolsMatchListSearchRowSchema>
 
 function trimNonEmptyString(v: string | null | undefined): string | null {
   if (v == null) return null
@@ -64,6 +71,18 @@ export function buildOfficialSchoolLonLatIndex(
   return m
 }
 
+/** `officialId` → coordinates from compact `schools_official_points.json`. */
+export function buildOfficialSchoolLonLatIndexFromPoints(
+  points: Record<string, readonly [number, number]>,
+): Map<string, [number, number]> {
+  const out = new Map<string, [number, number]>()
+  for (const id of Object.keys(points)) {
+    const [lon, lat] = points[id]
+    if (Number.isFinite(lon) && Number.isFinite(lat)) out.set(id, [lon, lat])
+  }
+  return out
+}
+
 /**
  * Representative point: OSM-Schwerpunkt, then JedeSchule-Felder auf der Match-Zeile, dann Lookup in amtlichem GeoJSON.
  */
@@ -71,9 +90,19 @@ export function matchRowMapLonLat(
   row: Row,
   officialLonLatIndex: Map<string, [number, number]> | null,
 ): [number, number] | null {
+  const rowAny = row as {
+    officialLon?: number | null
+    officialLat?: number | null
+    officialProperties?: Record<string, unknown> | null
+  }
   const fromOsm = parseMatchRowOsmCentroidLonLat(row)
   if (fromOsm) return fromOsm
-  const fromRow = parseJedeschuleLonLatFromRecord(row.officialProperties ?? null)
+  const fromOverviewRow =
+    typeof rowAny.officialLon === 'number' && typeof rowAny.officialLat === 'number'
+      ? ([rowAny.officialLon, rowAny.officialLat] as [number, number])
+      : null
+  if (fromOverviewRow) return fromOverviewRow
+  const fromRow = parseJedeschuleLonLatFromRecord(rowAny.officialProperties ?? null)
   if (fromRow) return fromRow
   if (officialLonLatIndex && row.officialId) {
     return officialLonLatIndex.get(row.officialId) ?? null

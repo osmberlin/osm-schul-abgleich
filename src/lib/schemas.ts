@@ -69,6 +69,7 @@ export const schoolsMatchRowSchema = z
     officialProperties: z.record(z.string(), z.unknown()).nullable().optional(),
     osmId: z.string().nullable(),
     osmType: z.enum(['way', 'relation', 'node']).nullable(),
+    hasArea: z.boolean().optional(),
     /** OSM geometry centroid; Abstand bezieht sich auf diesen Punkt. */
     osmCentroidLon: z.number().nullable().optional(),
     osmCentroidLat: z.number().nullable().optional(),
@@ -105,9 +106,141 @@ export const schoolsMatchRowSchema = z
     }
   })
 
-export const schoolsMatchesFileSchema = z.array(schoolsMatchRowSchema)
+const searchFacetYesNoSchema = z.enum(['yes', 'no'])
+const searchFacetOsmAmenitySchema = z.enum(['school', 'college', 'none'])
+const searchFacetMatchModeSchema = z
+  .enum([
+    'distance',
+    'distance_and_name',
+    'distance_and_name_prefix',
+    'name',
+    'name_prefix',
+    'website',
+    'address',
+    'ref',
+    '(none)',
+  ])
+  .optional()
+
+const stateMatchSearchSchema = z.object({
+  /** Normalized, deduplicated fulltext string for overview explorer. */
+  q: z.string(),
+  facets: z.object({
+    matchMode: searchFacetMatchModeSchema,
+    iscedLevel: searchFacetYesNoSchema,
+    schoolKindDe: z.string(),
+    osmAmenity: searchFacetOsmAmenitySchema,
+    geoBoundaryIssue: searchFacetYesNoSchema,
+    hasOfficial: searchFacetYesNoSchema,
+    hasOsm: searchFacetYesNoSchema,
+  }),
+})
+
+export const schoolsMatchMapRowSchema = z
+  .object({
+    key: z.string(),
+    category: matchCategorySchema.optional(),
+    matchCategory: matchCategorySchema.optional(),
+    officialId: z.string().nullable(),
+    officialName: z.string().nullable(),
+    officialLon: z.number().nullable().optional(),
+    officialLat: z.number().nullable().optional(),
+    osmId: z.string().nullable(),
+    osmType: z.enum(['way', 'relation', 'node']).nullable(),
+    osmCentroidLon: z.number().nullable().optional(),
+    osmCentroidLat: z.number().nullable().optional(),
+    osmName: z.string().nullable(),
+  })
+  .superRefine((row, ctx) => {
+    if (!row.category && !row.matchCategory) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ['matchCategory'],
+        message: 'Either "matchCategory" or "category" is required.',
+      })
+    }
+  })
+  .transform((row) => {
+    const resolved = (row.matchCategory ?? row.category)!
+    return {
+      ...row,
+      category: resolved,
+      matchCategory: resolved,
+    }
+  })
+
+export const schoolsMatchListSearchRowSchema = z
+  .object({
+    key: z.string(),
+    category: matchCategorySchema.optional(),
+    matchCategory: matchCategorySchema.optional(),
+    matchMode: z
+      .enum([
+        'distance',
+        'distance_and_name',
+        'distance_and_name_prefix',
+        'name',
+        'name_prefix',
+        'website',
+        'address',
+        'ref',
+      ])
+      .optional(),
+    officialId: z.string().nullable(),
+    officialName: z.string().nullable(),
+    officialLon: z.number().nullable().optional(),
+    officialLat: z.number().nullable().optional(),
+    officialAddress: z.string().nullable().optional(),
+    officialZip: z.string().nullable().optional(),
+    officialCity: z.string().nullable().optional(),
+    osmId: z.string().nullable(),
+    osmType: z.enum(['way', 'relation', 'node']).nullable(),
+    osmCentroidLon: z.number().nullable().optional(),
+    osmCentroidLat: z.number().nullable().optional(),
+    distanceMeters: z.number().nullable(),
+    osmName: z.string().nullable(),
+    osmAddrCity: z.string().nullable().optional(),
+    osmAddrStreet: z.string().nullable().optional(),
+    osmAddrHousenumber: z.string().nullable().optional(),
+    search: stateMatchSearchSchema,
+  })
+  .superRefine((row, ctx) => {
+    if (!row.category && !row.matchCategory) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ['matchCategory'],
+        message: 'Either "matchCategory" or "category" is required.',
+      })
+    }
+  })
+  .transform((row) => {
+    const resolved = (row.matchCategory ?? row.category)!
+    return {
+      ...row,
+      category: resolved,
+      matchCategory: resolved,
+    }
+  })
+
+export const schoolsMatchesMapFileSchema = z.array(schoolsMatchMapRowSchema)
+export const schoolsMatchesListSearchFileSchema = z.array(schoolsMatchListSearchRowSchema)
+export const schoolsMatchesDetailFileSchema = z.array(schoolsMatchRowSchema)
+export const schoolsMatchesDetailByKeyFileSchema = z.record(z.string(), schoolsMatchRowSchema)
+
+/**
+ * Backward-compatible alias for existing full/detail match file shape.
+ * Prefer `schoolsMatchesListSearchFileSchema` or `schoolsMatchesDetailFileSchema`.
+ */
+export const schoolsMatchesFileSchema = schoolsMatchesDetailFileSchema
 
 export type SchoolsMatchRow = z.infer<typeof schoolsMatchRowSchema>
+export type SchoolsMatchMapRow = z.infer<typeof schoolsMatchMapRowSchema>
+export type SchoolsMatchListSearchRow = z.infer<typeof schoolsMatchListSearchRowSchema>
+
+export const stateOfficialPointsFileSchema = z.record(
+  z.string(),
+  z.tuple([z.number().finite(), z.number().finite()]),
+)
 
 const stateSummarySchema = z.object({
   code: z.string(),

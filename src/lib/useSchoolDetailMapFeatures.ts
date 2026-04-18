@@ -1,10 +1,9 @@
 import { detailMapConnectorLines } from './detailMapConnectorLines'
-import type { StateSchoolsBundle, StateSchoolsMatchRow } from './fetchStateSchoolsBundle'
 import { findOfficialSchoolFeature } from './findOfficialSchoolFeature'
 import { buildMapDimMaskFeature } from './mapDimMask'
 import { MATCH_RADIUS_KM } from './matchRadius'
-import { findOsmFeature } from './osmFeatureLookup'
 import { resolveOsmSchoolAreaOutline } from './osmSchoolDetailGeometry'
+import type { StateSchoolsBundle, StateSchoolsMatchRow } from './stateDatasetQueries'
 import { parseMatchRowOsmCentroidLonLat } from './zodGeo'
 import circle from '@turf/circle'
 import { lineString, point } from '@turf/helpers'
@@ -35,8 +34,7 @@ function resolveSchoolDetailMapFeatures(
       const f = findOfficialSchoolFeature(data.official, row.officialId)
       if (f) features.push(f as Feature)
     }
-    const mainOsm = findOsmFeature(data.osm, row.osmType, row.osmId)
-    const osmArea = resolveOsmSchoolAreaOutline(mainOsm, row.osmType, row.osmId, osmAreasByKey)
+    const osmArea = resolveOsmSchoolAreaOutline(row, osmAreasByKey)
     if (osmArea) {
       features.push(osmArea)
     }

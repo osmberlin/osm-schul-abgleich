@@ -10,6 +10,7 @@ lerna-debug.log*
 node_modules
 dist
 dist-ssr
+.data-impact-stash
 *.local
 
 # Dataset downloads / generated files: see public/datasets/.gitignore

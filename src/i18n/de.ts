@@ -156,6 +156,9 @@ export const de = {
     tableFilteredEmpty: 'Keine Treffer für die gewählten Kategorien.',
     tableBboxEmpty: 'Keine Treffer im gewählten Kartenausschnitt.',
     tableExplorerEmpty: 'Keine Treffer für die aktuelle Suche und die gewählten Filter.',
+    showListButton: 'Liste anzeigen',
+    showSearchButton: 'Suche anzeigen',
+    loadingListSearch: 'Lade Liste und Suche…',
     explorer: {
       summary: 'Suche & Filter',
       summaryCounts: '{filtered} von {total} im Ausschnitt',
