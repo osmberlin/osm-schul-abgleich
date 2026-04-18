@@ -2,7 +2,21 @@ import { de } from '../i18n/de'
 import { HomeIcon } from '@heroicons/react/20/solid'
 import { Link } from '@tanstack/react-router'
 
-export type AppBreadcrumbCrumb = { name: string; to: string } | { name: string; current: true }
+export type AppBreadcrumbCrumb =
+  | { name: string; to: string; shortName?: string }
+  | { name: string; current: true; shortName?: string }
+
+function BreadcrumbCrumbLabel({ name, shortName }: { name: string; shortName?: string }) {
+  if (shortName != null && shortName !== name) {
+    return (
+      <>
+        <span className="hidden md:inline">{name}</span>
+        <span className="md:hidden">{shortName}</span>
+      </>
+    )
+  }
+  return <>{name}</>
+}
 
 function BreadcrumbChevron() {
   return (
@@ -25,15 +39,18 @@ type Props = {
   homeCurrent: boolean
   /** Segments after home; last entry must be `{ current: true }`. */
   items: AppBreadcrumbCrumb[]
+  /** On narrow viewports, show only the home icon (e.g. school detail). Link `aria-label` still names the app. */
+  hideAppTitleOnMobile?: boolean
 }
 
-export function AppBreadcrumb({ appTitle, homeCurrent, items }: Props) {
+export function AppBreadcrumb({ appTitle, homeCurrent, items, hideAppTitleOnMobile }: Props) {
   const homeSegmentClass =
     'flex items-center gap-2 text-sm font-medium text-zinc-400 hover:text-zinc-200'
   const homeIconClass = 'size-5 shrink-0 text-zinc-400 md:-ml-0.5'
 
   /** Row height matches parent `AppHeader` (`h-14`); chevrons use `h-full`. */
   const rowClass = 'h-14'
+  const appTitleClass = `text-brand-100${hideAppTitleOnMobile ? ' hidden md:inline' : ''}`
 
   return (
     <nav aria-label={de.breadcrumb.navLabel} className="flex min-w-0 flex-1">
@@ -42,7 +59,7 @@ export function AppBreadcrumb({ appTitle, homeCurrent, items }: Props) {
           {homeCurrent ? (
             <span className={homeSegmentClass} aria-current="page">
               <HomeIcon aria-hidden className={homeIconClass} />
-              <span className="text-brand-100">{appTitle}</span>
+              <span className={appTitleClass}>{appTitle}</span>
               <span className="sr-only">{de.breadcrumb.home}</span>
             </span>
           ) : (
@@ -52,34 +69,40 @@ export function AppBreadcrumb({ appTitle, homeCurrent, items }: Props) {
               aria-label={`${de.breadcrumb.home} — ${appTitle}`}
             >
               <HomeIcon aria-hidden className={homeIconClass} />
-              <span className="text-brand-100">{appTitle}</span>
+              <span className={appTitleClass}>{appTitle}</span>
             </Link>
           )}
         </li>
         {items.map((page, index) => {
           const key = `${index}-${page.name}`
           if ('current' in page && page.current) {
+            const a11yLong =
+              page.shortName != null ? { 'aria-label': page.name, title: page.name } : {}
             return (
               <li key={key} className="flex h-full min-w-0 shrink-0 items-stretch">
                 <BreadcrumbChevron />
                 <span
                   aria-current="page"
                   className="ml-4 flex min-w-0 items-center truncate text-sm font-medium text-zinc-400"
+                  {...a11yLong}
                 >
-                  {page.name}
+                  <BreadcrumbCrumbLabel name={page.name} shortName={page.shortName} />
                 </span>
               </li>
             )
           }
-          const link = page as { name: string; to: string }
+          const link = page as { name: string; to: string; shortName?: string }
+          const linkA11y =
+            link.shortName != null ? { 'aria-label': link.name, title: link.name } : {}
           return (
             <li key={key} className="flex h-full min-w-0 shrink-0 items-stretch">
               <BreadcrumbChevron />
               <Link
                 to={link.to}
                 className="ml-4 flex min-w-0 items-center truncate text-sm font-medium text-zinc-400 hover:text-zinc-200"
+                {...linkA11y}
               >
-                {link.name}
+                <BreadcrumbCrumbLabel name={link.name} shortName={link.shortName} />
               </Link>
             </li>
           )

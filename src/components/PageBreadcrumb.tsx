@@ -28,22 +28,30 @@ export function PageBreadcrumb() {
       const stateKey = m[1]
       const schoolKeyEnc = m[2]
       const label = STATE_LABEL_DE[stateKey as StateCode] ?? stateKey
+      const stateShort = stateKey.toUpperCase()
       if (schoolKeyEnc) {
         return {
           homeCurrent: false,
           items: [
-            { name: label, to: `/bundesland/${stateKey}` },
+            { name: label, shortName: stateShort, to: `/bundesland/${stateKey}` },
             { name: shortSchoolKeySegment(schoolKeyEnc), current: true },
           ],
         }
       }
-      return { homeCurrent: false, items: [{ name: label, current: true }] }
+      return { homeCurrent: false, items: [{ name: label, shortName: stateShort, current: true }] }
     }
 
     return { homeCurrent: true, items: [] }
   })()
 
+  const hideAppTitleOnMobile = /^\/bundesland\/[^/]+\/schule\//.test(pathname)
+
   return (
-    <AppBreadcrumb appTitle={de.appTitle} homeCurrent={crumbs.homeCurrent} items={crumbs.items} />
+    <AppBreadcrumb
+      appTitle={de.appTitle}
+      homeCurrent={crumbs.homeCurrent}
+      items={crumbs.items}
+      hideAppTitleOnMobile={hideAppTitleOnMobile}
+    />
   )
 }
