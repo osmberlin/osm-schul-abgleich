@@ -30,17 +30,3 @@ export function applyFlatMapRotationLocks(map: MaplibreMap) {
   map.keyboard.disableRotation()
   map.touchZoomRotate.disableRotation()
 }
-
-/** Hide vector building layers (ids containing `building`) on the basemap. */
-export function hideVectorBasemapBuildings(map: MaplibreMap) {
-  const style = map.getStyle()
-  if (!style?.layers) return
-  for (const layer of style.layers) {
-    if (!layer.id.toLowerCase().includes('building')) continue
-    try {
-      map.setLayoutProperty(layer.id, 'visibility', 'none')
-    } catch {
-      /* layer may not support layout */
-    }
-  }
-}
