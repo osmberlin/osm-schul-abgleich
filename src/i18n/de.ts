@@ -40,6 +40,10 @@ export const de = {
     hauptRealSectionTitle: 'Vorschlag aus amtlichen Daten (Hauptschule/Realschule)',
     hauptRealSectionLead:
       'Für diese Schule deuten die offiziellen Daten auf eine Hauptschule oder Realschule hin. Du kannst passende OSM-Tags taggen und im Hauptmenü hochladen.',
+    oeffentlicheTraegerschaftSectionTitle:
+      'Vorschlag aus amtlichen Daten (in öffentlicher Trägerschaft)',
+    oeffentlicheTraegerschaftSectionLead:
+      'Für diese Schule deuten die offiziellen Daten auf öffentliche Trägerschaft hin. Du kannst passende Betreiber-Tags taggen und im Hauptmenü hochladen.',
     schoolTagWikiLead: 'Bitte informiere dich auf den Wiki-Seiten:',
     /** Shown after the monospace tag in Grundschule action buttons. */
     proposeOsmTagVerb: 'taggen',

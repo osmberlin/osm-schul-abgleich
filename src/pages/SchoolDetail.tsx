@@ -1,3 +1,4 @@
+import { OeffentlicheTraegerschaftOsmSuggest } from '../components/school/OeffentlicheTraegerschaftOsmSuggest'
 import { PrimarySchoolOsmSuggest } from '../components/school/PrimarySchoolOsmSuggest'
 import { SchoolDetailActionLinks } from '../components/school/SchoolDetailActionLinks'
 import {
@@ -123,14 +124,17 @@ export function SchoolDetail() {
             officialProperties={matchRow.officialProperties ?? null}
           />
 
-          <SchoolDetailMatchExplanation row={matchRow} />
-
           <PrimarySchoolOsmSuggest
             row={matchRow}
             lon={mapOsmCentroid?.[0] ?? null}
             lat={mapOsmCentroid?.[1] ?? null}
           />
           <SecondarySchoolOsmSuggest
+            row={matchRow}
+            lon={mapOsmCentroid?.[0] ?? null}
+            lat={mapOsmCentroid?.[1] ?? null}
+          />
+          <OeffentlicheTraegerschaftOsmSuggest
             row={matchRow}
             lon={mapOsmCentroid?.[0] ?? null}
             lat={mapOsmCentroid?.[1] ?? null}
@@ -162,21 +166,24 @@ export function SchoolDetail() {
               ))}
             </div>
           ) : (
-            <div
-              id={
-                matchRow.officialId != null
-                  ? schoolDetailCompareSectionId(matchRow.officialId)
-                  : undefined
-              }
-            >
-              <SchoolDetailCompareBody
-                official={matchRow.officialProperties ?? null}
-                osm={matchRow.osmTags ?? null}
-                officialIdForHeader={matchRow.officialId}
-                osmTypeForHeader={matchRow.osmType}
-                osmIdForHeader={matchRow.osmId}
-              />
-            </div>
+            <>
+              <SchoolDetailMatchExplanation row={matchRow} />
+              <div
+                id={
+                  matchRow.officialId != null
+                    ? schoolDetailCompareSectionId(matchRow.officialId)
+                    : undefined
+                }
+              >
+                <SchoolDetailCompareBody
+                  official={matchRow.officialProperties ?? null}
+                  osm={matchRow.osmTags ?? null}
+                  officialIdForHeader={matchRow.officialId}
+                  osmTypeForHeader={matchRow.osmType}
+                  osmIdForHeader={matchRow.osmId}
+                />
+              </div>
+            </>
           )}
         </>
       )}

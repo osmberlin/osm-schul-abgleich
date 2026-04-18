@@ -1,6 +1,6 @@
 import { de } from '../../i18n/de'
 import { JEDESCHULE_DUPLICATE_GROUP_SIZE_KEY } from '../../lib/jedeschuleDuplicateGroup'
-import { comparePropertySections, normalizeAddressCompareString } from '../../lib/propertyCompare'
+import { comparePropertySections } from '../../lib/propertyCompare'
 import type { ReactNode } from 'react'
 
 function websiteHref(raw: string): string | null {
@@ -171,19 +171,10 @@ export function SchoolDetailCompareBody({
               ))}
               {compareGroups.map((group) => {
                 if (group.kind === 'address') {
-                  const normalizedOfficial = group.officialValue
-                    ? normalizeAddressCompareString(group.officialValue)
-                    : null
-                  const isMatch =
-                    normalizedOfficial != null && group.compareTargets.includes(normalizedOfficial)
-                  const rowTone =
-                    !isMatch && normalizedOfficial != null && group.compareTargets.length > 0
-                      ? 'border-l-2 border-amber-500/40'
-                      : ''
                   return (
                     <div
                       key={`${group.kind}-${group.officialKey}`}
-                      className={`grid gap-3 p-2 md:grid-cols-2 md:gap-0 md:p-0 ${rowTone}`}
+                      className="grid gap-3 p-2 md:grid-cols-2 md:gap-0 md:p-0"
                     >
                       <ComparePropertyItem
                         listClassName="md:border-r md:border-zinc-800 md:bg-amber-950/15 md:p-3"
@@ -206,11 +197,10 @@ export function SchoolDetailCompareBody({
                   )
                 }
                 if (group.kind === 'grundschule') {
-                  const rowTone = group.isEquivalentMatch ? '' : 'border-l-2 border-amber-500/40'
                   return (
                     <div
                       key={`${group.kind}-${group.officialKey}`}
-                      className={`grid gap-3 p-2 md:grid-cols-2 md:gap-0 md:p-0 ${rowTone}`}
+                      className="grid gap-3 p-2 md:grid-cols-2 md:gap-0 md:p-0"
                     >
                       <ComparePropertyItem
                         listClassName="md:border-r md:border-zinc-800 md:bg-amber-950/15 md:p-3"
@@ -233,11 +223,10 @@ export function SchoolDetailCompareBody({
                   )
                 }
                 if (group.kind === 'secondarySchool') {
-                  const rowTone = group.isEquivalentMatch ? '' : 'border-l-2 border-amber-500/40'
                   return (
                     <div
                       key={`${group.kind}-${group.officialKey}`}
-                      className={`grid gap-3 p-2 md:grid-cols-2 md:gap-0 md:p-0 ${rowTone}`}
+                      className="grid gap-3 p-2 md:grid-cols-2 md:gap-0 md:p-0"
                     >
                       <ComparePropertyItem
                         listClassName="md:border-r md:border-zinc-800 md:bg-amber-950/15 md:p-3"
@@ -260,11 +249,62 @@ export function SchoolDetailCompareBody({
                   )
                 }
                 if (group.kind === 'fachschule') {
-                  const rowTone = group.isEquivalentMatch ? '' : 'border-l-2 border-amber-500/40'
                   return (
                     <div
                       key={`${group.kind}-${group.officialKey}`}
-                      className={`grid gap-3 p-2 md:grid-cols-2 md:gap-0 md:p-0 ${rowTone}`}
+                      className="grid gap-3 p-2 md:grid-cols-2 md:gap-0 md:p-0"
+                    >
+                      <ComparePropertyItem
+                        listClassName="md:border-r md:border-zinc-800 md:bg-amber-950/15 md:p-3"
+                        tagKey={group.officialKey}
+                        keyClassName="text-amber-200"
+                        value={group.officialValue ?? '—'}
+                      />
+                      <div className="space-y-1 md:bg-blue-950/15 md:p-3">
+                        {group.osmKeys.map((k) => (
+                          <ComparePropertyItem
+                            key={`${group.kind}-${k}`}
+                            listClassName=""
+                            tagKey={k}
+                            keyClassName="text-blue-300"
+                            value={group.osmValues[k] ?? '—'}
+                          />
+                        ))}
+                      </div>
+                    </div>
+                  )
+                }
+                if (group.kind === 'providerOperator') {
+                  return (
+                    <div
+                      key={`${group.kind}-${group.officialKey}`}
+                      className="grid gap-3 p-2 md:grid-cols-2 md:gap-0 md:p-0"
+                    >
+                      <ComparePropertyItem
+                        listClassName="md:border-r md:border-zinc-800 md:bg-amber-950/15 md:p-3"
+                        tagKey={group.officialKey}
+                        keyClassName="text-amber-200"
+                        value={group.officialValue ?? '—'}
+                      />
+                      <div className="space-y-1 md:bg-blue-950/15 md:p-3">
+                        {group.osmKeys.map((k) => (
+                          <ComparePropertyItem
+                            key={`${group.kind}-${k}`}
+                            listClassName=""
+                            tagKey={k}
+                            keyClassName="text-blue-300"
+                            value={group.osmValues[k] ?? '—'}
+                          />
+                        ))}
+                      </div>
+                    </div>
+                  )
+                }
+                if (group.kind === 'legalStatusOperatorType') {
+                  return (
+                    <div
+                      key={`${group.kind}-${group.officialKey}`}
+                      className="grid gap-3 p-2 md:grid-cols-2 md:gap-0 md:p-0"
                     >
                       <ComparePropertyItem
                         listClassName="md:border-r md:border-zinc-800 md:bg-amber-950/15 md:p-3"

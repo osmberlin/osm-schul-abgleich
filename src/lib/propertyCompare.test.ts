@@ -115,6 +115,12 @@ describe('comparePropertySections grundschule group', () => {
     expect(res.onlyS).toEqual([])
   })
 
+  it('does not create grundschule group when no OSM compare keys are present', () => {
+    const res = comparePropertySections({ school_type: 'Grundschule' }, { name: 'GS X' })
+    expect(res.compareGroups).toHaveLength(0)
+    expect(res.onlyO).toEqual([['school_type', 'Grundschule']])
+  })
+
   it('places address group before grundschule when both apply', () => {
     const res = comparePropertySections(
       { address: 'Hauptstr. 1', school_type: 'Grundschule', name: 'X' },
@@ -200,6 +206,12 @@ describe('comparePropertySections secondary school group', () => {
     expect(res.onlyS).toEqual([])
   })
 
+  it('does not create secondary group when no OSM compare keys are present', () => {
+    const res = comparePropertySections({ school_type: 'Realschule' }, { name: 'RS X' })
+    expect(res.compareGroups).toHaveLength(0)
+    expect(res.onlyO).toEqual([['school_type', 'Realschule']])
+  })
+
   it('uses gesamtschule priority over gymnasium when both terms occur', () => {
     const res = comparePropertySections(
       { school_type: 'Gesamtschule mit gymnasialer Oberstufe' },
@@ -234,9 +246,8 @@ describe('comparePropertySections fachschule group', () => {
 
   it('does not create fachschule group when school_type has no fachschule substring', () => {
     const res = comparePropertySections({ school_type: 'Gymnasium' }, { amenity: 'college' })
-    expect(res.compareGroups).toHaveLength(1)
-    expect(res.compareGroups[0].kind).toBe('secondarySchool')
-    expect(res.onlyO).toEqual([])
+    expect(res.compareGroups).toHaveLength(0)
+    expect(res.onlyO).toEqual([['school_type', 'Gymnasium']])
     expect(res.onlyS).toEqual([['amenity', 'college']])
   })
 
@@ -250,12 +261,20 @@ describe('comparePropertySections fachschule group', () => {
     expect(res.onlyS).toEqual([])
   })
 
+  it('does not create fachschule group when amenity key is missing', () => {
+    const res = comparePropertySections({ school_type: 'Berufsfachschule' }, { name: 'FS X' })
+    expect(res.compareGroups).toHaveLength(0)
+    expect(res.onlyO).toEqual([['school_type', 'Berufsfachschule']])
+  })
+
   it('places address before grundschule before secondary school before fachschule when all apply', () => {
     const res = comparePropertySections(
       {
         address: 'Hauptstr. 1',
         school_type: 'Grundschule; Gymnasium; Berufsfachschule',
         name: 'X',
+        provider: 'Gemeinde Langerwehe',
+        legal_status: 'in öffentlicher Trägerschaft',
       },
       {
         name: 'X',
@@ -264,13 +283,17 @@ describe('comparePropertySections fachschule group', () => {
         'isced:level': '1',
         school: 'secondary',
         amenity: 'college',
+        operator: 'gemeinde langerwehe',
+        'operator:type': 'public',
       },
     )
-    expect(res.compareGroups).toHaveLength(4)
+    expect(res.compareGroups).toHaveLength(6)
     expect(res.compareGroups[0].kind).toBe('address')
     expect(res.compareGroups[1].kind).toBe('grundschule')
     expect(res.compareGroups[2].kind).toBe('secondarySchool')
     expect(res.compareGroups[3].kind).toBe('fachschule')
+    expect(res.compareGroups[4].kind).toBe('providerOperator')
+    expect(res.compareGroups[5].kind).toBe('legalStatusOperatorType')
   })
 
   it('places address before fachschule when grundschule does not apply', () => {
@@ -286,5 +309,155 @@ describe('comparePropertySections fachschule group', () => {
     expect(res.compareGroups).toHaveLength(2)
     expect(res.compareGroups[0].kind).toBe('address')
     expect(res.compareGroups[1].kind).toBe('fachschule')
+  })
+})
+
+describe('comparePropertySections provider/operator group', () => {
+  it('matches provider and operator with cleanup for tiny string differences', () => {
+    const res = comparePropertySections(
+      { provider: ' Gemeinde Langerwehe (NRW) ' },
+      { operator: 'gemeinde langerwehe' },
+    )
+    expect(res.compareGroups).toHaveLength(1)
+    const g = res.compareGroups[0]
+    expect(g.kind).toBe('providerOperator')
+    if (g.kind !== 'providerOperator') throw new Error('expected providerOperator')
+    expect(g.isEquivalentMatch).toBe(true)
+    expect(res.both).toEqual([])
+    expect(res.onlyO).toEqual([])
+    expect(res.onlyS).toEqual([])
+  })
+
+  it('marks provider/operator as not equivalent when one side is missing', () => {
+    const res = comparePropertySections({ provider: 'Gemeinde Langerwehe' }, {})
+    expect(res.compareGroups).toHaveLength(0)
+    expect(res.onlyO).toEqual([['provider', 'Gemeinde Langerwehe']])
+    expect(res.onlyS).toEqual([])
+  })
+
+  it('marks provider/operator as not equivalent when values differ semantically', () => {
+    const res = comparePropertySections(
+      { provider: 'Gemeinde Langerwehe' },
+      { operator: 'Stadt Düren' },
+    )
+    expect(res.compareGroups).toHaveLength(1)
+    const g = res.compareGroups[0]
+    expect(g.kind).toBe('providerOperator')
+    if (g.kind !== 'providerOperator') throw new Error('expected providerOperator')
+    expect(g.isEquivalentMatch).toBe(false)
+    expect(res.both).toEqual([])
+    expect(res.onlyO).toEqual([])
+    expect(res.onlyS).toEqual([])
+  })
+})
+
+describe('comparePropertySections legal_status/operator:type group', () => {
+  it('matches legal_status "in öffentlicher Trägerschaft" with operator:type=public', () => {
+    const res = comparePropertySections(
+      { legal_status: 'in öffentlicher Trägerschaft' },
+      { 'operator:type': 'public' },
+    )
+    expect(res.compareGroups).toHaveLength(1)
+    const g = res.compareGroups[0]
+    expect(g.kind).toBe('legalStatusOperatorType')
+    if (g.kind !== 'legalStatusOperatorType') throw new Error('expected legalStatusOperatorType')
+    expect(g.isEquivalentMatch).toBe(true)
+    expect(res.onlyO).toEqual([])
+    expect(res.onlyS).toEqual([])
+  })
+
+  it('matches when legal_status contains "öffentlich"', () => {
+    const res = comparePropertySections(
+      { legal_status: 'öffentlich' },
+      { 'operator:type': 'public' },
+    )
+    expect(res.compareGroups).toHaveLength(1)
+    const g = res.compareGroups[0]
+    expect(g.kind).toBe('legalStatusOperatorType')
+    if (g.kind !== 'legalStatusOperatorType') throw new Error('expected legalStatusOperatorType')
+    expect(g.isEquivalentMatch).toBe(true)
+    expect(res.onlyO).toEqual([])
+    expect(res.onlyS).toEqual([])
+  })
+
+  it('maps legal_status "Privat" to operator:type=private', () => {
+    const res = comparePropertySections({ legal_status: 'Privat' }, { 'operator:type': 'private' })
+    expect(res.compareGroups).toHaveLength(1)
+    const g = res.compareGroups[0]
+    expect(g.kind).toBe('legalStatusOperatorType')
+    if (g.kind !== 'legalStatusOperatorType') throw new Error('expected legalStatusOperatorType')
+    expect(g.isEquivalentMatch).toBe(true)
+    expect(res.onlyO).toEqual([])
+    expect(res.onlyS).toEqual([])
+  })
+
+  it('maps legal_status "private" to operator:type=private', () => {
+    const res = comparePropertySections({ legal_status: 'private' }, { 'operator:type': 'private' })
+    expect(res.compareGroups).toHaveLength(1)
+    const g = res.compareGroups[0]
+    expect(g.kind).toBe('legalStatusOperatorType')
+    if (g.kind !== 'legalStatusOperatorType') throw new Error('expected legalStatusOperatorType')
+    expect(g.isEquivalentMatch).toBe(true)
+    expect(res.onlyO).toEqual([])
+    expect(res.onlyS).toEqual([])
+  })
+
+  it('marks legal_status public group as mismatch when operator:type is not public', () => {
+    const res = comparePropertySections(
+      { legal_status: 'in öffentlicher Trägerschaft' },
+      { 'operator:type': 'government' },
+    )
+    expect(res.compareGroups).toHaveLength(1)
+    const g = res.compareGroups[0]
+    expect(g.kind).toBe('legalStatusOperatorType')
+    if (g.kind !== 'legalStatusOperatorType') throw new Error('expected legalStatusOperatorType')
+    expect(g.isEquivalentMatch).toBe(false)
+    expect(res.onlyO).toEqual([])
+    expect(res.onlyS).toEqual([])
+  })
+
+  it('marks legal_status private group as mismatch when operator:type is not private', () => {
+    const res = comparePropertySections({ legal_status: 'Privat' }, { 'operator:type': 'public' })
+    expect(res.compareGroups).toHaveLength(1)
+    const g = res.compareGroups[0]
+    expect(g.kind).toBe('legalStatusOperatorType')
+    if (g.kind !== 'legalStatusOperatorType') throw new Error('expected legalStatusOperatorType')
+    expect(g.isEquivalentMatch).toBe(false)
+    expect(res.onlyO).toEqual([])
+    expect(res.onlyS).toEqual([])
+  })
+
+  it('falls back to provider=öffentlich (Kommune) and maps to operator:type=public', () => {
+    const res = comparePropertySections(
+      { provider: 'öffentlich (Kommune)' },
+      { 'operator:type': 'public' },
+    )
+    expect(res.compareGroups.map((g) => g.kind)).toEqual(['legalStatusOperatorType'])
+    const g = res.compareGroups[0]
+    expect(g.kind).toBe('legalStatusOperatorType')
+    if (g.kind !== 'legalStatusOperatorType') throw new Error('expected legalStatusOperatorType')
+    expect(g.isEquivalentMatch).toBe(true)
+    expect(res.onlyO).toEqual([['provider', 'öffentlich (Kommune)']])
+    expect(res.onlyS).toEqual([])
+  })
+
+  it('does not build legal_status group when legal_status and provider are neutral', () => {
+    const res = comparePropertySections(
+      { legal_status: 'Unbekannt', provider: 'Gemeinde Langerwehe' },
+      { 'operator:type': 'public' },
+    )
+    expect(res.compareGroups).toHaveLength(0)
+    expect(res.onlyO).toEqual([
+      ['legal_status', 'Unbekannt'],
+      ['provider', 'Gemeinde Langerwehe'],
+    ])
+    expect(res.onlyS).toEqual([['operator:type', 'public']])
+  })
+
+  it('does not build legal_status group when operator:type is missing', () => {
+    const res = comparePropertySections({ legal_status: 'in öffentlicher Trägerschaft' }, {})
+    expect(res.compareGroups).toHaveLength(0)
+    expect(res.onlyO).toEqual([['legal_status', 'in öffentlicher Trägerschaft']])
+    expect(res.onlyS).toEqual([])
   })
 })

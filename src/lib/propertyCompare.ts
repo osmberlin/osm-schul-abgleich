@@ -3,6 +3,7 @@ import {
   flattenOfficialForCompare,
   flattenOsmTagsForCompare,
   normalizeAddressMatchKey,
+  normalizeSchoolNameForMatch,
 } from './compareMatchKeys'
 import { schoolTypeStringIndicatesFachschule } from './officialFachschule'
 import { schoolTypeStringIndicatesGrundschule, tagValueEqualsProposed } from './officialGrundschule'
@@ -17,6 +18,8 @@ type AddressCompareOsmKey = 'street' | 'housenumber'
 type GrundschuleCompareOsmKey = 'isced:level' | 'school'
 type SecondarySchoolCompareOsmKey = 'isced:level' | 'school'
 type FachschuleCompareOsmKey = 'amenity'
+type ProviderOperatorCompareOsmKey = 'operator'
+type LegalStatusOperatorTypeCompareOsmKey = 'operator:type'
 
 export type AddressCompareGroup = {
   kind: 'address'
@@ -59,13 +62,62 @@ export type FachschuleCompareGroup = {
   consumedKeys: string[]
 }
 
+export type ProviderOperatorCompareGroup = {
+  kind: 'providerOperator'
+  officialKey: 'provider'
+  officialValue: string | null
+  osmKeys: readonly ['operator']
+  osmValues: Record<ProviderOperatorCompareOsmKey, string | null>
+  isEquivalentMatch: boolean
+  consumedKeys: string[]
+}
+
+export type LegalStatusOperatorTypeCompareGroup = {
+  kind: 'legalStatusOperatorType'
+  officialKey: 'legal_status'
+  officialValue: string | null
+  osmKeys: readonly ['operator:type']
+  osmValues: Record<LegalStatusOperatorTypeCompareOsmKey, string | null>
+  isEquivalentMatch: boolean
+  consumedKeys: string[]
+}
+
 export type PropertyCompareGroup =
   | AddressCompareGroup
   | GrundschuleCompareGroup
   | SecondarySchoolCompareGroup
   | FachschuleCompareGroup
+  | ProviderOperatorCompareGroup
+  | LegalStatusOperatorTypeCompareGroup
 
 export { normalizeAddressCompareString } from './compareMatchKeys'
+
+type ExpectedOperatorTypeFromOfficial = 'public' | 'private'
+
+export function officialLegalStatusIndicatesPublic(
+  legalStatus: string | null | undefined,
+): boolean {
+  return expectedOperatorTypeFromOfficialString(legalStatus) === 'public'
+}
+
+function expectedOperatorTypeFromOfficialString(
+  value: string | null | undefined,
+): ExpectedOperatorTypeFromOfficial | null {
+  const normalized = normalizeSchoolNameForMatch(value)
+  if (!normalized) return null
+  if (normalized.includes('oeffentlich')) return 'public'
+  if (normalized.includes('privat') || normalized.includes('private')) return 'private'
+  return null
+}
+
+function expectedOperatorTypeFromOfficialProperties(
+  legalStatus: string | null | undefined,
+  provider: string | null | undefined,
+): ExpectedOperatorTypeFromOfficial | null {
+  const fromLegalStatus = expectedOperatorTypeFromOfficialString(legalStatus)
+  if (fromLegalStatus) return fromLegalStatus
+  return expectedOperatorTypeFromOfficialString(provider)
+}
 
 function buildAddressCompareGroup(
   offMap: Map<string, string>,
@@ -101,6 +153,7 @@ function buildGrundschuleCompareGroup(
 
   const isced = osmMap.get('isced:level') ?? null
   const school = osmMap.get('school') ?? null
+  if (isced == null && school == null) return null
   const isEquivalentMatch =
     tagValueEqualsProposed(isced ?? undefined, '1') ||
     tagValueEqualsProposed(school ?? undefined, 'primary')
@@ -124,6 +177,7 @@ function buildFachschuleCompareGroup(
   if (officialValue == null || !schoolTypeStringIndicatesFachschule(officialValue)) return null
 
   const amenity = osmMap.get('amenity') ?? null
+  if (amenity == null) return null
   const isEquivalentMatch = tagValueEqualsProposed(amenity ?? undefined, 'college')
 
   return {
@@ -147,6 +201,7 @@ function buildSecondarySchoolCompareGroup(
 
   const isced = osmMap.get('isced:level') ?? null
   const school = osmMap.get('school') ?? null
+  if (isced == null && school == null) return null
   const hasSecondary = tagValueEqualsProposed(school ?? undefined, 'secondary')
   const hasIsced23 = tagValueEqualsProposed(isced ?? undefined, '2;3')
   const hasIsced2 = tagValueEqualsProposed(isced ?? undefined, '2')
@@ -165,6 +220,54 @@ function buildSecondarySchoolCompareGroup(
     osmValues: { 'isced:level': isced, school },
     isEquivalentMatch,
     consumedKeys: ['school_type', 'isced:level', 'school'],
+  }
+}
+
+function buildProviderOperatorCompareGroup(
+  offMap: Map<string, string>,
+  osmMap: Map<string, string>,
+): ProviderOperatorCompareGroup | null {
+  const provider = offMap.get('provider') ?? null
+  const operator = osmMap.get('operator') ?? null
+  if (provider == null || operator == null) return null
+
+  const isEquivalentMatch =
+    provider != null &&
+    operator != null &&
+    normalizeSchoolNameForMatch(provider) === normalizeSchoolNameForMatch(operator)
+
+  return {
+    kind: 'providerOperator',
+    officialKey: 'provider',
+    officialValue: provider,
+    osmKeys: ['operator'],
+    osmValues: { operator },
+    isEquivalentMatch,
+    consumedKeys: ['provider', 'operator'],
+  }
+}
+
+function buildLegalStatusOperatorTypeCompareGroup(
+  offMap: Map<string, string>,
+  osmMap: Map<string, string>,
+): LegalStatusOperatorTypeCompareGroup | null {
+  const legalStatus = offMap.get('legal_status') ?? null
+  const provider = offMap.get('provider') ?? null
+  const expectedOperatorType = expectedOperatorTypeFromOfficialProperties(legalStatus, provider)
+  if (expectedOperatorType == null) return null
+
+  const operatorType = osmMap.get('operator:type') ?? null
+  if (operatorType == null) return null
+  const isEquivalentMatch = normalizeSchoolNameForMatch(operatorType) === expectedOperatorType
+
+  return {
+    kind: 'legalStatusOperatorType',
+    officialKey: 'legal_status',
+    officialValue: legalStatus,
+    osmKeys: ['operator:type'],
+    osmValues: { 'operator:type': operatorType },
+    isEquivalentMatch,
+    consumedKeys: ['legal_status', 'operator:type'],
   }
 }
 
@@ -200,6 +303,16 @@ export function comparePropertySections(
   if (fachschuleGroup) {
     compareGroups.push(fachschuleGroup)
     for (const key of fachschuleGroup.consumedKeys) consumedKeys.add(key)
+  }
+  const providerOperatorGroup = buildProviderOperatorCompareGroup(offMap, osmMap)
+  if (providerOperatorGroup) {
+    compareGroups.push(providerOperatorGroup)
+    for (const key of providerOperatorGroup.consumedKeys) consumedKeys.add(key)
+  }
+  const legalStatusOperatorTypeGroup = buildLegalStatusOperatorTypeCompareGroup(offMap, osmMap)
+  if (legalStatusOperatorTypeGroup) {
+    compareGroups.push(legalStatusOperatorTypeGroup)
+    for (const key of legalStatusOperatorTypeGroup.consumedKeys) consumedKeys.add(key)
   }
   const keys = new Set([...offMap.keys(), ...osmMap.keys()])
   const both: CompareRowBoth[] = []

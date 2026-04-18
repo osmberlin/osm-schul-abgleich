@@ -8,7 +8,7 @@ import {
   type PendingOsmEdit,
 } from '../../stores/osmAppStore'
 import { OsmTagSnippet } from '../OsmTagSnippet'
-import { SchoolOsmTagWikiLinks } from './SchoolOsmTagWikiLinks'
+import { SchoolOsmTagWikiLinks, type SchoolOsmWikiLink } from './SchoolOsmTagWikiLinks'
 
 const BTN_ACTIVE =
   'flex w-full flex-wrap items-center gap-x-1.5 gap-y-1 rounded-md border border-zinc-600 bg-zinc-900/40 px-3 py-2 text-left text-sm text-zinc-100 hover:bg-zinc-800/60 sm:w-auto'
@@ -54,6 +54,7 @@ type Props = {
   sectionLead: string
   sectionHeadingId: string
   suggestTags: readonly OsmSuggestTagSpec[]
+  wikiLinks?: readonly SchoolOsmWikiLink[]
 }
 
 export function SchoolOsmSuggestSection({
@@ -64,6 +65,7 @@ export function SchoolOsmSuggestSection({
   sectionLead,
   sectionHeadingId,
   suggestTags,
+  wikiLinks,
 }: Props) {
   const { addPendingTags } = useOsmAppActions()
   const pendingForObject = usePendingEditForOsmObject(row.osmType, row.osmId)
@@ -129,7 +131,7 @@ export function SchoolOsmSuggestSection({
           )
         })}
       </ul>
-      <SchoolOsmTagWikiLinks />
+      <SchoolOsmTagWikiLinks links={wikiLinks} />
     </section>
   )
 }

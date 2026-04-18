@@ -1,6 +1,11 @@
 import { de } from '../../i18n/de'
 
-const WIKI_LINKS = [
+export type SchoolOsmWikiLink = {
+  href: string
+  label: string
+}
+
+const DEFAULT_WIKI_LINKS: readonly SchoolOsmWikiLink[] = [
   {
     href: 'https://wiki.openstreetmap.org/wiki/DE:Tag:amenity%3Dschool',
     label: 'Tag:amenity=school',
@@ -15,11 +20,12 @@ const WIKI_LINKS = [
   },
 ] as const
 
-export function SchoolOsmTagWikiLinks() {
+export function SchoolOsmTagWikiLinks({ links }: { links?: readonly SchoolOsmWikiLink[] }) {
+  const wikiLinks = links ?? DEFAULT_WIKI_LINKS
   return (
     <p className="mt-3 text-sm text-zinc-300">
       {de.osm.schoolTagWikiLead}{' '}
-      {WIKI_LINKS.map((link, idx) => (
+      {wikiLinks.map((link, idx) => (
         <span key={link.href}>
           <a
             href={link.href}
@@ -29,7 +35,7 @@ export function SchoolOsmTagWikiLinks() {
           >
             {link.label}
           </a>
-          {idx < WIKI_LINKS.length - 1 ? ' ' : ''}
+          {idx < wikiLinks.length - 1 ? ' ' : ''}
         </span>
       ))}
     </p>
