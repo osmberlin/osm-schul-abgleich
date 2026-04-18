@@ -41,7 +41,7 @@ export function StateOverviewMatchList({
 }) {
   return (
     <>
-      <h2 className="mt-10 mb-2 flex flex-row flex-nowrap items-center gap-x-2 text-lg font-semibold text-zinc-100">
+      <h2 className="mt-10 mb-2 flex flex-row flex-wrap items-center gap-x-2 gap-y-1.5 sm:flex-nowrap text-lg font-semibold text-zinc-100">
         <span>{de.state.table}</span>
         <span className="inline-flex shrink-0 items-center rounded-full border border-zinc-300/90 bg-zinc-100 px-2.5 py-0.5 text-xs font-semibold text-zinc-700 tabular-nums">
           {formatDeInteger(listMatches.length)}
@@ -96,9 +96,9 @@ export function StateOverviewMatchList({
                     </div>
                     <div className="flex min-w-0 shrink-0 items-start gap-x-3 pt-0.5">
                       {(subId !== '' || row.distanceMeters != null) && (
-                        <div className="flex min-w-0 max-w-48 flex-col items-end gap-y-0.5">
+                        <div className="flex max-w-48 min-w-0 flex-col items-end gap-y-0.5">
                           {subId !== '' && (
-                            <p className="break-all text-right font-mono text-xs/5 text-zinc-400">
+                            <p className="text-right font-mono text-xs/5 break-all text-zinc-400">
                               {subId}
                             </p>
                           )}
