@@ -236,48 +236,6 @@ function optimizeMatchRowForUserOutput(
   return out
 }
 
-const OVERVIEW_MATCH_MODE_NONE = '(none)'
-const OVERVIEW_SCHOOL_KIND_NONE = '(keine)'
-
-function toNonEmptyString(v: unknown): string | null {
-  if (typeof v !== 'string') return null
-  const t = v.trim()
-  return t.length > 0 ? t : null
-}
-
-function normalizeSearchToken(v: string): string {
-  return v.trim().toLowerCase().replace(/\s+/g, ' ')
-}
-
-function overviewSearchQForRow(row: Record<string, unknown>): string {
-  const tokens: string[] = []
-  const officialName = toNonEmptyString(row.officialName)
-  if (officialName) tokens.push(officialName)
-  const osmName = toNonEmptyString(row.osmName)
-  if (osmName) tokens.push(osmName)
-  const tags = (row.osmTags ?? null) as Record<string, unknown> | null
-  if (tags) {
-    for (const k of Object.keys(tags)) {
-      if (!k.includes('name')) continue
-      const v = toNonEmptyString(tags[k])
-      if (v) tokens.push(v)
-    }
-  }
-  const dedup = new Set(tokens.map(normalizeSearchToken))
-  return [...dedup].join(' ')
-}
-
-function hasGeoBoundaryIssue(row: Record<string, unknown>): boolean {
-  const props = (row.officialProperties ?? null) as Record<string, unknown> | null
-  if (props?._error_outside_boundary != null) return true
-  const snaps = Array.isArray(row.ambiguousOfficialSnapshots) ? row.ambiguousOfficialSnapshots : []
-  for (const snap of snaps) {
-    const p = (snap as { properties?: Record<string, unknown> }).properties
-    if (p?._error_outside_boundary != null) return true
-  }
-  return false
-}
-
 function optimizeMapMatchRowForUserOutput(row: Record<string, unknown>): Record<string, unknown> {
   const officialProps = (row.officialProperties ?? null) as Record<string, unknown> | null
   return {
@@ -301,62 +259,6 @@ function optimizeMapMatchRowForUserOutput(row: Record<string, unknown>): Record<
       typeof row.osmCentroidLat === 'number' ? roundToDecimals(row.osmCentroidLat, R) : null,
     osmName: row.osmName ?? null,
   }
-}
-
-function optimizeListSearchMatchRowForUserOutput(
-  row: Record<string, unknown>,
-): Record<string, unknown> {
-  const tags = (row.osmTags ?? null) as Record<string, unknown> | null
-  const officialProps = (row.officialProperties ?? null) as Record<string, unknown> | null
-  const matchMode = toNonEmptyString(row.matchMode) ?? OVERVIEW_MATCH_MODE_NONE
-  const schoolKindDe = toNonEmptyString(row.schoolKindDe) ?? OVERVIEW_SCHOOL_KIND_NONE
-  const amenity = toNonEmptyString(tags?.amenity)
-  const osmAmenity = amenity === 'school' || amenity === 'college' ? amenity : 'none'
-  const hasIscedLevel = toNonEmptyString(tags?.['isced:level']) != null
-  const hasOfficial = toNonEmptyString(row.officialId) != null
-  const hasOsm = toNonEmptyString(row.osmId) != null
-  const out: Record<string, unknown> = {
-    key: row.key,
-    category: row.category,
-    officialId: row.officialId ?? null,
-    officialName: row.officialName ?? null,
-    officialLon:
-      typeof officialProps?.longitude === 'number'
-        ? roundToDecimals(officialProps.longitude, R)
-        : null,
-    officialLat:
-      typeof officialProps?.latitude === 'number'
-        ? roundToDecimals(officialProps.latitude, R)
-        : null,
-    officialAddress: toNonEmptyString(officialProps?.address),
-    officialZip: toNonEmptyString(officialProps?.zip),
-    officialCity: toNonEmptyString(officialProps?.city),
-    osmId: row.osmId ?? null,
-    osmType: row.osmType ?? null,
-    osmCentroidLon:
-      typeof row.osmCentroidLon === 'number' ? roundToDecimals(row.osmCentroidLon, R) : null,
-    osmCentroidLat:
-      typeof row.osmCentroidLat === 'number' ? roundToDecimals(row.osmCentroidLat, R) : null,
-    distanceMeters: row.distanceMeters ?? null,
-    osmName: row.osmName ?? null,
-    osmAddrCity: toNonEmptyString(tags?.['addr:city']),
-    osmAddrStreet: toNonEmptyString(tags?.['addr:street']),
-    osmAddrHousenumber: toNonEmptyString(tags?.['addr:housenumber']),
-    search: {
-      q: overviewSearchQForRow(row),
-      facets: {
-        matchMode,
-        iscedLevel: hasIscedLevel ? 'yes' : 'no',
-        schoolKindDe,
-        osmAmenity,
-        geoBoundaryIssue: hasGeoBoundaryIssue(row) ? 'yes' : 'no',
-        hasOfficial: hasOfficial ? 'yes' : 'no',
-        hasOsm: hasOsm ? 'yes' : 'no',
-      },
-    },
-  }
-  if (typeof row.matchMode === 'string') out.matchMode = row.matchMode
-  return out
 }
 
 function nearestStateByCenter(lon: number, lat: number): StateCode {
@@ -793,14 +695,6 @@ export async function runStateFirstPipeline(
         },
       ),
     )
-    const rowsStateListSearchUser = enriched.map((r) =>
-      optimizeListSearchMatchRowForUserOutput(
-        r as Record<string, unknown> & {
-          osmCentroidLon?: number | null
-          osmCentroidLat?: number | null
-        },
-      ),
-    )
     const rowsStateDetailByKey = Object.fromEntries(
       rowsStateDetailUser
         .map((r) => [String((r as { key?: unknown }).key ?? ''), r] as const)
@@ -842,10 +736,6 @@ export async function runStateFirstPipeline(
     await writeJson(
       path.join(datasetsDir(projectRoot), code, 'schools_matches_map.json'),
       rowsStateMapUser,
-    )
-    await writeJson(
-      path.join(datasetsDir(projectRoot), code, 'schools_matches_list_search.json'),
-      rowsStateListSearchUser,
     )
     await writeJson(
       path.join(datasetsDir(projectRoot), code, 'schools_matches_detail.json'),

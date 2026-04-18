@@ -2,7 +2,6 @@ import { DATASET_FETCH_INIT, DATASET_QUERY_GC_MS, DATASET_QUERY_STALE_MS } from 
 import {
   stateBoundaryUrl,
   stateMatchesDetailUrl,
-  stateMatchesListSearchUrl,
   stateMatchesMapUrl,
   stateOfficialPointsUrl,
   stateOfficialUrl,
@@ -12,7 +11,6 @@ import {
 import {
   schoolsMatchesDetailByKeyFileSchema,
   schoolsMatchesFileSchema,
-  schoolsMatchesListSearchFileSchema,
   schoolsMatchesMapFileSchema,
   stateOfficialPointsFileSchema,
 } from './schemas'
@@ -56,13 +54,15 @@ export function stateOverviewQueryOptions(stateKey: string) {
 export function stateListSearchQueryOptions(stateKey: string) {
   return queryOptions({
     queryKey: ['state-list-search', stateKey] as const,
-    queryFn: async () => {
-      const r = await fetch(stateMatchesListSearchUrl(stateKey), DATASET_FETCH_INIT)
+    queryFn: async (): Promise<z.infer<typeof schoolsMatchesFileSchema>> => {
+      const r = await fetch(stateMatchesDetailUrl(stateKey), DATASET_FETCH_INIT)
       if (!r.ok) {
         throw new Error('land list/search fetch')
       }
       const raw = await r.json()
-      return schoolsMatchesListSearchFileSchema.parse(raw)
+      const detailRowsByKey = schoolsMatchesDetailByKeyFileSchema.parse(raw)
+      const mergedRows = Object.values(detailRowsByKey)
+      return schoolsMatchesFileSchema.parse(mergedRows)
     },
     staleTime: DATASET_QUERY_STALE_MS,
     gcTime: DATASET_QUERY_GC_MS,

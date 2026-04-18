@@ -41,7 +41,7 @@ flowchart TB
 
 ## Ausgaben
 
-- **Pro Land:** `public/datasets/{code}/schools_official.geojson`, `schools_osm_areas.json` (volle Umriss-Geometrien, keyed `way/id` …), `schools_matches_map.json`, `schools_matches_list_search.json`, `schools_matches_detail.json`, `schools_official_points.json`, `schools_osm.meta.json`
+- **Pro Land:** `public/datasets/{code}/schools_official.geojson`, `schools_osm_areas.json` (volle Umriss-Geometrien, keyed `way/id` …), `schools_matches_map.json`, `schools_matches_detail.json`, `schools_official_points.json`, `schools_osm.meta.json`
 - **Gesamt:** `public/datasets/summary.json` (`pipelineVersion`, `jedeschuleCsvSource: jedeschule-latest.csv`)
 - **Intern (nicht im Pages-Build):** `public/datasets/.pipeline/schools_osm_de.geojson` (CI entfernt vor `vite build`)
 

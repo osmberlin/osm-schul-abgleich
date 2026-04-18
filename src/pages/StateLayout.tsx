@@ -63,16 +63,8 @@ export function StateLayout() {
             {formatSchoolWhereSubtitle(
               label,
               stateKey,
-              {
-                address: schuleRow.officialAddress ?? null,
-                zip: schuleRow.officialZip ?? null,
-                city: schuleRow.officialCity ?? null,
-              },
-              {
-                'addr:city': schuleRow.osmAddrCity ?? '',
-                'addr:street': schuleRow.osmAddrStreet ?? '',
-                'addr:housenumber': schuleRow.osmAddrHousenumber ?? '',
-              },
+              schuleRow.officialProperties ?? null,
+              schuleRow.osmTags ?? null,
             )}
             {schuleRow.category === 'matched' && schuleRow.distanceMeters != null && (
               <>

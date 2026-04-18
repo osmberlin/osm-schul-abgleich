@@ -22,8 +22,6 @@ export const stateOsmMetaUrl = (code: string) =>
   datasetsUrl(`/datasets/${code}/schools_osm.meta.json`)
 export const stateMatchesMapUrl = (code: string) =>
   datasetsUrl(`/datasets/${code}/schools_matches_map.json`)
-export const stateMatchesListSearchUrl = (code: string) =>
-  datasetsUrl(`/datasets/${code}/schools_matches_list_search.json`)
 export const stateMatchesDetailUrl = (code: string) =>
   datasetsUrl(`/datasets/${code}/schools_matches_detail.json`)
 export const stateOfficialPointsUrl = (code: string) =>

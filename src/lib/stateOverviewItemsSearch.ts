@@ -1,11 +1,11 @@
-import { schoolsMatchListSearchRowSchema } from './schemas'
+import { schoolsMatchRowSchema } from './schemas'
 import itemsjs from 'itemsjs'
 import type { z } from 'zod'
 
 export const STATE_MATCH_FACET_SCHOOL_KIND_NONE = '(keine)'
 export const STATE_MATCH_FACET_MATCH_MODE_NONE = '(none)'
 
-export type StateMatchRow = z.infer<typeof schoolsMatchListSearchRowSchema>
+export type StateMatchRow = z.infer<typeof schoolsMatchRowSchema>
 
 export const STATE_FACET_MATCH_MODES = [
   'distance',
@@ -25,18 +25,63 @@ export const STATE_FACET_OSM_AMENITY = ['school', 'college', 'none'] as const
 
 export type StateFacetOsmAmenity = (typeof STATE_FACET_OSM_AMENITY)[number]
 
+function toNonEmptyString(v: unknown): string | null {
+  if (typeof v !== 'string') return null
+  const t = v.trim()
+  return t.length > 0 ? t : null
+}
+
+function normalizeSearchToken(v: string): string {
+  return v.trim().toLowerCase().replace(/\s+/g, ' ')
+}
+
+function searchQFromRow(row: StateMatchRow): string {
+  const tokens: string[] = []
+  const officialName = toNonEmptyString(row.officialName)
+  if (officialName) tokens.push(officialName)
+  const osmName = toNonEmptyString(row.osmName)
+  if (osmName) tokens.push(osmName)
+  const tags = row.osmTags ?? null
+  if (tags) {
+    for (const k of Object.keys(tags)) {
+      if (!k.includes('name')) continue
+      const v = toNonEmptyString(tags[k])
+      if (v) tokens.push(v)
+    }
+  }
+  const dedup = new Set(tokens.map(normalizeSearchToken))
+  return [...dedup].join(' ')
+}
+
+function hasGeoBoundaryIssue(row: StateMatchRow): boolean {
+  const props = row.officialProperties ?? null
+  if (props?._error_outside_boundary != null) return true
+  const snaps = Array.isArray(row.ambiguousOfficialSnapshots) ? row.ambiguousOfficialSnapshots : []
+  for (const snap of snaps) {
+    if (snap.properties?._error_outside_boundary != null) return true
+  }
+  return false
+}
+
 export function matchRowToItemsJsDoc(row: StateMatchRow) {
-  const facets = row.search.facets
+  const amenity = toNonEmptyString(row.osmTags?.amenity)
+  const osmAmenity: StateFacetOsmAmenity =
+    amenity === 'school' || amenity === 'college' ? amenity : 'none'
+  const schoolKindDe = toNonEmptyString(row.schoolKindDe) ?? STATE_MATCH_FACET_SCHOOL_KIND_NONE
+  const iscedLevel = toNonEmptyString(row.osmTags?.['isced:level']) != null ? 'yes' : 'no'
+  const hasOfficial = toNonEmptyString(row.officialId) != null ? 'yes' : 'no'
+  const hasOsm = toNonEmptyString(row.osmId) != null ? 'yes' : 'no'
+
   return {
     id: row.key,
-    searchQ: row.search.q,
-    matchMode: (facets.matchMode ?? STATE_MATCH_FACET_MATCH_MODE_NONE) as string,
-    iscedLevel: facets.iscedLevel,
-    schoolKindDe: facets.schoolKindDe || STATE_MATCH_FACET_SCHOOL_KIND_NONE,
-    hasOfficial: facets.hasOfficial,
-    hasOsm: facets.hasOsm,
-    geoBoundaryIssue: facets.geoBoundaryIssue,
-    osmAmenity: facets.osmAmenity as StateFacetOsmAmenity,
+    searchQ: searchQFromRow(row),
+    matchMode: row.matchMode ?? STATE_MATCH_FACET_MATCH_MODE_NONE,
+    iscedLevel,
+    schoolKindDe,
+    hasOfficial,
+    hasOsm,
+    geoBoundaryIssue: hasGeoBoundaryIssue(row) ? 'yes' : 'no',
+    osmAmenity,
   }
 }
 

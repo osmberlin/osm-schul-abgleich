@@ -1,8 +1,4 @@
-import type {
-  schoolsMatchListSearchRowSchema,
-  schoolsMatchMapRowSchema,
-  schoolsMatchRowSchema,
-} from './schemas'
+import type { schoolsMatchMapRowSchema, schoolsMatchRowSchema } from './schemas'
 import type { StateMapBbox } from './useStateMapBbox'
 import { parseJedeschuleLonLatFromRecord, parseMatchRowOsmCentroidLonLat } from './zodGeo'
 import distance from '@turf/distance'
@@ -10,10 +6,7 @@ import { featureCollection, point } from '@turf/helpers'
 import type { Feature, FeatureCollection, Point } from 'geojson'
 import type { z } from 'zod'
 
-type Row =
-  | z.infer<typeof schoolsMatchRowSchema>
-  | z.infer<typeof schoolsMatchMapRowSchema>
-  | z.infer<typeof schoolsMatchListSearchRowSchema>
+type Row = z.infer<typeof schoolsMatchRowSchema> | z.infer<typeof schoolsMatchMapRowSchema>
 
 function trimNonEmptyString(v: string | null | undefined): string | null {
   if (v == null) return null

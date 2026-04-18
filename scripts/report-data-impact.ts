@@ -35,10 +35,6 @@ const PER_LAND_FILE_ROUTE_PURPOSE: Record<
     route: '`/bundesland/{code}`',
     purpose: 'Map-first rows (key/category/display names/coordinates) for immediate map rendering.',
   },
-  'schools_matches_list_search.json': {
-    route: '`/bundesland/{code}` (lazy: Liste/Suche anzeigen) (+ reused in detail)',
-    purpose: 'List/search rows with condensed `search` object and list-specific fields.',
-  },
   'schools_matches_detail.json': {
     route: '`/bundesland/{code}/schule/…`',
     purpose: 'Detail-only full match rows keyed by `key` for compare/explanation fields.',
@@ -420,7 +416,6 @@ async function main() {
     'Code',
     '`official_points`',
     '`matches_map`',
-    '`matches_list_search`',
     '`official.geojson`',
     '`matches_detail`',
     '`osm_areas`',
@@ -430,7 +425,6 @@ async function main() {
     r.code,
     formatMiB(r.byFile['schools_official_points.json'] ?? 0),
     formatMiB(r.byFile['schools_matches_map.json'] ?? 0),
-    formatMiB(r.byFile['schools_matches_list_search.json'] ?? 0),
     formatMiB(r.byFile['schools_official.geojson'] ?? 0),
     formatMiB(r.byFile['schools_matches_detail.json'] ?? 0),
     formatMiB(r.byFile['schools_osm_areas.json'] ?? 0),
@@ -443,18 +437,10 @@ async function main() {
     bytesByFile('schools_official_points.json', perLand.byFile) +
     bytesByFile('schools_matches_map.json', perLand.byFile) +
     bytesByFile('schools_osm.meta.json', perLand.byFile)
-  const lazyListSearchPerLandTotal = bytesByFile('schools_matches_list_search.json', perLand.byFile)
   const detailOnlyPerLandTotal =
     bytesByFile('schools_official.geojson', perLand.byFile) +
     bytesByFile('schools_osm_areas.json', perLand.byFile) +
     bytesByFile('schools_matches_detail.json', perLand.byFile)
-  const matchMapBytes = bytesByFile('schools_matches_map.json', perLand.byFile)
-  const matchListSearchBytes = bytesByFile('schools_matches_list_search.json', perLand.byFile)
-  const matchDetailBytes = bytesByFile('schools_matches_detail.json', perLand.byFile)
-  const mapVsDetailMatchPct =
-    matchDetailBytes > 0 ? ((matchMapBytes / matchDetailBytes) * 100).toFixed(2) : '0.00'
-  const listSearchVsDetailMatchPct =
-    matchDetailBytes > 0 ? ((matchListSearchBytes / matchDetailBytes) * 100).toFixed(2) : '0.00'
 
   lines.push('### Route-oriented payload slices (sum over 16 Länder)')
   lines.push('')
@@ -470,7 +456,6 @@ async function main() {
           'Map-first core (`official_points` + `matches_map` + `osm.meta`)',
           mapCorePerLandTotal,
         ),
-        fmtRow('List/search lazy increment (`matches_list_search`)', lazyListSearchPerLandTotal),
         fmtRow(
           'Detail-only increment (`official.geojson` + `osm_areas` + `matches_detail`)',
           detailOnlyPerLandTotal,
@@ -479,16 +464,16 @@ async function main() {
     ),
   )
   lines.push('')
-  lines.push('### Duplication reduction indicator')
+  lines.push('### Duplication posture (current)')
   lines.push('')
   lines.push(
-    `Map match payload is **${mapVsDetailMatchPct}%** of detail match payload (${formatMiB(matchMapBytes)} vs ${formatMiB(matchDetailBytes)}).`,
+    'Map payload is intentionally minimal (`key`, category, ids, display names, map coordinates).',
   )
   lines.push(
-    `List/search payload is **${listSearchVsDetailMatchPct}%** of detail match payload (${formatMiB(matchListSearchBytes)} vs ${formatMiB(matchDetailBytes)}).`,
+    'List/search now reuses detail rows (no separate list-search file), so overlap is intentionally accepted to keep client and pipeline complexity lower.',
   )
   lines.push(
-    'Interpretation: lower percentages indicate clearer route separation. Map payload should be much smaller than detail; list/search can remain closer if it intentionally carries filter/search material.',
+    'Further de-duplication is possible but likely shifts complexity into client-side derivation and is not prioritized without measured bottlenecks.',
   )
   lines.push('')
 
@@ -516,6 +501,11 @@ async function main() {
       String(sp['schools_matches_map.json'] ?? 0),
     ],
     [
+      `\`datasets/${sampleState}/schools_matches_detail.json\` (lazy via Liste/Suche anzeigen)`,
+      formatMiB(sp['schools_matches_detail.json'] ?? 0),
+      String(sp['schools_matches_detail.json'] ?? 0),
+    ],
+    [
       `\`datasets/${sampleState}/schools_osm.meta.json\``,
       formatMiB(sp['schools_osm.meta.json'] ?? 0),
       String(sp['schools_osm.meta.json'] ?? 0),
@@ -531,6 +521,10 @@ async function main() {
   lines.push('')
   lines.push(
     `**State route total (${sampleState}):** ${formatMiB(stateRouteTotal)} (${stateRouteTotal} bytes)`,
+  )
+  lines.push('')
+  lines.push(
+    '*Note: `schools_matches_detail.json` is loaded on the state route only when list/search is opened (`Liste/Suche anzeigen`).*',
   )
   lines.push('')
 
@@ -550,12 +544,6 @@ async function main() {
       'yes (same as state route)',
     ],
     [
-      `\`datasets/${sampleState}/schools_matches_list_search.json\` (lazy via Liste/Suche anzeigen)`,
-      formatMiB(sp['schools_matches_list_search.json'] ?? 0),
-      String(sp['schools_matches_list_search.json'] ?? 0),
-      'maybe (cached when list/search was opened on state route)',
-    ],
-    [
       `\`datasets/${sampleState}/schools_official.geojson\``,
       formatMiB(sp['schools_official.geojson'] ?? 0),
       String(sp['schools_official.geojson'] ?? 0),
@@ -565,7 +553,7 @@ async function main() {
       `\`datasets/${sampleState}/schools_matches_detail.json\``,
       formatMiB(sp['schools_matches_detail.json'] ?? 0),
       String(sp['schools_matches_detail.json'] ?? 0),
-      'no',
+      'maybe (same file as state route list/search)',
     ],
     [
       `\`datasets/${sampleState}/schools_osm_areas.json\` (lazy, when needed)`,

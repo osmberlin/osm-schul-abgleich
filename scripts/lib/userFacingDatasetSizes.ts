@@ -27,7 +27,6 @@ export const USER_FACING_FILES = [
   'schools_official_points.json',
   'schools_osm_areas.json',
   'schools_matches_map.json',
-  'schools_matches_list_search.json',
   'schools_matches_detail.json',
   'schools_osm.meta.json',
 ] as const
