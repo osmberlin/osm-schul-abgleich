@@ -73,6 +73,8 @@ jobs:
           rm -f public/datasets/jedeschule-latest.csv
           rm -rf public/datasets/.pipeline
       - run: bun run build
+        env:
+          VITE_OSM_OAUTH_CLIENT_ID: ${{ secrets.VITE_OSM_OAUTH_CLIENT_ID }}
       - name: Create gzip/brotli sidecars in dist (experiment)
         run: bun run build:compress
       - uses: actions/upload-pages-artifact@v3
