@@ -250,11 +250,16 @@ export const de = {
       'Bei mindestens einem Kandidaten fehlen nutzbare Koordinaten, daher erscheint nicht jeder Kandidat als Punkt auf der Karte. Vergleiche die Felder in der Tabelle und entscheide anhand der OSM-Daten, welche Tags angepasst werden sollen.',
     ambiguousOfficialHeading: 'Amtliche Kandidaten',
     ambiguousJedeschule: 'JedeSchule',
-    mapLegendOfficial: 'Offizielle Schule (Übereinstimmung/Kandidaten)',
-    mapLegendOsmReference: 'Referenz Schule (OSM)',
-    mapHoverLabelOsmOtherMatched: 'Andere Schule OSM mit Übereinstimmung',
-    mapHoverLabelOsmOtherAmbiguous: 'Andere Schule OSM mit Kandidaten',
-    mapHoverLabelOsmOtherOther: 'Andere Schule OSM',
+    mapLegendSelectedSchool: 'Ausgewählte Schule',
+    mapLegendOsmSchoolArea: 'Fläche Schule OSM',
+    /** Weitere Schulen: gleiche Farben/Semantik wie `state.categoryLabel`, mit „Schule …“ für die Detail-Legende. */
+    mapLegendOtherSchool: {
+      matched: 'Schule in beiden Daten',
+      official_only: 'Schule nur in offiziellen Daten',
+      osm_only: 'Schule nur in OSM',
+      match_ambiguous: 'Schule uneindeutig',
+      official_no_coord: 'Schule amtlich ohne Koordinaten',
+    },
     mapMask: 'Maskierung',
     matchExplanationDistance:
       'Zuordnung über Distanz: ein einziger amtlicher Schuldatensatz lag im Vergleichsradius um den OSM-Schwerpunkt.',

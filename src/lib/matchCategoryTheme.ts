@@ -89,8 +89,8 @@ export const MATCH_CATEGORY_SWATCH_CLASSES: Record<
 }
 
 /**
- * SchuleDetail-Vergleichskarte: offizieller Punkt = official_only, OSM-Fläche/Schwerpunkt = osm_only
- * (gleiche Farben wie auf der Startseite / Legende).
+ * SchuleDetail-Vergleichskarte: offizieller Punkt = official_only (Farben wie Startseite).
+ * OSM-Fläche (Fill/Outline, Legenden-Swatch) = osm_only; Schwerpunkt-Halo ist neutral schwarz, nicht Blau.
  */
 export const DETAIL_MAP_OFFICIAL = theme.official_only
 export const DETAIL_MAP_OSM = theme.osm_only

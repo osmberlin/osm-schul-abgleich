@@ -215,6 +215,7 @@ export function SchoolDetailMapSection({
       </div>
       <SchoolDetailMapLegend
         mapOsmCentroid={mapOsmCentroid}
+        hasOsmAreaPolygons={matchRow.hasArea === true}
         allOtherSchoolPointFeatures={allOtherSchoolPointFeatures}
       />
     </div>

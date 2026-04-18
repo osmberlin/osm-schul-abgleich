@@ -5,6 +5,7 @@ import { LAND_BOUNDARY_LINE_PAINT, MAP_DIM_MASK_FILL } from '../../lib/mapDimMas
 import {
   DETAIL_MAP_OFFICIAL,
   DETAIL_MAP_OSM,
+  MATCH_CATEGORY_SWATCH_CLASSES,
   paintMatchCatCore,
   paintMatchCatHalo,
   paintMatchCatSortKey,
@@ -21,7 +22,7 @@ import {
   primaryHoveredHit,
   resolveDetailMapClickTarget,
 } from '../../lib/schoolDetailMapInteractions'
-import type { StateMatchCategory } from '../../lib/stateMatchCategories'
+import { STATE_MATCH_CATEGORIES, type StateMatchCategory } from '../../lib/stateMatchCategories'
 import { useDetailMapMask } from '../../lib/useDetailMapMask'
 import type { StateMapBbox } from '../../lib/useStateMapBbox'
 import { MapPointHoverPanel } from '../MapPointHoverPanel'
@@ -58,6 +59,18 @@ const DETAIL_MAP_ID = 'school-detail-map'
 
 const DETAIL_MAP_LEGEND_POINT_TILE =
   'inline-flex size-[18px] shrink-0 items-center justify-center rounded-sm bg-zinc-200 p-0 shadow-sm ring-1 ring-zinc-400/25'
+
+/** Match categories present on „other school“ points, stable order (same as map `paintMatchCat*`). */
+function collectOtherSchoolMatchCategories(features: readonly Feature[]): StateMatchCategory[] {
+  const seen = new Set<StateMatchCategory>()
+  for (const f of features) {
+    const c = f.properties?.matchCat
+    if (typeof c === 'string' && (STATE_MATCH_CATEGORIES as readonly string[]).includes(c)) {
+      seen.add(c as StateMatchCategory)
+    }
+  }
+  return STATE_MATCH_CATEGORIES.filter((cat) => seen.has(cat))
+}
 
 export type DetailMapViewState = {
   longitude: number
@@ -376,7 +389,7 @@ export function SchoolDetailMap({
               ]}
               paint={{
                 'circle-radius': 8,
-                'circle-color': 'rgba(59, 130, 246, 0.5)',
+                'circle-color': 'rgba(10, 10, 10, 0.45)',
                 'circle-stroke-width': 0,
               }}
             />
@@ -435,69 +448,54 @@ export function SchoolDetailMap({
 
 export function SchoolDetailMapLegend({
   mapOsmCentroid,
+  hasOsmAreaPolygons,
   allOtherSchoolPointFeatures,
 }: {
   mapOsmCentroid: readonly [number, number] | null
+  hasOsmAreaPolygons: boolean
   allOtherSchoolPointFeatures: Feature[]
 }) {
   const { showMapMask, setShowMapMask } = useDetailMapMask()
   return (
-    <div className="mt-2 flex min-w-0 flex-wrap items-center justify-between gap-x-3 gap-y-2">
-      <div className="flex min-w-0 flex-1 flex-wrap items-center gap-x-3 gap-y-1 text-xs leading-snug text-zinc-400">
-        <span className="inline-flex items-center gap-1.5">
-          <span className={DETAIL_MAP_LEGEND_POINT_TILE} aria-hidden>
-            <DetailMapLegendPointDot haloClassName="bg-amber-500/42" coreClassName="bg-amber-500" />
-          </span>
-          {de.detail.mapLegendOfficial}
-        </span>
-        <span className="inline-flex items-center gap-1.5">
-          {mapOsmCentroid != null && (
+    <div className="mt-2 flex min-w-0 flex-col gap-y-2 sm:flex-row sm:flex-wrap sm:items-center sm:justify-between sm:gap-x-3 sm:gap-y-2">
+      <div className="flex w-full min-w-0 flex-wrap items-center gap-x-3 gap-y-1 text-xs leading-snug text-zinc-400 sm:flex-1">
+        {mapOsmCentroid != null && (
+          <span className="inline-flex items-center gap-1.5">
             <span className={DETAIL_MAP_LEGEND_POINT_TILE} aria-hidden>
-              <DetailMapLegendPointDot haloClassName="bg-blue-500/45" coreClassName="bg-black" />
+              <DetailMapLegendPointDot haloClassName="bg-black/40" coreClassName="bg-black" />
             </span>
-          )}
-          <span className={DETAIL_MAP_LEGEND_POINT_TILE} aria-hidden>
-            <div
-              className="box-border size-[14px] shrink-0 rounded-[2px] border-2 border-solid"
-              style={{
-                backgroundColor: DETAIL_MAP_OSM.polygonFillRgba,
-                borderColor: DETAIL_MAP_OSM.polygonOutlineHex,
-              }}
-            />
+            {de.detail.mapLegendSelectedSchool}
           </span>
-          {de.detail.mapLegendOsmReference}
-        </span>
-        {allOtherSchoolPointFeatures.length > 0 && (
-          <>
-            <span className="inline-flex items-center gap-1.5">
-              <span className={DETAIL_MAP_LEGEND_POINT_TILE} aria-hidden>
-                <DetailMapLegendPointDot
-                  haloClassName="bg-blue-500/42"
-                  coreClassName="bg-[#2563eb]"
-                />
-              </span>
-              <span className="text-zinc-400">{de.detail.mapHoverLabelOsmOtherMatched}</span>
-            </span>
-            <span className="inline-flex items-center gap-1.5">
-              <span className={DETAIL_MAP_LEGEND_POINT_TILE} aria-hidden>
-                <DetailMapLegendPointDot
-                  haloClassName="bg-violet-500/45"
-                  coreClassName="bg-[#2563eb]"
-                />
-              </span>
-              <span className="text-zinc-400">{de.detail.mapHoverLabelOsmOtherAmbiguous}</span>
-            </span>
-            <span className="inline-flex items-center gap-1.5">
-              <span className={DETAIL_MAP_LEGEND_POINT_TILE} aria-hidden>
-                <DetailMapLegendPointDot
-                  haloClassName="bg-zinc-500/38"
-                  coreClassName="bg-[#71717a]"
-                />
-              </span>
-              <span className="text-zinc-400">{de.detail.mapHoverLabelOsmOtherOther}</span>
-            </span>
-          </>
         )}
+        {hasOsmAreaPolygons && (
+          <span className="inline-flex items-center gap-1.5">
+            <span className={DETAIL_MAP_LEGEND_POINT_TILE} aria-hidden>
+              <div
+                className="box-border size-[14px] shrink-0 rounded-[2px] border-2 border-solid"
+                style={{
+                  backgroundColor: DETAIL_MAP_OSM.polygonFillRgba,
+                  borderColor: DETAIL_MAP_OSM.polygonOutlineHex,
+                }}
+              />
+            </span>
+            {de.detail.mapLegendOsmSchoolArea}
+          </span>
+        )}
+        {allOtherSchoolPointFeatures.length > 0 &&
+          collectOtherSchoolMatchCategories(allOtherSchoolPointFeatures).map((cat) => {
+            const swatch = MATCH_CATEGORY_SWATCH_CLASSES[cat]
+            return (
+              <span key={cat} className="inline-flex items-center gap-1.5">
+                <span className={DETAIL_MAP_LEGEND_POINT_TILE} aria-hidden>
+                  <DetailMapLegendPointDot
+                    haloClassName={swatch.outer}
+                    coreClassName={swatch.inner}
+                  />
+                </span>
+                <span className="text-zinc-400">{de.detail.mapLegendOtherSchool[cat]}</span>
+              </span>
+            )
+          })}
       </div>
       <label className="inline-flex shrink-0 cursor-pointer items-center gap-1.5">
         <span className="relative inline-flex h-5 w-9 shrink-0 items-center">
