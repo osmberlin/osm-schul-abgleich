@@ -100,33 +100,25 @@ export function SchoolDetailCompareBody({
         </h2>
         <div className="overflow-hidden rounded-lg border border-zinc-700">
           <header>
-            <div className="border-b border-zinc-700 bg-zinc-900/50 px-2.5 py-1.5 text-xs md:hidden">
-              <p className="leading-snug font-semibold tracking-wide">
-                <span className="text-amber-200">
-                  {de.detail.official}
-                  {officialIdForHeader ? (
-                    <>
-                      {' \u00B7 '}
-                      <span className="font-mono font-normal">{officialIdForHeader}</span>
-                    </>
-                  ) : null}
-                </span>
-                {officialIdForHeader && osmRefLabel ? (
-                  <span aria-hidden className="text-zinc-400">
-                    {' '}
-                    {'\u00B7'}{' '}
-                  </span>
+            <div className="border-b border-zinc-700 bg-zinc-900/50 md:hidden">
+              <div className="border-b border-zinc-700 bg-amber-950/35 px-3 py-2 text-xs font-semibold tracking-wide text-amber-200">
+                {de.detail.official}
+                {officialIdForHeader ? (
+                  <>
+                    {' \u00B7 '}
+                    <span className="font-mono font-normal">{officialIdForHeader}</span>
+                  </>
                 ) : null}
-                <span className="text-blue-300">
-                  {de.detail.osm}
-                  {osmRefLabel ? (
-                    <>
-                      {' \u00B7 '}
-                      <span className="font-mono font-normal">{osmRefLabel}</span>
-                    </>
-                  ) : null}
-                </span>
-              </p>
+              </div>
+              <div className="bg-blue-950/35 px-3 py-2 text-xs font-semibold tracking-wide text-blue-300">
+                {de.detail.osm}
+                {osmRefLabel ? (
+                  <>
+                    {' \u00B7 '}
+                    <span className="font-mono font-normal">{osmRefLabel}</span>
+                  </>
+                ) : null}
+              </div>
             </div>
             <div className="hidden grid-cols-2 gap-0 border-b border-zinc-700 bg-zinc-900/50 md:grid">
               <div className="border-r border-zinc-700 bg-amber-950/35 px-3 py-2 text-xs font-semibold tracking-wide text-amber-200">
@@ -154,7 +146,7 @@ export function SchoolDetailCompareBody({
           ) : (
             <div className="divide-y divide-zinc-800">
               {nameRows.map(([k, o, s]) => (
-                <div key={k} className="grid gap-3 p-2 md:grid-cols-2 md:gap-0 md:p-0">
+                <div key={k} className="grid grid-cols-1 gap-3 p-2 md:grid-cols-2 md:gap-0 md:p-0">
                   <ComparePropertyItem
                     listClassName="md:border-r md:border-zinc-800 md:bg-amber-950/15 md:p-3"
                     tagKey={k}
@@ -174,7 +166,7 @@ export function SchoolDetailCompareBody({
                   return (
                     <div
                       key={`${group.kind}-${group.officialKey}`}
-                      className="grid gap-3 p-2 md:grid-cols-2 md:gap-0 md:p-0"
+                      className="grid grid-cols-1 gap-3 p-2 md:grid-cols-2 md:gap-0 md:p-0"
                     >
                       <ComparePropertyItem
                         listClassName="md:border-r md:border-zinc-800 md:bg-amber-950/15 md:p-3"
@@ -200,7 +192,7 @@ export function SchoolDetailCompareBody({
                   return (
                     <div
                       key={`${group.kind}-${group.officialKey}`}
-                      className="grid gap-3 p-2 md:grid-cols-2 md:gap-0 md:p-0"
+                      className="grid grid-cols-1 gap-3 p-2 md:grid-cols-2 md:gap-0 md:p-0"
                     >
                       <ComparePropertyItem
                         listClassName="md:border-r md:border-zinc-800 md:bg-amber-950/15 md:p-3"
@@ -226,7 +218,7 @@ export function SchoolDetailCompareBody({
                   return (
                     <div
                       key={`${group.kind}-${group.officialKey}`}
-                      className="grid gap-3 p-2 md:grid-cols-2 md:gap-0 md:p-0"
+                      className="grid grid-cols-1 gap-3 p-2 md:grid-cols-2 md:gap-0 md:p-0"
                     >
                       <ComparePropertyItem
                         listClassName="md:border-r md:border-zinc-800 md:bg-amber-950/15 md:p-3"
@@ -252,7 +244,7 @@ export function SchoolDetailCompareBody({
                   return (
                     <div
                       key={`${group.kind}-${group.officialKey}`}
-                      className="grid gap-3 p-2 md:grid-cols-2 md:gap-0 md:p-0"
+                      className="grid grid-cols-1 gap-3 p-2 md:grid-cols-2 md:gap-0 md:p-0"
                     >
                       <ComparePropertyItem
                         listClassName="md:border-r md:border-zinc-800 md:bg-amber-950/15 md:p-3"
@@ -278,7 +270,7 @@ export function SchoolDetailCompareBody({
                   return (
                     <div
                       key={`${group.kind}-${group.officialKey}`}
-                      className="grid gap-3 p-2 md:grid-cols-2 md:gap-0 md:p-0"
+                      className="grid grid-cols-1 gap-3 p-2 md:grid-cols-2 md:gap-0 md:p-0"
                     >
                       <ComparePropertyItem
                         listClassName="md:border-r md:border-zinc-800 md:bg-amber-950/15 md:p-3"
@@ -304,7 +296,7 @@ export function SchoolDetailCompareBody({
                   return (
                     <div
                       key={`${group.kind}-${group.officialKey}`}
-                      className="grid gap-3 p-2 md:grid-cols-2 md:gap-0 md:p-0"
+                      className="grid grid-cols-1 gap-3 p-2 md:grid-cols-2 md:gap-0 md:p-0"
                     >
                       <ComparePropertyItem
                         listClassName="md:border-r md:border-zinc-800 md:bg-amber-950/15 md:p-3"
@@ -329,7 +321,7 @@ export function SchoolDetailCompareBody({
                 return null
               })}
               {nonNameBothRows.map(([k, o, s]) => (
-                <div key={k} className="grid gap-3 p-2 md:grid-cols-2 md:gap-0 md:p-0">
+                <div key={k} className="grid grid-cols-1 gap-3 p-2 md:grid-cols-2 md:gap-0 md:p-0">
                   <ComparePropertyItem
                     listClassName="md:border-r md:border-zinc-800 md:bg-amber-950/15 md:p-3"
                     tagKey={k}
@@ -360,7 +352,7 @@ export function SchoolDetailCompareBody({
         </ul>
       </nav>
 
-      <section className="mt-10 grid gap-8 md:grid-cols-2 md:gap-10">
+      <section className="mt-10 grid grid-cols-1 gap-8 md:grid-cols-2 md:gap-10">
         <section aria-labelledby="school-detail-compare-official-only-heading">
           <h2
             id="school-detail-compare-official-only-heading"
