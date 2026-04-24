@@ -40,6 +40,22 @@ const matchCategorySchema = z.enum([
   'official_no_coord',
 ])
 
+export const pipelineRunContextKnownSchema = z.enum([
+  'refresh_scheduled_nightly',
+  'refresh_manual_nightly',
+  'refresh_scheduled_weekly_official',
+  'refresh_scheduled_daily_reuse_official',
+  'refresh_scheduled_bootstrap_official',
+  'refresh_manual_full',
+  'refresh_manual_osm_only',
+  'deploy_push_stored',
+])
+
+export const pipelineSourceModeReasonKnownSchema = z.enum([
+  'scheduled_non_friday',
+  'manual_official_reuse',
+])
+
 const ambiguousOfficialSnapshotSchema = z.object({
   id: z.string(),
   name: z.string(),
@@ -188,44 +204,37 @@ const runStateEntrySchema = z.object({
   counts: stateSummarySchema.shape.counts.optional(),
 })
 
-export const runRecordSchema = z
-  .object({
-    startedAt: z.string(),
-    finishedAt: z.string(),
-    durationMs: z.number(),
-    gitSha: z.string().optional(),
-    runContext: z.string().optional(),
-    overallOk: z.boolean(),
-    errors: z.array(z.string()),
-    states: z.array(runStateEntrySchema).optional(),
-    // Legacy alias from older snapshots
-    lands: z.array(runStateEntrySchema).optional(),
-    matchSkipped: z.boolean().optional(),
-    matchSkipReason: z.string().optional(),
-    downloads: z
-      .object({
-        jedeschule: z.object({
-          ok: z.boolean(),
-          generatedAt: z.string().optional(),
-          errorMessage: z.string().optional(),
-          upstreamDatasetChanged: z.boolean().optional(),
-          sourceMode: z.enum(['fresh', 'reused', 'failed']).optional(),
-          sourceModeReason: z.string().optional(),
-        }),
-        osm: z.object({
-          ok: z.boolean(),
-          generatedAt: z.string().optional(),
-          errorMessage: z.string().optional(),
-          sourceMode: z.enum(['fresh', 'reused', 'failed']).optional(),
-          sourceModeReason: z.string().optional(),
-        }),
-      })
-      .optional(),
-  })
-  .transform((row) => ({
-    ...row,
-    states: row.states ?? row.lands ?? [],
-  }))
+export const runRecordSchema = z.object({
+  startedAt: z.string(),
+  finishedAt: z.string(),
+  durationMs: z.number(),
+  gitSha: z.string().optional(),
+  runContext: z.union([pipelineRunContextKnownSchema, z.string()]).optional(),
+  overallOk: z.boolean(),
+  errors: z.array(z.string()),
+  states: z.array(runStateEntrySchema),
+  matchSkipped: z.boolean().optional(),
+  matchSkipReason: z.string().optional(),
+  downloads: z
+    .object({
+      jedeschule: z.object({
+        ok: z.boolean(),
+        generatedAt: z.string().optional(),
+        errorMessage: z.string().optional(),
+        upstreamDatasetChanged: z.boolean().optional(),
+        sourceMode: z.enum(['fresh', 'reused', 'failed']).optional(),
+        sourceModeReason: z.union([pipelineSourceModeReasonKnownSchema, z.string()]).optional(),
+      }),
+      osm: z.object({
+        ok: z.boolean(),
+        generatedAt: z.string().optional(),
+        errorMessage: z.string().optional(),
+        sourceMode: z.enum(['fresh', 'reused', 'failed']).optional(),
+        sourceModeReason: z.union([pipelineSourceModeReasonKnownSchema, z.string()]).optional(),
+      }),
+    })
+    .optional(),
+})
 
 export const runsFileSchema = z.object({
   runs: z.array(runRecordSchema),
@@ -239,7 +248,7 @@ export const pipelineSourceMetaSchema = z.object({
   ok: z.boolean(),
   errorMessage: z.string().optional(),
   sourceMode: z.enum(['fresh', 'reused', 'failed']).optional(),
-  sourceModeReason: z.string().optional(),
+  sourceModeReason: z.union([pipelineSourceModeReasonKnownSchema, z.string()]).optional(),
   overpassResponseTimestamp: z.string().optional(),
   interpreterUrl: z.string().optional(),
   httpLastModified: z.string().optional(),
@@ -250,3 +259,5 @@ export const pipelineSourceMetaSchema = z.object({
 })
 
 export type PipelineSourceMeta = z.infer<typeof pipelineSourceMetaSchema>
+export type PipelineRunContextKnown = z.infer<typeof pipelineRunContextKnownSchema>
+export type PipelineSourceModeReasonKnown = z.infer<typeof pipelineSourceModeReasonKnownSchema>

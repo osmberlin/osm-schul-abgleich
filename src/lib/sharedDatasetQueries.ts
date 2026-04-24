@@ -1,6 +1,6 @@
 import { DATASET_FETCH_INIT, DATASET_QUERY_GC_MS, DATASET_QUERY_STALE_MS } from './cachePolicy'
 import { nationalOfficialMetaUrl, nationalOsmMetaUrl, runsJsonlUrl, summaryJsonUrl } from './paths'
-import { parseRunHistoryFileText } from './runHistoryJsonl'
+import { parseRunHistoryFileTextWithDiagnostics } from './runHistoryJsonl'
 import {
   type PipelineSourceMeta,
   pipelineSourceMetaSchema,
@@ -30,20 +30,21 @@ export function runsQueryOptions() {
     queryFn: async () => {
       const r = await fetch(runsJsonlUrl(), DATASET_FETCH_INIT)
       if (!r.ok) throw new Error(String(r.status))
-      const rawRuns = parseRunHistoryFileText(await r.text())
+      const { runs: rawRuns, diagnostics: parseDiagnostics } =
+        parseRunHistoryFileTextWithDiagnostics(await r.text())
+      let schemaMismatches = 0
       const validRuns = rawRuns.flatMap((item) => {
-        const normalized =
-          typeof item === 'object' &&
-          item !== null &&
-          Array.isArray((item as { lands?: unknown }).lands)
-            ? { ...(item as Record<string, unknown>), states: (item as { lands: unknown[] }).lands }
-            : item
-        const parsed = runRecordSchema.safeParse(normalized)
+        const parsed = runRecordSchema.safeParse(item)
+        if (!parsed.success) schemaMismatches += 1
         return parsed.success ? [parsed.data] : []
       })
       return {
         runs: validRuns,
         droppedRuns: rawRuns.length - validRuns.length,
+        droppedRunDiagnostics: {
+          parseErrors: parseDiagnostics.parseErrors,
+          schemaMismatches,
+        },
       }
     },
     staleTime: DATASET_QUERY_STALE_MS,

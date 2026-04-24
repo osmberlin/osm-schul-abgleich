@@ -642,7 +642,7 @@ export async function runStateFirstPipeline(
 
   const summaryUpdates = new Map<string, StateSummaryOut>()
 
-  // Clean legacy per-state artifacts that are no longer part of the route-split dataset model.
+  // Clean stale per-state artifacts that are no longer part of the route-split dataset model.
   for (const code of STATE_ORDER) {
     await rm(path.join(datasetsDir(projectRoot), code, 'schools_osm.geojson'), { force: true })
     await rm(path.join(datasetsDir(projectRoot), code, 'schools_matches.json'), { force: true })

@@ -343,7 +343,6 @@ export const de = {
     stateDiagnosticsSummary: 'State diagnostics',
     errorPayloadSummary: 'Error payload',
     gitSha: 'Git SHA',
-    runContextLabel: 'Laufkontext',
     runContextScheduledWeeklyOfficial:
       'Geplanter Nachtlauf (Freitag, inkl. amtlicher Aktualisierung)',
     runContextScheduledDailyReuse: 'Geplanter Nachtlauf (amtliche Daten wiederverwendet)',

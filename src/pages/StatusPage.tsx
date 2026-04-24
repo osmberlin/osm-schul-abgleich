@@ -1,7 +1,11 @@
 import { de } from '../i18n/de'
 import { cn } from '../lib/cn'
 import { formatDurationMs } from '../lib/formatDuration'
-import type { PipelineSourceMeta } from '../lib/schemas'
+import type {
+  PipelineRunContextKnown,
+  PipelineSourceMeta,
+  PipelineSourceModeReasonKnown,
+} from '../lib/schemas'
 import { nationalPipelineMetaQueryOptions, runsQueryOptions } from '../lib/sharedDatasetQueries'
 import { useQuery } from '@tanstack/react-query'
 
@@ -12,6 +16,22 @@ type RunDownloadStatus = {
   sourceModeReason?: string
 }
 
+const RUN_CONTEXT_LABELS: Record<PipelineRunContextKnown, string> = {
+  refresh_scheduled_nightly: de.status.runContextScheduledNightly,
+  refresh_manual_nightly: de.status.runContextManualNightly,
+  refresh_scheduled_weekly_official: de.status.runContextScheduledWeeklyOfficial,
+  refresh_scheduled_daily_reuse_official: de.status.runContextScheduledDailyReuse,
+  refresh_scheduled_bootstrap_official: de.status.runContextScheduledBootstrap,
+  refresh_manual_full: de.status.runContextManualFull,
+  refresh_manual_osm_only: de.status.runContextManualOsmOnly,
+  deploy_push_stored: de.status.runContextPushStored,
+}
+
+const SOURCE_MODE_REASON_LABELS: Record<PipelineSourceModeReasonKnown, string> = {
+  scheduled_non_friday: de.status.sourceModeReasonScheduledNonFriday,
+  manual_official_reuse: de.status.sourceModeReasonManualReuse,
+}
+
 function renderSourceMode(mode?: 'fresh' | 'reused' | 'failed') {
   if (mode === 'fresh') return de.status.sourceModeFresh
   if (mode === 'reused') return de.status.sourceModeReused
@@ -20,38 +40,34 @@ function renderSourceMode(mode?: 'fresh' | 'reused' | 'failed') {
 }
 
 function renderSourceModeReason(reason?: string) {
-  switch (reason) {
-    case 'scheduled_non_friday':
-      return de.status.sourceModeReasonScheduledNonFriday
-    case 'manual_official_reuse':
-      return de.status.sourceModeReasonManualReuse
-    default:
-      return null
-  }
+  if (!reason) return null
+  return SOURCE_MODE_REASON_LABELS[reason as PipelineSourceModeReasonKnown] ?? null
 }
 
 function renderRunContext(runContext?: string) {
-  switch (runContext) {
-    case 'refresh_scheduled_nightly':
-      return de.status.runContextScheduledNightly
-    case 'refresh_manual_nightly':
-      return de.status.runContextManualNightly
-    // Legacy contexts kept for older run history entries.
-    case 'refresh_scheduled_weekly_official':
-      return de.status.runContextScheduledWeeklyOfficial
-    case 'refresh_scheduled_daily_reuse_official':
-      return de.status.runContextScheduledDailyReuse
-    case 'refresh_scheduled_bootstrap_official':
-      return de.status.runContextScheduledBootstrap
-    case 'refresh_manual_full':
-      return de.status.runContextManualFull
-    case 'refresh_manual_osm_only':
-      return de.status.runContextManualOsmOnly
-    case 'deploy_push_stored':
-      return de.status.runContextPushStored
-    default:
-      return de.status.runContextUnknown
+  if (!runContext) return de.status.runContextUnknown
+  return RUN_CONTEXT_LABELS[runContext as PipelineRunContextKnown] ?? de.status.runContextUnknown
+}
+
+function isDefaultRunContext(runContext?: string) {
+  return !runContext || runContext === 'refresh_scheduled_nightly'
+}
+
+function formatBerlinDateTime(value: string) {
+  return new Date(value).toLocaleString('de-DE', { timeZone: 'Europe/Berlin' })
+}
+
+function shouldShowRunDownloads(run: {
+  matchSkipped?: boolean
+  downloads?: {
+    jedeschule: RunDownloadStatus
+    osm: RunDownloadStatus
   }
+}) {
+  if (!run.downloads) return false
+  if (run.matchSkipped) return true
+  const statuses = [run.downloads.jedeschule, run.downloads.osm]
+  return statuses.some((s) => !s.ok || s.sourceMode === 'reused' || s.sourceMode === 'failed')
 }
 
 function SourceMetaCard({
@@ -171,102 +187,153 @@ export function StatusPage() {
       {runsQ.isSuccess && (
         <>
           {runsQ.data.droppedRuns > 0 ? (
-            <p className="mt-4 text-xs text-amber-200">
-              {de.status.runsDroppedWarning.replace('{count}', String(runsQ.data.droppedRuns))}
-            </p>
+            <div className="mt-4 space-y-1 rounded-md border border-amber-800/60 bg-amber-950/30 px-3 py-2 text-xs text-amber-100">
+              <p>
+                {de.status.runsDroppedWarning.replace('{count}', String(runsQ.data.droppedRuns))}
+              </p>
+              <p>
+                {de.status.runsDroppedDiagnostics
+                  .replace('{parseErrors}', String(runsQ.data.droppedRunDiagnostics.parseErrors))
+                  .replace(
+                    '{schemaMismatches}',
+                    String(runsQ.data.droppedRunDiagnostics.schemaMismatches),
+                  )}
+              </p>
+            </div>
           ) : null}
           <ul className="mt-4 divide-y divide-zinc-700 overflow-hidden rounded-lg border border-zinc-700">
-            {[...runsQ.data.runs].reverse().map((run) => (
-              <li
-                key={`${run.startedAt}-${run.finishedAt}-${run.durationMs}-${run.gitSha ?? ''}`}
-                className="px-2.5 py-2.5 sm:px-3 sm:py-3"
-              >
-                <p className="text-xs text-zinc-400">{renderRunContext(run.runContext)}</p>
-                <div className="flex flex-col items-start gap-1 text-sm sm:flex-row sm:flex-wrap sm:items-center sm:gap-x-3 sm:gap-y-1">
-                  <span className="min-w-0">
-                    {de.status.started}: {new Date(run.startedAt).toLocaleString('de-DE')}
-                  </span>
-                  <span className="hidden text-zinc-400 sm:inline">·</span>
-                  <span>
-                    {de.status.finished}: {new Date(run.finishedAt).toLocaleString('de-DE')}
-                  </span>
-                  <span className="hidden text-zinc-400 sm:inline">·</span>
-                  <span>
-                    {de.status.duration}: {formatDurationMs(run.durationMs)}
-                  </span>
-                  <span
-                    className={cn(
-                      'inline-flex w-fit items-center rounded-full px-2.5 py-0.5 text-xs font-medium sm:ml-auto',
-                      run.overallOk
-                        ? 'bg-emerald-900/50 text-emerald-100'
-                        : 'bg-red-950/60 text-red-200',
-                    )}
-                  >
-                    {run.overallOk ? de.status.okBadgeOk : de.status.okBadgeFail}
-                  </span>
-                </div>
-
-                {run.matchSkipped ? (
-                  <p className="mt-2 rounded-md bg-amber-950/40 px-2 py-1.5 text-xs text-amber-100">
-                    <span className="font-medium">{de.status.matchSkipped}.</span>{' '}
-                    {run.matchSkipReason ?? ''}
-                  </p>
-                ) : run.states.length > 0 ? (
-                  <p className="mt-2 text-xs text-zinc-400">{de.status.matchRan}</p>
-                ) : run.errors.length > 0 ? (
-                  <p className="mt-2 text-xs text-amber-200">
-                    {de.status.matchNotRunMissingInputs}
-                  </p>
-                ) : null}
-
-                {run.downloads ? (
-                  <div className="mt-2 rounded-md bg-zinc-900/50 p-2 text-xs">
-                    <p className="font-medium text-zinc-200">{de.status.runDownloads}</p>
-                    <ul className="mt-1 list-inside list-disc space-y-0.5 text-zinc-400">
-                      <li>
-                        {de.status.sourceJedeschule}:{' '}
-                        {run.downloads.jedeschule.ok
-                          ? de.status.downloadOk
-                          : de.status.downloadFail}
-                        {run.downloads.jedeschule.sourceMode
-                          ? ` (${renderSourceMode(run.downloads.jedeschule.sourceMode)})`
-                          : ''}
-                        {run.downloads.jedeschule.generatedAt
-                          ? ` — ${new Date(run.downloads.jedeschule.generatedAt).toLocaleString('de-DE', { timeZone: 'Europe/Berlin' })}`
-                          : ''}
-                      </li>
-                      <li>
-                        {de.status.sourceOsmDe}:{' '}
-                        {run.downloads.osm.ok ? de.status.downloadOk : de.status.downloadFail}
-                        {run.downloads.osm.sourceMode
-                          ? ` (${renderSourceMode(run.downloads.osm.sourceMode)})`
-                          : ''}
-                        {run.downloads.osm.generatedAt
-                          ? ` — ${new Date(run.downloads.osm.generatedAt).toLocaleString('de-DE', { timeZone: 'Europe/Berlin' })}`
-                          : ''}
-                      </li>
-                    </ul>
+            {[...runsQ.data.runs].reverse().map((run) => {
+              const statesWithCounts = run.states.filter((s) => !!s.counts).length
+              const missingOsmStates = run.states.filter((s) => s.osmSource === 'missing').length
+              const runDownloads = run.downloads
+              const showRunDownloads = runDownloads ? shouldShowRunDownloads(run) : false
+              return (
+                <li
+                  key={`${run.startedAt}-${run.finishedAt}-${run.durationMs}-${run.gitSha ?? ''}`}
+                  className="px-2.5 py-2.5 sm:px-3 sm:py-3"
+                >
+                  <div className="flex flex-col items-start gap-1 text-sm sm:flex-row sm:flex-wrap sm:items-center sm:gap-x-3 sm:gap-y-1">
+                    <span className="min-w-0">
+                      {de.status.started}: {formatBerlinDateTime(run.startedAt)}
+                    </span>
+                    <span className="hidden text-zinc-400 sm:inline">·</span>
+                    <span>
+                      {de.status.finished}: {formatBerlinDateTime(run.finishedAt)}
+                    </span>
+                    <span className="hidden text-zinc-400 sm:inline">·</span>
+                    <span>
+                      {de.status.duration}: {formatDurationMs(run.durationMs)}
+                    </span>
+                    <span
+                      className={cn(
+                        'inline-flex w-fit items-center rounded-full px-2.5 py-0.5 text-xs font-medium sm:ml-auto',
+                        run.overallOk
+                          ? 'bg-emerald-900/50 text-emerald-100'
+                          : 'bg-red-950/60 text-red-200',
+                      )}
+                    >
+                      {run.overallOk ? de.status.okBadgeOk : de.status.okBadgeFail}
+                    </span>
                   </div>
-                ) : null}
+                  {!isDefaultRunContext(run.runContext) ? (
+                    <p className="mt-1 text-xs text-zinc-400">{renderRunContext(run.runContext)}</p>
+                  ) : null}
 
-                {run.errors.length > 0 && (
-                  <pre className="mt-2 max-h-32 overflow-auto rounded bg-zinc-900 p-1.5 text-xs">
-                    {run.errors.join('\n')}
-                  </pre>
-                )}
-                <details className="mt-2 text-xs text-zinc-400">
-                  <summary>{de.status.states}</summary>
-                  <ul className="mt-1 list-inside list-disc">
-                    {run.states.map((l) => (
-                      <li key={l.code}>
-                        {l.code} — {l.osmSource ?? '?'}
-                        {l.osmSnapshotAt ? ` (${l.osmSnapshotAt})` : ''}
-                      </li>
-                    ))}
-                  </ul>
-                </details>
-              </li>
-            ))}
+                  {run.matchSkipped ? (
+                    <p className="mt-2 rounded-md bg-amber-950/40 px-2 py-1.5 text-xs text-amber-100">
+                      <span className="font-medium">{de.status.matchSkipped}.</span>{' '}
+                      {run.matchSkipReason ?? ''}
+                    </p>
+                  ) : run.states.length > 0 ? (
+                    <p className="mt-2 text-xs text-zinc-400">{de.status.matchRan}</p>
+                  ) : run.errors.length > 0 ? (
+                    <p className="mt-2 text-xs text-amber-200">
+                      {de.status.matchNotRunMissingInputs}
+                    </p>
+                  ) : null}
+
+                  <div className="mt-2 flex flex-wrap items-center gap-1.5 text-xs text-zinc-400">
+                    <span className="inline-flex rounded-full bg-zinc-800 px-2 py-0.5">
+                      {de.status.statesCount.replace('{count}', String(run.states.length))}
+                    </span>
+                    <span className="inline-flex rounded-full bg-zinc-800 px-2 py-0.5">
+                      {de.status.statesWithCounts.replace('{count}', String(statesWithCounts))}
+                    </span>
+                    {missingOsmStates > 0 ? (
+                      <span className="inline-flex rounded-full bg-amber-950/40 px-2 py-0.5 text-amber-100">
+                        {de.status.statesMissingOsm.replace('{count}', String(missingOsmStates))}
+                      </span>
+                    ) : null}
+                  </div>
+
+                  {showRunDownloads && runDownloads ? (
+                    <div className="mt-2 rounded-md bg-zinc-900/50 p-2 text-xs">
+                      <p className="font-medium text-zinc-200">{de.status.runDownloads}</p>
+                      <ul className="mt-1 list-inside list-disc space-y-0.5 text-zinc-400">
+                        <li>
+                          {de.status.sourceJedeschule}:{' '}
+                          {runDownloads.jedeschule.ok
+                            ? de.status.downloadOk
+                            : de.status.downloadFail}
+                          {runDownloads.jedeschule.sourceMode
+                            ? ` (${renderSourceMode(runDownloads.jedeschule.sourceMode)})`
+                            : ''}
+                          {runDownloads.jedeschule.generatedAt
+                            ? ` — ${formatBerlinDateTime(runDownloads.jedeschule.generatedAt)}`
+                            : ''}
+                        </li>
+                        <li>
+                          {de.status.sourceOsmDe}:{' '}
+                          {runDownloads.osm.ok ? de.status.downloadOk : de.status.downloadFail}
+                          {runDownloads.osm.sourceMode
+                            ? ` (${renderSourceMode(runDownloads.osm.sourceMode)})`
+                            : ''}
+                          {runDownloads.osm.generatedAt
+                            ? ` — ${formatBerlinDateTime(runDownloads.osm.generatedAt)}`
+                            : ''}
+                        </li>
+                      </ul>
+                    </div>
+                  ) : null}
+
+                  <details className="mt-2 text-xs text-zinc-400">
+                    <summary className="cursor-pointer hover:underline">
+                      {de.status.runDetailsSummary}
+                    </summary>
+                    <div className="mt-2 grid gap-1">
+                      {run.gitSha ? (
+                        <p>
+                          {de.status.gitSha}: <span className="font-mono">{run.gitSha}</span>
+                        </p>
+                      ) : null}
+                    </div>
+                  </details>
+                  <details className="mt-2 text-xs text-zinc-400">
+                    <summary className="cursor-pointer hover:underline">
+                      {de.status.stateDiagnosticsSummary}
+                    </summary>
+                    <ul className="mt-1 list-inside list-disc">
+                      {run.states.map((l) => (
+                        <li key={l.code}>
+                          {l.code} — {l.osmSource ?? '?'}
+                          {l.osmSnapshotAt ? ` (${l.osmSnapshotAt})` : ''}
+                        </li>
+                      ))}
+                    </ul>
+                  </details>
+                  {run.errors.length > 0 ? (
+                    <details className="mt-2 text-xs text-amber-100">
+                      <summary className="cursor-pointer hover:underline">
+                        {de.status.errorPayloadSummary}
+                      </summary>
+                      <pre className="mt-2 max-h-32 overflow-auto rounded bg-zinc-900 p-1.5 text-xs text-zinc-200">
+                        {run.errors.join('\n')}
+                      </pre>
+                    </details>
+                  ) : null}
+                </li>
+              )
+            })}
           </ul>
         </>
       )}

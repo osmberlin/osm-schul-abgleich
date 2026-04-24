@@ -1,7 +1,9 @@
 import {
   compareRunRecordsStable,
   parseRunHistoryFileText,
+  parseRunHistoryFileTextWithDiagnostics,
   parseRunHistoryJsonl,
+  parseRunHistoryJsonlWithDiagnostics,
   sortRunRecordsStable,
   stringifyRunHistoryJsonl,
 } from './runHistoryJsonl'
@@ -22,12 +24,15 @@ describe('runHistoryJsonl', () => {
     expect(rows.map((r) => (r as { tag: string }).tag)).toEqual(['a', 'b'])
   })
 
-  it('parseRunHistoryJsonl throws with 1-based line number', () => {
+  it('parseRunHistoryJsonl skips malformed lines and exposes parse diagnostics', () => {
     const text = ['{"ok":true}', 'not-json'].join('\n')
-    expect(() => parseRunHistoryJsonl(text)).toThrow(/line 2/)
+    expect(parseRunHistoryJsonl(text)).toEqual([{ ok: true }])
+    const withDiagnostics = parseRunHistoryJsonlWithDiagnostics(text)
+    expect(withDiagnostics.runs).toEqual([{ ok: true }])
+    expect(withDiagnostics.diagnostics.parseErrors).toBe(1)
   })
 
-  it('parseRunHistoryFileText treats one JSON object line as JSONL, not legacy', () => {
+  it('parseRunHistoryFileText parses one JSON object line', () => {
     const row = run('2026-04-02T12:00:00Z', '2026-04-02T12:01:00Z', 'solo')
     const text = JSON.stringify(row)
     const rows = parseRunHistoryFileText(text)
@@ -35,14 +40,14 @@ describe('runHistoryJsonl', () => {
     expect((rows[0] as { tag: string }).tag).toBe('solo')
   })
 
-  it('parseRunHistoryFileText handles legacy wrapper', () => {
-    const inner = [
-      run('2026-04-02T12:00:00Z', '2026-04-02T12:01:00Z', 'a'),
-      run('2026-04-03T12:00:00Z', '2026-04-03T12:01:00Z', 'b'),
-    ]
-    const text = JSON.stringify({ runs: [inner[1], inner[0]] })
-    const rows = parseRunHistoryFileText(text)
-    expect(rows.map((r) => (r as { tag: string }).tag)).toEqual(['a', 'b'])
+  it('parseRunHistoryFileText keeps wrapped JSON as a plain JSONL record', () => {
+    const text = JSON.stringify({
+      runs: [run('2026-04-02T12:00:00Z', '2026-04-02T12:01:00Z', 'a')],
+    })
+    const parsed = parseRunHistoryFileTextWithDiagnostics(text)
+    expect(parsed.runs).toHaveLength(1)
+    expect((parsed.runs[0] as { runs: unknown[] }).runs).toHaveLength(1)
+    expect(parsed.diagnostics.parseErrors).toBe(0)
   })
 
   it('parseRunHistoryFileText returns [] for empty or whitespace', () => {
