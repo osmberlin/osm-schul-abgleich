@@ -11,6 +11,11 @@ import { MATCH_RADIUS_KM } from '../../src/lib/matchRadius'
 import { centroidFromOsmGeometry } from '../../src/lib/osmGeometryCentroid'
 import { OSM_SCHOOL_NAME_TAGS_IN_ORDER, type OsmNameMatchTag } from '../../src/lib/osmNameMatchTags'
 import { canonicalSchoolKindDe } from '../../src/lib/osmSchoolKindDe'
+import type {
+  SchoolFormCombo,
+  SchoolFormFamily,
+  SchoolFormRule,
+} from '../../src/lib/schoolFormRules'
 import type { StateCode } from '../../src/lib/stateConfig'
 import { stateCodeFromSchoolId } from '../../src/lib/stateConfig'
 import distance from '@turf/distance'
@@ -142,6 +147,9 @@ export type MatchRowOut = {
   /** Canonical German Schulart from `school` / `school:de` (see `canonicalSchoolKindDe`). */
   schoolKindDe: string | null
   schoolKindDeSource: 'school:de' | 'mapped' | 'passthrough' | 'excluded' | 'unmapped' | null
+  schoolFormRule?: SchoolFormRule | null
+  schoolFormFamily?: SchoolFormFamily | null
+  schoolFormCombo?: SchoolFormCombo
   ambiguousOfficialIds?: string[]
   ambiguousOfficialSnapshots?: AmbiguousOfficialSnapshot[]
   /** Normalized string used for OSM↔official name equality (see pipeline). */

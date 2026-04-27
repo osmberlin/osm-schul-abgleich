@@ -2,6 +2,7 @@ import { berlinCalendarDateKey } from '../../src/lib/berlinCalendarDateKey'
 import { promoteClosedLineStringsToPolygons } from '../../src/lib/osmClosedRingsToPolygons'
 import { centroidFromOsmGeometry } from '../../src/lib/osmGeometryCentroid'
 import { parseRunHistoryFileText, stringifyRunHistoryJsonl } from '../../src/lib/runHistoryJsonl'
+import { classifySchoolFormCombo } from '../../src/lib/schoolFormRules'
 import {
   type StateCode,
   stateCodeFromSchoolId,
@@ -336,6 +337,22 @@ function enrichRowsWithPipelineState(
   })
 }
 
+function enrichRowsWithSchoolFormClassification(rows: MatchRowOut[]): MatchRowOut[] {
+  return rows.map((row) => {
+    const form = classifySchoolFormCombo({
+      officialName: row.officialName,
+      officialProperties: row.officialProperties,
+      osmTags: row.osmTags,
+    })
+    return {
+      ...row,
+      schoolFormRule: form.schoolFormRule,
+      schoolFormFamily: form.schoolFormFamily,
+      schoolFormCombo: form.schoolFormCombo,
+    }
+  })
+}
+
 export function officialsFromNationalOfficialFc(fc: FeatureCollection): OfficialInput[] {
   const out: OfficialInput[] = []
   for (const f of fc.features) {
@@ -664,7 +681,9 @@ export async function runStateFirstPipeline(
     const osmSchools = buildOsmSchoolsFromGeoJson(osmStateFc)
     const osmStateByKey = buildOsmStateMap(osmStateFc)
     const { rows } = matchSchools(deduped.officials, osmSchools, { osmStateByKey })
-    const enriched = enrichRowsWithPipelineState(rows, osmStateByKey)
+    const enriched = enrichRowsWithSchoolFormClassification(
+      enrichRowsWithPipelineState(rows, osmStateByKey),
+    )
 
     const canonicalOfficialIds = new Set(deduped.officials.map((o) => o.id))
     const officialStateOut: FeatureCollection = featureCollection(

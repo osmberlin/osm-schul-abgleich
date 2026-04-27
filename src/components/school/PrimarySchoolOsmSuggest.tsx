@@ -1,17 +1,8 @@
 import { de } from '../../i18n/de'
 import { isOfficialGrundschule } from '../../lib/officialGrundschule'
 import type { SchoolsMatchRow } from '../../lib/schemas'
+import { PRIMARY_SUGGEST_TAGS } from '../../lib/schoolFormRules'
 import { SchoolOsmSuggestSection } from './SchoolOsmSuggestSection'
-
-const TAG_SCHOOL = 'school'
-const TAG_ISCED = 'isced:level'
-const VAL_SCHOOL = 'primary'
-const VAL_ISCED = '1'
-
-const PRIMARY_SUGGEST_TAGS = [
-  { key: TAG_SCHOOL, value: VAL_SCHOOL },
-  { key: TAG_ISCED, value: VAL_ISCED },
-] as const
 
 type Props = {
   row: SchoolsMatchRow

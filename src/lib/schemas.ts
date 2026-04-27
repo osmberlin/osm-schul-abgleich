@@ -9,6 +9,16 @@ const schoolKindDeSourceSchema = z.enum([
   'unmapped',
 ])
 
+const schoolFormRuleSchema = z.enum(['grundschule', 'gymnasium', 'gesamtschule', 'hauptReal'])
+const schoolFormFamilySchema = z.enum(['grundschule', 'weiterfuehrend'])
+const schoolFormComboSchema = z.enum([
+  'missing_osm',
+  'only_osm',
+  'matching_tags',
+  'matching_but_lacking_tags',
+  'none',
+])
+
 export const jedeschuleSchoolSchema = z.object({
   id: z.string(),
   name: z.string(),
@@ -103,6 +113,9 @@ export const schoolsMatchRowSchema = z
     pipelineState: z.string().optional(),
     schoolKindDe: z.string().nullable().optional(),
     schoolKindDeSource: schoolKindDeSourceSchema.nullable().optional(),
+    schoolFormRule: schoolFormRuleSchema.nullable().optional(),
+    schoolFormFamily: schoolFormFamilySchema.nullable().optional(),
+    schoolFormCombo: schoolFormComboSchema.optional(),
   })
   .superRefine((row, ctx) => {
     if (!row.category && !row.matchCategory) {

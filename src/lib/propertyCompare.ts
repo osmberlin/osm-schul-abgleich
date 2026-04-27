@@ -6,11 +6,13 @@ import {
   normalizeSchoolNameForMatch,
 } from './compareMatchKeys'
 import { schoolTypeStringIndicatesFachschule } from './officialFachschule'
-import { schoolTypeStringIndicatesGrundschule, tagValueEqualsProposed } from './officialGrundschule'
+import { tagValueEqualsProposed } from './officialGrundschule'
 import {
+  evaluateOsmRuleMatch,
+  schoolTypeStringIndicatesGrundschule,
   type SecondarySchoolKind,
   resolveSecondarySchoolKindFromSchoolType,
-} from './officialSecondarySchool'
+} from './schoolFormRules'
 
 type CompareRowBoth = [string, string, string]
 type CompareRowSingle = [string, string]
@@ -154,9 +156,10 @@ function buildGrundschuleCompareGroup(
   const isced = osmMap.get('isced:level') ?? null
   const school = osmMap.get('school') ?? null
   if (isced == null && school == null) return null
-  const isEquivalentMatch =
-    tagValueEqualsProposed(isced ?? undefined, '1') ||
-    tagValueEqualsProposed(school ?? undefined, 'primary')
+  const { isEquivalentMatch } = evaluateOsmRuleMatch('grundschule', {
+    ...(isced ? { 'isced:level': isced } : {}),
+    ...(school ? { school } : {}),
+  })
 
   return {
     kind: 'grundschule',
@@ -202,14 +205,10 @@ function buildSecondarySchoolCompareGroup(
   const isced = osmMap.get('isced:level') ?? null
   const school = osmMap.get('school') ?? null
   if (isced == null && school == null) return null
-  const hasSecondary = tagValueEqualsProposed(school ?? undefined, 'secondary')
-  const hasIsced23 = tagValueEqualsProposed(isced ?? undefined, '2;3')
-  const hasIsced2 = tagValueEqualsProposed(isced ?? undefined, '2')
-
-  let isEquivalentMatch = false
-  if (variant === 'gymnasium') isEquivalentMatch = hasSecondary || hasIsced23
-  else if (variant === 'gesamtschule') isEquivalentMatch = hasSecondary || hasIsced23 || hasIsced2
-  else isEquivalentMatch = hasSecondary || hasIsced2
+  const { isEquivalentMatch } = evaluateOsmRuleMatch(variant, {
+    ...(isced ? { 'isced:level': isced } : {}),
+    ...(school ? { school } : {}),
+  })
 
   return {
     kind: 'secondarySchool',

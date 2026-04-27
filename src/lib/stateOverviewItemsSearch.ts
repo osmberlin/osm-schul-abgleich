@@ -25,6 +25,25 @@ export const STATE_FACET_OSM_AMENITY = ['school', 'college', 'none'] as const
 
 export type StateFacetOsmAmenity = (typeof STATE_FACET_OSM_AMENITY)[number]
 
+export const STATE_FACET_SCHOOL_FORM_FAMILY = ['grundschule', 'weiterfuehrend'] as const
+export type StateFacetSchoolFormFamily = (typeof STATE_FACET_SCHOOL_FORM_FAMILY)[number]
+
+export const STATE_FACET_SCHOOL_FORM_RULE = [
+  'grundschule',
+  'gymnasium',
+  'gesamtschule',
+  'hauptReal',
+] as const
+export type StateFacetSchoolFormRule = (typeof STATE_FACET_SCHOOL_FORM_RULE)[number]
+
+export const STATE_FACET_SCHOOL_FORM_COMBO = [
+  'missing_osm',
+  'only_osm',
+  'matching_tags',
+  'matching_but_lacking_tags',
+] as const
+export type StateFacetSchoolFormCombo = (typeof STATE_FACET_SCHOOL_FORM_COMBO)[number]
+
 function toNonEmptyString(v: unknown): string | null {
   if (typeof v !== 'string') return null
   const t = v.trim()
@@ -71,6 +90,13 @@ export function matchRowToItemsJsDoc(row: StateMatchRow) {
   const iscedLevel = toNonEmptyString(row.osmTags?.['isced:level']) != null ? 'yes' : 'no'
   const hasOfficial = toNonEmptyString(row.officialId) != null ? 'yes' : 'no'
   const hasOsm = toNonEmptyString(row.osmId) != null ? 'yes' : 'no'
+  // School-form facets are meaningful only for already matched schools.
+  const schoolFormRule =
+    row.category === 'matched' ? (toNonEmptyString(row.schoolFormRule) ?? 'none') : 'none'
+  const schoolFormFamily =
+    row.category === 'matched' ? (toNonEmptyString(row.schoolFormFamily) ?? 'none') : 'none'
+  const schoolFormCombo =
+    row.category === 'matched' ? (toNonEmptyString(row.schoolFormCombo) ?? 'none') : 'none'
 
   return {
     id: row.key,
@@ -82,6 +108,9 @@ export function matchRowToItemsJsDoc(row: StateMatchRow) {
     hasOsm,
     geoBoundaryIssue: hasGeoBoundaryIssue(row) ? 'yes' : 'no',
     osmAmenity,
+    schoolFormRule,
+    schoolFormFamily,
+    schoolFormCombo,
   }
 }
 
@@ -104,6 +133,9 @@ export function createStateMatchItemsJsEngine(rows: StateMatchRow[]) {
         hide_zero_doc_count: true,
       },
       osmAmenity: { title: 'OSM-Objekt', size: 5 },
+      schoolFormRule: { title: 'Schulform-Regel', size: 6 },
+      schoolFormFamily: { title: 'Schulform-Familie', size: 4 },
+      schoolFormCombo: { title: 'Schulform-Status', size: 6 },
     },
   })
 }
@@ -116,6 +148,8 @@ export type ExplorerFilterState = {
   geoBoundaryIssues: string[]
   schoolKinds: string[]
   osmAmenities: string[]
+  schoolFormFamilies: string[]
+  schoolFormCombos: string[]
 }
 
 export function searchStateMatchesWithExplorer(
@@ -128,6 +162,8 @@ export function searchStateMatchesWithExplorer(
   if (state.geoBoundaryIssues.length > 0) filters.geoBoundaryIssue = state.geoBoundaryIssues
   if (state.schoolKinds.length > 0) filters.schoolKindDe = state.schoolKinds
   if (state.osmAmenities.length > 0) filters.osmAmenity = state.osmAmenities
+  if (state.schoolFormFamilies.length > 0) filters.schoolFormFamily = state.schoolFormFamilies
+  if (state.schoolFormCombos.length > 0) filters.schoolFormCombo = state.schoolFormCombos
 
   return engine.search({
     query: state.query.trim() || undefined,

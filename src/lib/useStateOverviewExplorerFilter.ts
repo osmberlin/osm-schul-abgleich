@@ -1,4 +1,9 @@
-import { STATE_FACET_MATCH_MODES, STATE_FACET_OSM_AMENITY } from './stateOverviewItemsSearch'
+import {
+  STATE_FACET_MATCH_MODES,
+  STATE_FACET_OSM_AMENITY,
+  STATE_FACET_SCHOOL_FORM_COMBO,
+  STATE_FACET_SCHOOL_FORM_FAMILY,
+} from './stateOverviewItemsSearch'
 import { stateRouteApi } from './stateRouteApi'
 import { useNavigate } from '@tanstack/react-router'
 
@@ -15,11 +20,14 @@ export function useStateOverviewExplorerFilter() {
   const geoBoundaryIssues = search.lgeo ?? []
   const schoolKinds = search.lsk ?? []
   const osmAmenities = search.loa ?? []
+  const schoolFormFamilies = search.lsfam ?? []
+  const schoolFormCombos = search.lscombo ?? []
 
   function setExploreQ(nextValue: string) {
     void navigate({
       unsafeRelative: 'path',
       replace: true,
+      resetScroll: false,
       search: (prev) => ({
         ...prev,
         lq: nextValue === '' ? undefined : nextValue,
@@ -31,6 +39,7 @@ export function useStateOverviewExplorerFilter() {
     void navigate({
       unsafeRelative: 'path',
       replace: true,
+      resetScroll: false,
       search: (prev) => ({
         ...prev,
         lscope: nextValue === 'both' ? undefined : nextValue,
@@ -42,6 +51,7 @@ export function useStateOverviewExplorerFilter() {
     void navigate({
       unsafeRelative: 'path',
       replace: true,
+      resetScroll: false,
       search: (prev) => {
         const cur = prev.lmm ?? []
         const next = new Set(cur)
@@ -56,21 +66,15 @@ export function useStateOverviewExplorerFilter() {
     })
   }
 
-  function toggleIscedLevel(level: 'yes' | 'no', on: boolean) {
+  function setIscedLevel(level: 'all' | 'yes' | 'no') {
     void navigate({
       unsafeRelative: 'path',
       replace: true,
-      search: (prev) => {
-        const cur = prev.lisc ?? []
-        const next = new Set(cur)
-        if (on) next.add(level)
-        else next.delete(level)
-        const arr = [...next]
-        return {
-          ...prev,
-          lisc: arr.length === 0 ? undefined : arr,
-        }
-      },
+      resetScroll: false,
+      search: (prev) => ({
+        ...prev,
+        lisc: level === 'all' ? undefined : [level],
+      }),
     })
   }
 
@@ -78,6 +82,7 @@ export function useStateOverviewExplorerFilter() {
     void navigate({
       unsafeRelative: 'path',
       replace: true,
+      resetScroll: false,
       search: (prev) => {
         const cur = prev.lgeo ?? []
         const next = new Set(cur)
@@ -96,6 +101,7 @@ export function useStateOverviewExplorerFilter() {
     void navigate({
       unsafeRelative: 'path',
       replace: true,
+      resetScroll: false,
       search: (prev) => {
         const cur = prev.lsk ?? []
         const next = new Set(cur)
@@ -114,6 +120,7 @@ export function useStateOverviewExplorerFilter() {
     void navigate({
       unsafeRelative: 'path',
       replace: true,
+      resetScroll: false,
       search: (prev) => {
         const cur = prev.loa ?? []
         const next = new Set(cur)
@@ -130,10 +137,49 @@ export function useStateOverviewExplorerFilter() {
     })
   }
 
+  function setSchoolFormFamilies(values: (typeof STATE_FACET_SCHOOL_FORM_FAMILY)[number][]) {
+    void navigate({
+      unsafeRelative: 'path',
+      replace: true,
+      resetScroll: false,
+      search: (prev) => {
+        const arr = values.filter((x): x is (typeof STATE_FACET_SCHOOL_FORM_FAMILY)[number] =>
+          STATE_FACET_SCHOOL_FORM_FAMILY.includes(
+            x as (typeof STATE_FACET_SCHOOL_FORM_FAMILY)[number],
+          ),
+        )
+        return {
+          ...prev,
+          lsfam: arr.length === 0 ? undefined : arr,
+        }
+      },
+    })
+  }
+
+  function setSchoolFormCombos(values: (typeof STATE_FACET_SCHOOL_FORM_COMBO)[number][]) {
+    void navigate({
+      unsafeRelative: 'path',
+      replace: true,
+      resetScroll: false,
+      search: (prev) => {
+        const arr = values.filter((x): x is (typeof STATE_FACET_SCHOOL_FORM_COMBO)[number] =>
+          STATE_FACET_SCHOOL_FORM_COMBO.includes(
+            x as (typeof STATE_FACET_SCHOOL_FORM_COMBO)[number],
+          ),
+        )
+        return {
+          ...prev,
+          lscombo: arr.length === 0 ? undefined : arr,
+        }
+      },
+    })
+  }
+
   function resetExplorer() {
     void navigate({
       unsafeRelative: 'path',
       replace: true,
+      resetScroll: false,
       search: (prev) => ({
         ...prev,
         lq: undefined,
@@ -143,6 +189,8 @@ export function useStateOverviewExplorerFilter() {
         lgeo: undefined,
         lsk: undefined,
         loa: undefined,
+        lsfam: undefined,
+        lscombo: undefined,
       }),
     })
   }
@@ -155,13 +203,17 @@ export function useStateOverviewExplorerFilter() {
     matchModes,
     toggleMatchMode,
     iscedLevels,
-    toggleIscedLevel,
+    setIscedLevel,
     geoBoundaryIssues,
     toggleGeoBoundaryIssue,
     schoolKinds,
     toggleSchoolKind,
     osmAmenities,
     toggleOsmAmenity,
+    schoolFormFamilies,
+    setSchoolFormFamilies,
+    schoolFormCombos,
+    setSchoolFormCombos,
     resetExplorer,
   }
 }

@@ -4,11 +4,17 @@ import { formatDeInteger } from '../../lib/formatNumber'
 import {
   STATE_FACET_MATCH_MODES,
   STATE_FACET_OSM_AMENITY,
+  STATE_FACET_SCHOOL_FORM_COMBO,
+  STATE_FACET_SCHOOL_FORM_FAMILY,
   STATE_MATCH_FACET_MATCH_MODE_NONE,
   STATE_MATCH_FACET_SCHOOL_KIND_NONE,
   type StateFacetMatchMode,
   type StateFacetOsmAmenity,
+  type StateFacetSchoolFormCombo,
+  type StateFacetSchoolFormFamily,
 } from '../../lib/stateOverviewItemsSearch'
+import { stateRouteApi } from '../../lib/stateRouteApi'
+import { parseStateMapBboxSearchParam } from '../../lib/useStateMapBbox'
 import { ChevronDownIcon } from '@heroicons/react/20/solid'
 import { useEffect, useId, useState } from 'react'
 
@@ -39,6 +45,32 @@ function osmAmenityLabel(key: string): string {
   return key
 }
 
+function schoolFormFamilyLabel(key: StateFacetSchoolFormFamily): string {
+  if (key === 'grundschule') return de.state.explorer.schoolFormFamilyGrundschule
+  return de.state.explorer.schoolFormFamilyWeiterfuehrend
+}
+
+function schoolFormFamilyFilterLabel(key: StateFacetSchoolFormFamily): string {
+  if (key === 'grundschule') return de.state.explorer.schoolFormFamilyFilterLabelGrundschule
+  return de.state.explorer.schoolFormFamilyFilterLabelWeiterfuehrend
+}
+
+function schoolFormComboLabel(
+  family: StateFacetSchoolFormFamily,
+  key: StateFacetSchoolFormCombo,
+): string {
+  if (family === 'grundschule') {
+    if (key === 'missing_osm') return de.state.explorer.schoolFormComboMissingOsmGrundschule
+    if (key === 'only_osm') return de.state.explorer.schoolFormComboOnlyOsmGrundschule
+    if (key === 'matching_tags') return de.state.explorer.schoolFormComboMatchingTagsGrundschule
+    return de.state.explorer.schoolFormComboMatchingButLackingTagsGrundschule
+  }
+  if (key === 'missing_osm') return de.state.explorer.schoolFormComboMissingOsmWeiterfuehrend
+  if (key === 'only_osm') return de.state.explorer.schoolFormComboOnlyOsmWeiterfuehrend
+  if (key === 'matching_tags') return de.state.explorer.schoolFormComboMatchingTagsWeiterfuehrend
+  return de.state.explorer.schoolFormComboMatchingButLackingTagsWeiterfuehrend
+}
+
 export function StateOverviewFiltersDisclosure({
   exploreQ,
   setExploreQ,
@@ -47,13 +79,17 @@ export function StateOverviewFiltersDisclosure({
   matchModes,
   toggleMatchMode,
   iscedLevels,
-  toggleIscedLevel,
+  setIscedLevel,
   geoBoundaryIssues,
   toggleGeoBoundaryIssue,
   schoolKinds,
   toggleSchoolKind,
   osmAmenities,
   toggleOsmAmenity,
+  schoolFormFamilies,
+  setSchoolFormFamilies,
+  schoolFormCombos,
+  setSchoolFormCombos,
   resetExplorer,
   aggregations,
   filteredCount,
@@ -66,18 +102,24 @@ export function StateOverviewFiltersDisclosure({
   matchModes: string[]
   toggleMatchMode: (mode: StateFacetMatchMode, on: boolean) => void
   iscedLevels: string[]
-  toggleIscedLevel: (level: 'yes' | 'no', on: boolean) => void
+  setIscedLevel: (level: 'all' | 'yes' | 'no') => void
   geoBoundaryIssues: string[]
   toggleGeoBoundaryIssue: (v: 'yes' | 'no', on: boolean) => void
   schoolKinds: string[]
   toggleSchoolKind: (kind: string, on: boolean) => void
   osmAmenities: string[]
   toggleOsmAmenity: (v: StateFacetOsmAmenity, on: boolean) => void
+  schoolFormFamilies: string[]
+  setSchoolFormFamilies: (v: StateFacetSchoolFormFamily[]) => void
+  schoolFormCombos: string[]
+  setSchoolFormCombos: (v: StateFacetSchoolFormCombo[]) => void
   resetExplorer: () => void
   aggregations: Aggregations | undefined
   filteredCount: number
   bboxTotalCount: number
 }) {
+  const search = stateRouteApi.useSearch()
+  const bboxFilterActive = parseStateMapBboxSearchParam(search.bbox) != null
   const baseId = useId()
   const [localQ, setLocalQ] = useState(exploreQ)
   useEffect(() => {
@@ -96,6 +138,8 @@ export function StateOverviewFiltersDisclosure({
   const geoBoundaryBuckets = aggregations?.geoBoundaryIssue?.buckets ?? []
   const schoolBuckets = sortBuckets(aggregations?.schoolKindDe?.buckets ?? [])
   const osmAmenityBuckets = aggregations?.osmAmenity?.buckets ?? []
+  const schoolFormFamilyBuckets = aggregations?.schoolFormFamily?.buckets ?? []
+  const schoolFormComboBuckets = aggregations?.schoolFormCombo?.buckets ?? []
 
   const hasActiveExplorer =
     exploreQ.trim() !== '' ||
@@ -104,7 +148,16 @@ export function StateOverviewFiltersDisclosure({
     iscedLevels.length > 0 ||
     geoBoundaryIssues.length > 0 ||
     schoolKinds.length > 0 ||
-    osmAmenities.length > 0
+    osmAmenities.length > 0 ||
+    schoolFormFamilies.length > 0 ||
+    schoolFormCombos.length > 0
+  const summaryCountLabel = bboxFilterActive
+    ? de.state.explorer.summaryCountsInBbox
+    : de.state.explorer.summaryCountsTotal
+  const iscedFilterValue: 'all' | 'yes' | 'no' =
+    iscedLevels.length === 1 && (iscedLevels[0] === 'yes' || iscedLevels[0] === 'no')
+      ? iscedLevels[0]
+      : 'all'
 
   return (
     <details className="group mb-6 rounded-lg border border-zinc-700 bg-zinc-900/50 outline outline-zinc-100/10">
@@ -117,7 +170,7 @@ export function StateOverviewFiltersDisclosure({
         <span className="flex min-w-0 flex-1 flex-col gap-0.5 sm:flex-row sm:items-baseline sm:gap-2">
           <span className="shrink-0">{de.state.explorer.summary}</span>
           <span className="truncate text-xs font-normal text-zinc-400 tabular-nums sm:text-sm">
-            {de.state.explorer.summaryCounts
+            {summaryCountLabel
               .replace('{filtered}', formatDeInteger(filteredCount))
               .replace('{total}', formatDeInteger(bboxTotalCount))}
           </span>
@@ -176,31 +229,80 @@ export function StateOverviewFiltersDisclosure({
 
         <fieldset className="mb-5">
           <legend className="mb-2 text-xs font-medium text-zinc-300">
-            {de.state.explorer.matchModeHeading}
+            {de.state.explorer.schoolFormHeading}
           </legend>
-          <div className="flex max-h-40 flex-col gap-2 overflow-y-auto pr-1">
-            {STATE_FACET_MATCH_MODES.map((mode) => {
-              const bucket = matchBuckets.find((b) => String(b.key) === mode)
-              const count = bucket?.doc_count ?? 0
-              const checked = matchModes.includes(mode)
+          <div className="space-y-2">
+            {STATE_FACET_SCHOOL_FORM_FAMILY.map((family) => {
+              const familySelected = schoolFormFamilies.includes(family)
+              const activeCombo =
+                familySelected && schoolFormCombos.length === 1
+                  ? (schoolFormCombos[0] as StateFacetSchoolFormCombo)
+                  : null
+              const familyOnlyChecked = familySelected && schoolFormCombos.length === 0
+              const familyBucket = schoolFormFamilyBuckets.find((b) => String(b.key) === family)
+              const familyCount = familyBucket?.doc_count ?? 0
               return (
-                <label
-                  key={mode}
-                  className="flex cursor-pointer items-center justify-between gap-3 rounded-md border border-zinc-700/80 bg-zinc-950/60 px-3 py-2 text-xs has-[:checked]:border-emerald-800"
+                <details
+                  key={family}
+                  className="rounded-md border border-zinc-700/80 bg-zinc-950/60 px-3 py-2"
                 >
-                  <span className="inline-flex min-w-0 items-center gap-2">
-                    <input
-                      type="checkbox"
-                      checked={checked}
-                      onChange={(e) => toggleMatchMode(mode, e.target.checked)}
-                      className="rounded border-zinc-500 text-emerald-600 focus:ring-emerald-500"
-                    />
-                    <span className="truncate">{matchModeLabel(mode)}</span>
-                  </span>
-                  <span className="shrink-0 text-zinc-400 tabular-nums">
-                    {formatDeInteger(count)}
-                  </span>
-                </label>
+                  <summary
+                    className={cn(
+                      '-mx-3 -my-2 flex w-[calc(100%+1.5rem)] cursor-pointer list-none items-center justify-between gap-3 px-3 py-2 text-xs font-medium text-zinc-200 transition-colors hover:bg-zinc-900/60',
+                      'marker:hidden [&::-webkit-details-marker]:hidden',
+                    )}
+                  >
+                    <span>{schoolFormFamilyLabel(family)}</span>
+                    <span className="shrink-0 text-zinc-400 tabular-nums">
+                      {formatDeInteger(familyCount)}
+                    </span>
+                  </summary>
+                  <div className="mt-2 space-y-2 border-t border-zinc-700/70 pt-2">
+                    <label className="flex cursor-pointer items-center gap-2 text-xs text-zinc-300">
+                      <input
+                        type="radio"
+                        name={`school-form-${family}`}
+                        checked={familyOnlyChecked}
+                        onChange={() => {
+                          setSchoolFormFamilies([family])
+                          setSchoolFormCombos([])
+                        }}
+                        className="border-zinc-500 text-emerald-600 focus:ring-emerald-500"
+                      />
+                      {schoolFormFamilyFilterLabel(family)}
+                    </label>
+                    {STATE_FACET_SCHOOL_FORM_COMBO.map((combo) => {
+                      const comboChecked = familySelected && activeCombo === combo
+                      const comboBucket = schoolFormComboBuckets.find(
+                        (b) => String(b.key) === combo,
+                      )
+                      const comboCount = comboBucket?.doc_count ?? 0
+                      return (
+                        <label
+                          key={`${family}-${combo}`}
+                          className="flex cursor-pointer items-start justify-between gap-3 text-xs text-zinc-300"
+                        >
+                          <span className="inline-flex min-w-0 items-start gap-2">
+                            <input
+                              type="radio"
+                              name={`school-form-${family}`}
+                              checked={comboChecked}
+                              onChange={() => {
+                                setSchoolFormFamilies([family])
+                                setSchoolFormCombos([combo])
+                              }}
+                              className="mt-0.5 border-zinc-500 text-emerald-600 focus:ring-emerald-500"
+                            />
+                            <span>{schoolFormComboLabel(family, combo)}</span>
+                          </span>
+                          <span className="shrink-0 text-zinc-400 tabular-nums">
+                            {formatDeInteger(comboCount)}
+                          </span>
+                        </label>
+                      )
+                    })}
+                  </div>
+                </details>
               )
             })}
           </div>
@@ -211,10 +313,12 @@ export function StateOverviewFiltersDisclosure({
             {de.state.explorer.iscedHeading}
           </legend>
           <div className="flex flex-col gap-2 sm:flex-row">
-            {(['yes', 'no'] as const).map((level) => {
-              const bucket = iscedBuckets.find((b) => String(b.key) === level)
-              const count = bucket?.doc_count ?? 0
-              const checked = iscedLevels.includes(level)
+            {(['all', 'yes', 'no'] as const).map((level) => {
+              const count =
+                level === 'all'
+                  ? iscedBuckets.reduce((sum, b) => sum + b.doc_count, 0)
+                  : (iscedBuckets.find((b) => String(b.key) === level)?.doc_count ?? 0)
+              const checked = iscedFilterValue === level
               return (
                 <label
                   key={level}
@@ -222,12 +326,17 @@ export function StateOverviewFiltersDisclosure({
                 >
                   <span className="inline-flex items-center gap-2">
                     <input
-                      type="checkbox"
+                      type="radio"
+                      name={`${baseId}-isced`}
                       checked={checked}
-                      onChange={(e) => toggleIscedLevel(level, e.target.checked)}
+                      onChange={() => setIscedLevel(level)}
                       className="rounded border-zinc-500 text-emerald-600 focus:ring-emerald-500"
                     />
-                    {level === 'yes' ? de.state.explorer.iscedYes : de.state.explorer.iscedNo}
+                    {level === 'all'
+                      ? de.state.explorer.iscedAll
+                      : level === 'yes'
+                        ? de.state.explorer.iscedYes
+                        : de.state.explorer.iscedNo}
                   </span>
                   <span className="text-zinc-400 tabular-nums">{formatDeInteger(count)}</span>
                 </label>
@@ -237,35 +346,86 @@ export function StateOverviewFiltersDisclosure({
         </fieldset>
 
         <fieldset className="mb-5">
-          <legend className="mb-2 text-xs font-medium text-zinc-300">
-            {de.state.explorer.osmAmenityHeading}
-          </legend>
-          <div className="flex flex-col gap-2 sm:flex-row sm:flex-wrap">
-            {STATE_FACET_OSM_AMENITY.map((v) => {
-              const bucket = osmAmenityBuckets.find((b) => String(b.key) === v)
-              const count = bucket?.doc_count ?? 0
-              const checked = osmAmenities.includes(v)
-              return (
-                <label
-                  key={v}
-                  className="flex min-w-[140px] flex-1 cursor-pointer items-center justify-between gap-3 rounded-md border border-zinc-700/80 bg-zinc-950/60 px-3 py-2 text-xs has-[:checked]:border-emerald-800"
-                >
-                  <span className="inline-flex min-w-0 items-center gap-2">
-                    <input
-                      type="checkbox"
-                      checked={checked}
-                      onChange={(e) => toggleOsmAmenity(v, e.target.checked)}
-                      className="rounded border-zinc-500 text-emerald-600 focus:ring-emerald-500"
-                    />
-                    <span className="truncate">{osmAmenityLabel(v)}</span>
-                  </span>
-                  <span className="shrink-0 text-zinc-400 tabular-nums">
-                    {formatDeInteger(count)}
-                  </span>
-                </label>
-              )
-            })}
-          </div>
+          <details className="rounded-md border border-zinc-700/80 bg-zinc-950/60 px-3 py-2">
+            <summary
+              className={cn(
+                '-mx-3 -my-2 flex w-[calc(100%+1.5rem)] cursor-pointer list-none items-center justify-between gap-3 px-3 py-2 text-xs font-medium text-zinc-200 transition-colors hover:bg-zinc-900/60',
+                'marker:hidden [&::-webkit-details-marker]:hidden',
+              )}
+            >
+              <span>{de.state.explorer.osmAmenityHeading}</span>
+              <span className="shrink-0 text-zinc-400 tabular-nums">
+                {formatDeInteger(osmAmenityBuckets.reduce((acc, b) => acc + b.doc_count, 0))}
+              </span>
+            </summary>
+            <div className="mt-2 flex max-h-40 flex-col gap-2 overflow-y-auto border-t border-zinc-700/70 pt-2 pr-1">
+              {STATE_FACET_OSM_AMENITY.map((v) => {
+                const bucket = osmAmenityBuckets.find((b) => String(b.key) === v)
+                const count = bucket?.doc_count ?? 0
+                const checked = osmAmenities.includes(v)
+                return (
+                  <label
+                    key={v}
+                    className="flex cursor-pointer items-center justify-between gap-3 rounded-md border border-zinc-700/80 bg-zinc-950/60 px-3 py-2 text-xs has-[:checked]:border-emerald-800"
+                  >
+                    <span className="inline-flex min-w-0 items-center gap-2">
+                      <input
+                        type="checkbox"
+                        checked={checked}
+                        onChange={(e) => toggleOsmAmenity(v, e.target.checked)}
+                        className="rounded border-zinc-500 text-emerald-600 focus:ring-emerald-500"
+                      />
+                      <span className="truncate">{osmAmenityLabel(v)}</span>
+                    </span>
+                    <span className="shrink-0 text-zinc-400 tabular-nums">
+                      {formatDeInteger(count)}
+                    </span>
+                  </label>
+                )
+              })}
+            </div>
+          </details>
+        </fieldset>
+
+        <fieldset className="mb-5">
+          <details className="rounded-md border border-zinc-700/80 bg-zinc-950/60 px-3 py-2">
+            <summary
+              className={cn(
+                '-mx-3 -my-2 flex w-[calc(100%+1.5rem)] cursor-pointer list-none items-center justify-between gap-3 px-3 py-2 text-xs font-medium text-zinc-200 transition-colors hover:bg-zinc-900/60',
+                'marker:hidden [&::-webkit-details-marker]:hidden',
+              )}
+            >
+              <span>{de.state.explorer.schoolKindHeading}</span>
+              <span className="shrink-0 text-zinc-400 tabular-nums">
+                {formatDeInteger(schoolBuckets.reduce((acc, b) => acc + b.doc_count, 0))}
+              </span>
+            </summary>
+            <div className="mt-2 max-h-48 space-y-2 overflow-y-auto border-t border-zinc-700/70 pt-2 pr-1">
+              {schoolBuckets.map((b) => {
+                const key = String(b.key)
+                const checked = schoolKinds.includes(key)
+                return (
+                  <label
+                    key={key}
+                    className="flex cursor-pointer items-start justify-between gap-3 rounded-md border border-zinc-700/80 bg-zinc-950/60 px-3 py-2 text-xs has-[:checked]:border-emerald-800"
+                  >
+                    <span className="inline-flex min-w-0 items-start gap-2">
+                      <input
+                        type="checkbox"
+                        checked={checked}
+                        onChange={(e) => toggleSchoolKind(key, e.target.checked)}
+                        className="mt-0.5 rounded border-zinc-500 text-emerald-600 focus:ring-emerald-500"
+                      />
+                      <span className="break-words text-zinc-200">{schoolKindLabel(key)}</span>
+                    </span>
+                    <span className="shrink-0 text-zinc-400 tabular-nums">
+                      {formatDeInteger(b.doc_count)}
+                    </span>
+                  </label>
+                )
+              })}
+            </div>
+          </details>
         </fieldset>
 
         <fieldset className="mb-5">
@@ -301,34 +461,45 @@ export function StateOverviewFiltersDisclosure({
         </fieldset>
 
         <fieldset className="mb-5">
-          <legend className="mb-2 text-xs font-medium text-zinc-300">
-            {de.state.explorer.schoolKindHeading}
-          </legend>
-          <div className="max-h-48 space-y-2 overflow-y-auto pr-1">
-            {schoolBuckets.map((b) => {
-              const key = String(b.key)
-              const checked = schoolKinds.includes(key)
-              return (
-                <label
-                  key={key}
-                  className="flex cursor-pointer items-start justify-between gap-3 rounded-md border border-zinc-700/80 bg-zinc-950/60 px-3 py-2 text-xs has-[:checked]:border-emerald-800"
-                >
-                  <span className="inline-flex min-w-0 items-start gap-2">
-                    <input
-                      type="checkbox"
-                      checked={checked}
-                      onChange={(e) => toggleSchoolKind(key, e.target.checked)}
-                      className="mt-0.5 rounded border-zinc-500 text-emerald-600 focus:ring-emerald-500"
-                    />
-                    <span className="break-words text-zinc-200">{schoolKindLabel(key)}</span>
-                  </span>
-                  <span className="shrink-0 text-zinc-400 tabular-nums">
-                    {formatDeInteger(b.doc_count)}
-                  </span>
-                </label>
-              )
-            })}
-          </div>
+          <details className="rounded-md border border-zinc-700/80 bg-zinc-950/60 px-3 py-2">
+            <summary
+              className={cn(
+                '-mx-3 -my-2 flex w-[calc(100%+1.5rem)] cursor-pointer list-none items-center justify-between gap-3 px-3 py-2 text-xs font-medium text-zinc-200 transition-colors hover:bg-zinc-900/60',
+                'marker:hidden [&::-webkit-details-marker]:hidden',
+              )}
+            >
+              <span>{de.state.explorer.matchModeHeading}</span>
+              <span className="shrink-0 text-zinc-400 tabular-nums">
+                {formatDeInteger(matchBuckets.reduce((acc, b) => acc + b.doc_count, 0))}
+              </span>
+            </summary>
+            <div className="mt-2 flex max-h-40 flex-col gap-2 overflow-y-auto border-t border-zinc-700/70 pt-2 pr-1">
+              {STATE_FACET_MATCH_MODES.map((mode) => {
+                const bucket = matchBuckets.find((b) => String(b.key) === mode)
+                const count = bucket?.doc_count ?? 0
+                const checked = matchModes.includes(mode)
+                return (
+                  <label
+                    key={mode}
+                    className="flex cursor-pointer items-center justify-between gap-3 rounded-md border border-zinc-700/80 bg-zinc-950/60 px-3 py-2 text-xs has-[:checked]:border-emerald-800"
+                  >
+                    <span className="inline-flex min-w-0 items-center gap-2">
+                      <input
+                        type="checkbox"
+                        checked={checked}
+                        onChange={(e) => toggleMatchMode(mode, e.target.checked)}
+                        className="rounded border-zinc-500 text-emerald-600 focus:ring-emerald-500"
+                      />
+                      <span className="truncate">{matchModeLabel(mode)}</span>
+                    </span>
+                    <span className="shrink-0 text-zinc-400 tabular-nums">
+                      {formatDeInteger(count)}
+                    </span>
+                  </label>
+                )
+              })}
+            </div>
+          </details>
         </fieldset>
 
         <div className="flex flex-wrap gap-2">

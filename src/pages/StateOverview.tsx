@@ -1,3 +1,4 @@
+import { StateDatasetLicenceSection } from '../components/licence/StateDatasetLicenceSection'
 import { StateOverviewFiltersDisclosure } from '../components/state/StateOverviewFiltersDisclosure'
 import { StateOverviewHistorySection } from '../components/state/StateOverviewHistorySection'
 import { StateOverviewMatchList } from '../components/state/StateOverviewMatchList'
@@ -47,7 +48,9 @@ export function StateOverview() {
     explorer.iscedLevels.length > 0 ||
     explorer.geoBoundaryIssues.length > 0 ||
     explorer.schoolKinds.length > 0 ||
-    explorer.osmAmenities.length > 0
+    explorer.osmAmenities.length > 0 ||
+    explorer.schoolFormFamilies.length > 0 ||
+    explorer.schoolFormCombos.length > 0
   const [listSearchRequested, setListSearchRequested] = useState(false)
   const showSearch = listSearchRequested || hasExplorerSearchParams
   const showList = listSearchRequested
@@ -99,6 +102,8 @@ export function StateOverview() {
           geoBoundaryIssues: explorer.geoBoundaryIssues,
           schoolKinds: explorer.schoolKinds,
           osmAmenities: explorer.osmAmenities,
+          schoolFormFamilies: explorer.schoolFormFamilies,
+          schoolFormCombos: explorer.schoolFormCombos,
         })
   const explorerIds = exploreResult ? collectFilteredIdsFromSearchResult(exploreResult) : null
 
@@ -183,13 +188,17 @@ export function StateOverview() {
               matchModes={explorer.matchModes}
               toggleMatchMode={explorer.toggleMatchMode}
               iscedLevels={explorer.iscedLevels}
-              toggleIscedLevel={explorer.toggleIscedLevel}
+              setIscedLevel={explorer.setIscedLevel}
               geoBoundaryIssues={explorer.geoBoundaryIssues}
               toggleGeoBoundaryIssue={explorer.toggleGeoBoundaryIssue}
               schoolKinds={explorer.schoolKinds}
               toggleSchoolKind={explorer.toggleSchoolKind}
               osmAmenities={explorer.osmAmenities}
               toggleOsmAmenity={explorer.toggleOsmAmenity}
+              schoolFormFamilies={explorer.schoolFormFamilies}
+              setSchoolFormFamilies={explorer.setSchoolFormFamilies}
+              schoolFormCombos={explorer.schoolFormCombos}
+              setSchoolFormCombos={explorer.setSchoolFormCombos}
               resetExplorer={explorer.resetExplorer}
               aggregations={exploreResult?.data.aggregations}
               filteredCount={listSearchMatchesAfterExplorer.length}
@@ -264,6 +273,8 @@ export function StateOverview() {
           )}
         </>
       )}
+
+      <StateDatasetLicenceSection routeStateCode={stateKey} className="mt-8" />
 
       <StateOverviewHistorySection
         code={stateKey}

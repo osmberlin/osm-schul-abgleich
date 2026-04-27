@@ -120,6 +120,7 @@ export const de = {
       colOsmCompatible: 'OSM-kompatibel',
       colChecked: 'Zuletzt geprüft',
       unknownLicense: 'Unbekannt',
+      licenseSourceLinkLabel: 'Lizenzquelle',
       sourceLinkLabel: 'Datenquelle (API)',
       osmCompatibleLabel: {
         unknown: 'Unbekannt',
@@ -129,6 +130,9 @@ export const de = {
       },
       osmCompatibilityRefLink: 'Nachweis (OSM-Wiki, PDF)',
       officialSourceRefLink: 'Referenz',
+      explicitModelHeading: 'Explizites Lizenzmodell je Datensatz',
+      explicitModelLead:
+        'Jeder Datensatz hat eine explizite Lizenzangabe (Kurzname + Quelle), eine OSM-Kompatibilitaetseinschaetzung (mit Nachweis) und optional einen Kommentar.',
       osmCompatLegendHeading: 'Legende zur OSM-Kompatibilität',
       osmCompatLegendText: {
         unknown:
@@ -136,6 +140,22 @@ export const de = {
         no: 'Für diese amtliche Quelle besteht keine Freigabe zur Nutzung in OSM. Die amtlichen Daten dürfen daher nur als Basis für eine **eigene Recherche** genutzt werden.',
         yesLicenceOrWaiver: 'Diese Daten dürfen in OSM übernommen werden.',
       },
+    },
+  },
+  licenceSection: {
+    heading: 'Datenlizenz und Herkunft ({state})',
+    datasetLicenseLabel: 'Originale Lizenz (Kurzname)',
+    osmCompatibilityLabel: 'OSM-kompatibel',
+    datasetSourceLabel: 'Datensatzquelle',
+    datasetSourcePrimary: 'Datenquelle (API/Portal)',
+    datasetSourceReference: 'Referenz',
+    sourceEvidence: 'Nachweis',
+    unknown: 'Unbekannt',
+    osmCompatibleLabel: {
+      unknown: 'Unbekannt',
+      no: 'Nein',
+      yes_licence: 'Ja (Lizenz oder Freigabe)',
+      yes_waiver: 'Ja (Lizenz oder Freigabe)',
     },
   },
   state: {
@@ -161,16 +181,18 @@ export const de = {
     loadingListSearch: 'Lade Liste und Suche…',
     explorer: {
       summary: 'Suche & Filter',
-      summaryCounts: '{filtered} von {total} im Ausschnitt',
+      summaryCountsInBbox: '{filtered} von {total} im Ausschnitt',
+      summaryCountsTotal: '{filtered} von {total} gesamt',
       queryLabel: 'Volltext (Namen)',
       queryPlaceholder: 'z. B. Grundschule, Ortsteil …',
-      nameScopeLabel: 'Namen durchsuchen in',
+      nameScopeLabel: 'Suche anwenden auf…',
       nameScopeBoth: 'Amtlich und OSM',
       nameScopeOfficial: 'Nur amtliche Namen',
       nameScopeOsm: 'Nur OSM-Namen',
       matchModeHeading: 'Abgleichmodus',
       matchModeNone: 'Kein Modus (nicht zugeordnet)',
       iscedHeading: 'OSM-Tag isced:level',
+      iscedAll: 'Alle',
       iscedYes: 'Vorhanden',
       iscedNo: 'Nicht vorhanden',
       geoBoundaryHeading: 'Amtliche Geoposition (Bundesland)',
@@ -182,6 +204,31 @@ export const de = {
       osmAmenitySchool: 'Schule (amenity=school)',
       osmAmenityCollege: 'Berufliche Einrichtung (amenity=college)',
       osmAmenityNone: 'Kein OSM-Objekt / sonstiges',
+      schoolFormHeading: 'Schulform-Kombination',
+      schoolFormFamilyGrundschule: 'Grundschulen',
+      schoolFormFamilyWeiterfuehrend: 'Weiterfuehrende Schulen',
+      schoolFormFamilyFilterLabel: 'Diese Gruppe einbeziehen',
+      schoolFormFamilyFilterLabelGrundschule: 'Nur Grundschulen anzeigen',
+      schoolFormFamilyFilterLabelWeiterfuehrend: 'Nur weiterführende Schulen anzeigen',
+      schoolFormComboMissingOsm: 'Fehlt in OSM / kann nachgetragen werden',
+      schoolFormComboOnlyOsm: 'Nur in OSM / ggf. Quelle oder OSM pruefen',
+      schoolFormComboMatchingTags: 'Passende Tags / kann trotzdem geprueft werden',
+      schoolFormComboMatchingButLackingTags:
+        'Matching, aber Tags unvollstaendig / sollte geprueft werden',
+      schoolFormComboMissingOsmGrundschule:
+        'Grundschulen mit fehlenden Schulform-Tags in OSM – ggf. nachtragen',
+      schoolFormComboOnlyOsmGrundschule:
+        'OSM-Schulform-Tags ohne amtliche Grundschul-Entsprechung – prüfen',
+      schoolFormComboMatchingTagsGrundschule: 'Abgleich erfolgt, Tags vorhanden – OK',
+      schoolFormComboMatchingButLackingTagsGrundschule:
+        'Abgleich erfolgt, aber Tags sind unvollständig – Tags präzisieren (`school` oder `isced:level`)',
+      schoolFormComboMissingOsmWeiterfuehrend:
+        'Weiterführende Schulen mit fehlenden Schulform-Tags in OSM – ggf. nachtragen',
+      schoolFormComboOnlyOsmWeiterfuehrend:
+        'OSM-Schulform-Tags ohne amtliche Entsprechung bei weiterführenden Schulen – prüfen',
+      schoolFormComboMatchingTagsWeiterfuehrend: 'Abgleich erfolgt, Tags vorhanden – OK',
+      schoolFormComboMatchingButLackingTagsWeiterfuehrend:
+        'Abgleich erfolgt, aber Tags sind unvollständig – Tags präzisieren (`school` oder `isced:level`)',
       reset: 'Zurücksetzen',
       openHint: 'Filter wirken auf Kennzahlen, Karte und Trefferliste.',
     },

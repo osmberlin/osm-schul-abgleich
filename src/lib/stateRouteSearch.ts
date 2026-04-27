@@ -8,6 +8,10 @@ import {
   STATE_FACET_OSM_AMENITY,
   type StateFacetMatchMode,
   type StateFacetOsmAmenity,
+  STATE_FACET_SCHOOL_FORM_COMBO,
+  STATE_FACET_SCHOOL_FORM_FAMILY,
+  type StateFacetSchoolFormCombo,
+  type StateFacetSchoolFormFamily,
 } from './stateOverviewItemsSearch'
 import { parseStateMapBboxSearchParam, serializeStateMapBboxSearchParam } from './useStateMapBbox'
 import { z } from 'zod'
@@ -35,6 +39,10 @@ type StateRouteSearch = {
   lsk?: string[]
   /** Facet: OSM amenity (school / college / none). */
   loa?: StateFacetOsmAmenity[]
+  /** Facet: school-form family (`grundschule`/`weiterfuehrend`). */
+  lsfam?: StateFacetSchoolFormFamily[]
+  /** Facet: school-form status (`missing_osm`, `only_osm`, ...). */
+  lscombo?: StateFacetSchoolFormCombo[]
   mask?: boolean
 }
 
@@ -109,6 +117,12 @@ export function validateStateRouteSearch(search: Record<string, unknown>): State
 
   const loa = normalizeEnumArray(stringList(search.loa), STATE_FACET_OSM_AMENITY)
   if (loa.length > 0) out.loa = loa
+
+  const lsfam = normalizeEnumArray(stringList(search.lsfam), STATE_FACET_SCHOOL_FORM_FAMILY)
+  if (lsfam.length > 0) out.lsfam = lsfam
+
+  const lscombo = normalizeEnumArray(stringList(search.lscombo), STATE_FACET_SCHOOL_FORM_COMBO)
+  if (lscombo.length > 0) out.lscombo = lscombo
 
   return out
 }
