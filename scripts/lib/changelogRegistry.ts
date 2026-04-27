@@ -4,7 +4,7 @@ import { z } from 'zod'
 
 export const CHANGELOG_REGISTRY_PATH = path.join('changelog', 'registry.yaml')
 export const CHANGELOG_MARKDOWN_PATH = 'CHANGELOG.md'
-export const CHANGELOG_JSON_PATH = path.join('public', 'datasets', 'changelog.gen.json')
+export const CHANGELOG_JSON_PATH = path.join('public', 'changelog.gen.json')
 export const CHANGELOG_ONLY_ALLOWED_PATHS = new Set<string>([
   CHANGELOG_REGISTRY_PATH,
   CHANGELOG_MARKDOWN_PATH,

@@ -10,7 +10,7 @@ function envScopedJsonFileName(fileName: string): string {
 export const summaryJsonUrl = () => datasetsUrl('/datasets/summary.json')
 export const runsJsonlUrl = () =>
   datasetsUrl(`/datasets/status/${envScopedJsonFileName('runs.jsonl')}`)
-export const changelogJsonUrl = () => datasetsUrl('/datasets/changelog.gen.json')
+export const changelogJsonUrl = () => datasetsUrl('/changelog.gen.json')
 export const nationalOfficialMetaUrl = () =>
   datasetsUrl(`/datasets/${envScopedJsonFileName('schools_official_de.meta.json')}`)
 export const nationalOsmMetaUrl = () =>

@@ -59,7 +59,7 @@ export function runsQueryOptions() {
   })
 }
 
-/** Shared TanStack query options for datasets/changelog.gen.json */
+/** Shared TanStack query options for changelog.gen.json */
 export function changelogQueryOptions() {
   return queryOptions({
     queryKey: ['changelog'] as const,
