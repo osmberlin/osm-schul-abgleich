@@ -12,6 +12,7 @@ import { SchoolDetailCompareBody } from '../components/school/SchoolDetailCompar
 import { SchoolDetailLicenceWarnings } from '../components/school/SchoolDetailLicence'
 import { SchoolDetailMapSection } from '../components/school/SchoolDetailMapSection'
 import { SchoolDetailMatchExplanation } from '../components/school/SchoolDetailMatchExplanation'
+import { SchoolRefOsmSuggest } from '../components/school/SchoolRefOsmSuggest'
 import { SecondarySchoolOsmSuggest } from '../components/school/SecondarySchoolOsmSuggest'
 import { de } from '../i18n/de'
 import { findOfficialSchoolFeature } from '../lib/findOfficialSchoolFeature'
@@ -176,6 +177,11 @@ export function SchoolDetail() {
             lat={mapOsmCentroid?.[1] ?? null}
           />
           <OeffentlicheTraegerschaftOsmSuggest
+            row={matchRow}
+            lon={mapOsmCentroid?.[0] ?? null}
+            lat={mapOsmCentroid?.[1] ?? null}
+          />
+          <SchoolRefOsmSuggest
             row={matchRow}
             lon={mapOsmCentroid?.[0] ?? null}
             lat={mapOsmCentroid?.[1] ?? null}

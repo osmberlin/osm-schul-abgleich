@@ -1,4 +1,3 @@
-import { StateDatasetLicenceSection } from '../components/licence/StateDatasetLicenceSection'
 import { StateOverviewFiltersDisclosure } from '../components/state/StateOverviewFiltersDisclosure'
 import { StateOverviewHistorySection } from '../components/state/StateOverviewHistorySection'
 import { StateOverviewMatchList } from '../components/state/StateOverviewMatchList'
@@ -273,8 +272,6 @@ export function StateOverview() {
           )}
         </>
       )}
-
-      <StateDatasetLicenceSection routeStateCode={stateKey} className="mt-8" />
 
       <StateOverviewHistorySection
         code={stateKey}

@@ -3,6 +3,8 @@ import {
   flattenOfficialForCompare,
   flattenOsmTagsForCompare,
   normalizeAddressMatchKey,
+  normalizeOfficialIdRefSegment,
+  normalizeOsmRefForOfficialIdCompare,
   normalizeSchoolNameForMatch,
 } from './compareMatchKeys'
 import { schoolTypeStringIndicatesFachschule } from './officialFachschule'
@@ -22,6 +24,7 @@ type SecondarySchoolCompareOsmKey = 'isced:level' | 'school'
 type FachschuleCompareOsmKey = 'amenity'
 type ProviderOperatorCompareOsmKey = 'operator'
 type LegalStatusOperatorTypeCompareOsmKey = 'operator:type'
+type IdRefCompareOsmKey = 'ref'
 
 export type AddressCompareGroup = {
   kind: 'address'
@@ -84,6 +87,16 @@ export type LegalStatusOperatorTypeCompareGroup = {
   consumedKeys: string[]
 }
 
+export type IdRefCompareGroup = {
+  kind: 'idRef'
+  officialKey: 'id'
+  officialValue: string | null
+  osmKeys: readonly ['ref']
+  osmValues: Record<IdRefCompareOsmKey, string | null>
+  isEquivalentMatch: boolean
+  consumedKeys: string[]
+}
+
 export type PropertyCompareGroup =
   | AddressCompareGroup
   | GrundschuleCompareGroup
@@ -91,6 +104,7 @@ export type PropertyCompareGroup =
   | FachschuleCompareGroup
   | ProviderOperatorCompareGroup
   | LegalStatusOperatorTypeCompareGroup
+  | IdRefCompareGroup
 
 export { normalizeAddressCompareString } from './compareMatchKeys'
 
@@ -270,6 +284,27 @@ function buildLegalStatusOperatorTypeCompareGroup(
   }
 }
 
+function buildIdRefCompareGroup(
+  offMap: Map<string, string>,
+  osmMap: Map<string, string>,
+): IdRefCompareGroup | null {
+  const officialId = offMap.get('id') ?? null
+  const osmRef = osmMap.get('ref') ?? null
+  if (officialId == null || osmRef == null) return null
+  const normalizedOfficialId = normalizeOfficialIdRefSegment(officialId)
+  const normalizedOsmRef = normalizeOsmRefForOfficialIdCompare(osmRef, officialId)
+  if (!normalizedOfficialId || !normalizedOsmRef) return null
+  return {
+    kind: 'idRef',
+    officialKey: 'id',
+    officialValue: officialId,
+    osmKeys: ['ref'],
+    osmValues: { ref: osmRef },
+    isEquivalentMatch: normalizedOfficialId === normalizedOsmRef,
+    consumedKeys: ['id', 'ref'],
+  }
+}
+
 export function comparePropertySections(
   official: Record<string, unknown> | null | undefined,
   osm: Record<string, string> | null | undefined,
@@ -313,6 +348,11 @@ export function comparePropertySections(
   if (legalStatusOperatorTypeGroup) {
     compareGroups.push(legalStatusOperatorTypeGroup)
     for (const key of legalStatusOperatorTypeGroup.consumedKeys) consumedKeys.add(key)
+  }
+  const idRefGroup = buildIdRefCompareGroup(offMap, osmMap)
+  if (idRefGroup) {
+    compareGroups.push(idRefGroup)
+    for (const key of idRefGroup.consumedKeys) consumedKeys.add(key)
   }
   const keys = new Set([...offMap.keys(), ...osmMap.keys()])
   const bothEqual: CompareRowBoth[] = []

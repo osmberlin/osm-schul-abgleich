@@ -106,6 +106,67 @@ describe('matchSchools', () => {
     expect(m[0].matchedByRefNormalized).toBe('07K12')
   })
 
+  it('matches OSM ref against the last segment of multi-dash official ids', () => {
+    const off: OfficialInput = {
+      id: 'BE-XX-03P11',
+      name: 'Testschule Mitte',
+      lon: 13.4572,
+      lat: 52.5519,
+      properties: { id: 'BE-XX-03P11' },
+    }
+    const osmRel: OsmSchoolInput = {
+      osmType: 'relation',
+      osmId: '3001',
+      name: 'Testschule Mitte',
+      tags: {
+        amenity: 'school',
+        name: 'Testschule Mitte',
+        ref: '03P11',
+      },
+      geometry: { type: 'Point', coordinates: [13.45726, 52.55194] },
+      centroid: [13.45726, 52.55194],
+    }
+    const { rows } = matchSchools([off], [osmRel], landOpts(osmRel, 'BE'))
+    const m = rows.filter((r) => r.category === 'matched')
+    expect(m).toHaveLength(1)
+    expect(m[0].officialId).toBe('BE-XX-03P11')
+    expect(m[0].matchMode).toBe('ref')
+  })
+
+  it('keeps ref matching priority before distance+name matches', () => {
+    const byRef: OfficialInput = {
+      id: 'BE-XX-03P11',
+      name: 'Andere Schule',
+      lon: 13.4572,
+      lat: 52.5519,
+      properties: { id: 'BE-XX-03P11' },
+    }
+    const byName: OfficialInput = {
+      id: 'BE-OTHER',
+      name: 'Muster Schule',
+      lon: 13.45721,
+      lat: 52.55191,
+      properties: { id: 'BE-OTHER' },
+    }
+    const osm: OsmSchoolInput = {
+      osmType: 'relation',
+      osmId: '3002',
+      name: 'Muster Schule',
+      tags: {
+        amenity: 'school',
+        name: 'Muster Schule',
+        ref: '03P11',
+      },
+      geometry: { type: 'Point', coordinates: [13.45726, 52.55194] },
+      centroid: [13.45726, 52.55194],
+    }
+    const { rows } = matchSchools([byRef, byName], [osm], landOpts(osm, 'BE'))
+    const matched = rows.filter((r) => r.category === 'matched')
+    expect(matched).toHaveLength(1)
+    expect(matched[0].officialId).toBe('BE-XX-03P11')
+    expect(matched[0].matchMode).toBe('ref')
+  })
+
   it('keeps radius at 150m but allows later statewide fallback', () => {
     const far: OsmSchoolInput = {
       ...osmNear,

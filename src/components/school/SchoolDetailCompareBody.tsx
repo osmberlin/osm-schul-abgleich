@@ -166,164 +166,73 @@ export function SchoolDetailCompareBody({
   const hasCommonRows = equalRows.length > 0 || equalCompareGroups.length > 0
   const hasDifferentRows = differentRows.length > 0 || differentCompareGroups.length > 0
 
+  function renderStandardCompareGroupRow(
+    group: Exclude<PropertyCompareGroup, { kind: 'address' }>,
+  ): ReactNode {
+    const osmValues = group.osmValues as Record<string, string | null>
+    return (
+      <div
+        key={`${group.kind}-${group.officialKey}`}
+        className="grid grid-cols-1 gap-3 p-2 md:grid-cols-2 md:gap-0 md:p-0"
+      >
+        <ComparePropertyItem
+          listClassName="md:border-r md:border-zinc-800 md:bg-amber-950/15 md:p-3"
+          tagKey={group.officialKey}
+          keyClassName="text-amber-200"
+          value={group.officialValue ?? '—'}
+        />
+        <div className="space-y-1 md:bg-blue-950/15 md:p-3">
+          {group.osmKeys.map((k) => (
+            <ComparePropertyItem
+              key={`${group.kind}-${k}`}
+              listClassName=""
+              tagKey={k}
+              keyClassName="text-blue-300"
+              value={osmValues[k] ?? '—'}
+            />
+          ))}
+        </div>
+      </div>
+    )
+  }
+
   function renderCompareGroupRow(group: PropertyCompareGroup): ReactNode {
-    if (group.kind === 'address') {
-      return (
-        <div
-          key={`${group.kind}-${group.officialKey}`}
-          className="grid grid-cols-1 gap-3 p-2 md:grid-cols-2 md:gap-0 md:p-0"
-        >
-          <ComparePropertyItem
-            listClassName="md:border-r md:border-zinc-800 md:bg-amber-950/15 md:p-3"
-            tagKey={group.officialKey}
-            keyClassName="text-amber-200"
-            value={group.officialValue ?? '—'}
-          />
-          <div className="space-y-1 md:bg-blue-950/15 md:p-3">
-            {group.osmKeys.map((k) => (
-              <ComparePropertyItem
-                key={`${group.kind}-${k}`}
-                listClassName=""
-                tagKey={k}
-                keyClassName="text-blue-300"
-                value={group.osmValues[k] ?? '—'}
-              />
-            ))}
+    switch (group.kind) {
+      case 'address':
+        return (
+          <div
+            key={`${group.kind}-${group.officialKey}`}
+            className="grid grid-cols-1 gap-3 p-2 md:grid-cols-2 md:gap-0 md:p-0"
+          >
+            <ComparePropertyItem
+              listClassName="md:border-r md:border-zinc-800 md:bg-amber-950/15 md:p-3"
+              tagKey={group.officialKey}
+              keyClassName="text-amber-200"
+              value={group.officialValue ?? '—'}
+            />
+            <div className="space-y-1 md:bg-blue-950/15 md:p-3">
+              {group.osmKeys.map((k) => (
+                <ComparePropertyItem
+                  key={`${group.kind}-${k}`}
+                  listClassName=""
+                  tagKey={k}
+                  keyClassName="text-blue-300"
+                  value={group.osmValues[k] ?? '—'}
+                />
+              ))}
+            </div>
           </div>
-        </div>
-      )
+        )
+      case 'grundschule':
+      case 'secondarySchool':
+      case 'fachschule':
+      case 'providerOperator':
+      case 'legalStatusOperatorType':
+      case 'idRef':
+        return renderStandardCompareGroupRow(group)
     }
-    if (group.kind === 'grundschule') {
-      return (
-        <div
-          key={`${group.kind}-${group.officialKey}`}
-          className="grid grid-cols-1 gap-3 p-2 md:grid-cols-2 md:gap-0 md:p-0"
-        >
-          <ComparePropertyItem
-            listClassName="md:border-r md:border-zinc-800 md:bg-amber-950/15 md:p-3"
-            tagKey={group.officialKey}
-            keyClassName="text-amber-200"
-            value={group.officialValue ?? '—'}
-          />
-          <div className="space-y-1 md:bg-blue-950/15 md:p-3">
-            {group.osmKeys.map((k) => (
-              <ComparePropertyItem
-                key={`${group.kind}-${k}`}
-                listClassName=""
-                tagKey={k}
-                keyClassName="text-blue-300"
-                value={group.osmValues[k] ?? '—'}
-              />
-            ))}
-          </div>
-        </div>
-      )
-    }
-    if (group.kind === 'secondarySchool') {
-      return (
-        <div
-          key={`${group.kind}-${group.officialKey}`}
-          className="grid grid-cols-1 gap-3 p-2 md:grid-cols-2 md:gap-0 md:p-0"
-        >
-          <ComparePropertyItem
-            listClassName="md:border-r md:border-zinc-800 md:bg-amber-950/15 md:p-3"
-            tagKey={group.officialKey}
-            keyClassName="text-amber-200"
-            value={group.officialValue ?? '—'}
-          />
-          <div className="space-y-1 md:bg-blue-950/15 md:p-3">
-            {group.osmKeys.map((k) => (
-              <ComparePropertyItem
-                key={`${group.kind}-${k}`}
-                listClassName=""
-                tagKey={k}
-                keyClassName="text-blue-300"
-                value={group.osmValues[k] ?? '—'}
-              />
-            ))}
-          </div>
-        </div>
-      )
-    }
-    if (group.kind === 'fachschule') {
-      return (
-        <div
-          key={`${group.kind}-${group.officialKey}`}
-          className="grid grid-cols-1 gap-3 p-2 md:grid-cols-2 md:gap-0 md:p-0"
-        >
-          <ComparePropertyItem
-            listClassName="md:border-r md:border-zinc-800 md:bg-amber-950/15 md:p-3"
-            tagKey={group.officialKey}
-            keyClassName="text-amber-200"
-            value={group.officialValue ?? '—'}
-          />
-          <div className="space-y-1 md:bg-blue-950/15 md:p-3">
-            {group.osmKeys.map((k) => (
-              <ComparePropertyItem
-                key={`${group.kind}-${k}`}
-                listClassName=""
-                tagKey={k}
-                keyClassName="text-blue-300"
-                value={group.osmValues[k] ?? '—'}
-              />
-            ))}
-          </div>
-        </div>
-      )
-    }
-    if (group.kind === 'providerOperator') {
-      return (
-        <div
-          key={`${group.kind}-${group.officialKey}`}
-          className="grid grid-cols-1 gap-3 p-2 md:grid-cols-2 md:gap-0 md:p-0"
-        >
-          <ComparePropertyItem
-            listClassName="md:border-r md:border-zinc-800 md:bg-amber-950/15 md:p-3"
-            tagKey={group.officialKey}
-            keyClassName="text-amber-200"
-            value={group.officialValue ?? '—'}
-          />
-          <div className="space-y-1 md:bg-blue-950/15 md:p-3">
-            {group.osmKeys.map((k) => (
-              <ComparePropertyItem
-                key={`${group.kind}-${k}`}
-                listClassName=""
-                tagKey={k}
-                keyClassName="text-blue-300"
-                value={group.osmValues[k] ?? '—'}
-              />
-            ))}
-          </div>
-        </div>
-      )
-    }
-    if (group.kind === 'legalStatusOperatorType') {
-      return (
-        <div
-          key={`${group.kind}-${group.officialKey}`}
-          className="grid grid-cols-1 gap-3 p-2 md:grid-cols-2 md:gap-0 md:p-0"
-        >
-          <ComparePropertyItem
-            listClassName="md:border-r md:border-zinc-800 md:bg-amber-950/15 md:p-3"
-            tagKey={group.officialKey}
-            keyClassName="text-amber-200"
-            value={group.officialValue ?? '—'}
-          />
-          <div className="space-y-1 md:bg-blue-950/15 md:p-3">
-            {group.osmKeys.map((k) => (
-              <ComparePropertyItem
-                key={`${group.kind}-${k}`}
-                listClassName=""
-                tagKey={k}
-                keyClassName="text-blue-300"
-                value={group.osmValues[k] ?? '—'}
-              />
-            ))}
-          </div>
-        </div>
-      )
-    }
-    return null
+    const _exhaustive: never = group
+    return _exhaustive
   }
 
   return (

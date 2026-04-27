@@ -161,3 +161,51 @@ export function normalizeWebsiteMatchKey(raw: string | null | undefined): string
   if (path === '') path = '/'
   return `${url.hostname.toLowerCase()}${port}${path}${url.search}`
 }
+
+function firstTokenByCommonSeparators(raw: string): string {
+  return raw.split(/[;,]/)[0]?.trim() ?? ''
+}
+
+/**
+ * Normalized official id segment used for ref matching/comparison.
+ * Uses the last dash-separated segment (`BE-XX-03P11` -> `03p11`).
+ */
+export function normalizeOfficialIdRefSegment(rawId: string | null | undefined): string {
+  const id = String(rawId ?? '')
+    .trim()
+    .toLowerCase()
+  if (!id) return ''
+  const parts = id
+    .split('-')
+    .map((p) => p.trim())
+    .filter((p) => p !== '')
+  if (parts.length === 0) return ''
+  return parts.at(-1) ?? ''
+}
+
+/**
+ * Normalized OSM ref value for comparison with official ids.
+ * Keeps first token (before `;`/`,`), trims/lowercases, and strips optional state prefix (`be-`).
+ */
+export function normalizeOsmRefForOfficialIdCompare(
+  rawRef: string | null | undefined,
+  officialId: string | null | undefined,
+): string {
+  let ref = firstTokenByCommonSeparators(
+    String(rawRef ?? '')
+      .trim()
+      .toLowerCase(),
+  )
+  if (!ref) return ''
+  const officialPrefix = String(officialId ?? '')
+    .trim()
+    .toLowerCase()
+    .split('-')
+    .map((p) => p.trim())
+    .filter((p) => p !== '')[0]
+  if (officialPrefix) {
+    const prefixed = `${officialPrefix}-`
+    if (ref.startsWith(prefixed)) ref = ref.slice(prefixed.length).trim()
+  }
+  return ref
+}

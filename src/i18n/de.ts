@@ -44,6 +44,9 @@ export const de = {
       'Vorschlag aus amtlichen Daten (in öffentlicher Trägerschaft)',
     oeffentlicheTraegerschaftSectionLead:
       'Für diese Schule deuten die offiziellen Daten auf öffentliche Trägerschaft hin. Du kannst passende Betreiber-Tags taggen und im Hauptmenü hochladen.',
+    refSectionTitle: 'Vorschlag aus amtlichen Daten (ref)',
+    refSectionLead:
+      'Für diese Schule ist eine amtliche Kennung verfügbar, die als OSM-Tag `ref=*` geeignet sein kann.',
     schoolTagWikiLead: 'Bitte informiere dich auf den Wiki-Seiten:',
     /** Shown after the monospace tag in Grundschule action buttons. */
     proposeOsmTagVerb: 'taggen',
@@ -325,8 +328,7 @@ export const de = {
       'Zuordnung nur über Website-Gleichheit (amtlicher Datensatz ohne Koordinaten, normalisierte URL):',
     matchExplanationAddress:
       'Zuordnung nur über Adress-Gleichheit (amtlicher Datensatz ohne Koordinaten, normalisierte Adresse):',
-    matchExplanationRef:
-      'Zuordnung über OSM-Tag `ref` und amtliche Schul-ID (Suffix nach Bundesland-Präfix, z. B. `BE-07K12` ↔ `ref=07K12`):',
+    matchExplanationRef: 'Zuordnung über OSM-Tag `ref` und amtliche Schul-ID:',
     matchModeLabel: {
       distance: 'Distanz',
       distance_and_name: 'Distanz + Name',

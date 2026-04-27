@@ -3,6 +3,7 @@ import {
   flattenOsmTagsForCompare,
   normalizeAddressMatchKey,
   normalizeForFachschuleCollegeMatch,
+  normalizeOfficialIdRefSegment,
   normalizeSchoolNameForMatch,
   normalizeWebsiteMatchKey,
   isFachschuleOfficialName,
@@ -160,7 +161,7 @@ export type MatchRowOut = {
   matchedByWebsiteNormalized?: string
   /** Normalized address string used for no-coord address fallback equality. */
   matchedByAddressNormalized?: string
-  /** OSM `ref` value used for JedeSchule id suffix match (`BE-07K12` ↔ `ref=07K12`). */
+  /** OSM `ref` value used for official id-segment match (`BE-XX-07K12` ↔ `ref=07K12`). */
   matchedByRefNormalized?: string
   /** Federal state code for national pipeline split (optional). */
   pipelineState?: string
@@ -357,19 +358,14 @@ export type MatchSchoolsOptions = {
   osmStateByKey: Map<string, StateCode>
 }
 
-/** Map JedeSchule id suffix to keyed lookup: `BE-07K12` → `BE:07k12` (collisions dropped). */
+/** Map official id ref segment to keyed lookup: `BE-XX-07K12` → `BE:07k12` (collisions dropped). */
 function buildOfficialRefMatchIndex(withCoord: OfficialInput[]): Map<string, OfficialInput> {
   const seenTwice = new Set<string>()
   const m = new Map<string, OfficialInput>()
   for (const off of withCoord) {
     const land = stateCodeFromSchoolId(off.id)
     if (!land) continue
-    const dash = off.id.indexOf('-')
-    if (dash < 0 || dash >= off.id.length - 1) continue
-    const suffix = off.id
-      .slice(dash + 1)
-      .trim()
-      .toLowerCase()
+    const suffix = normalizeOfficialIdRefSegment(off.id)
     if (!suffix) continue
     const key = `${land}:${suffix}`
     if (m.has(key)) {

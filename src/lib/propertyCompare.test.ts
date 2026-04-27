@@ -478,3 +478,38 @@ describe('comparePropertySections legal_status/operator:type group', () => {
     expect(res.onlyS).toEqual([])
   })
 })
+
+describe('comparePropertySections id/ref group', () => {
+  it('treats official id with prefix as equal to OSM ref', () => {
+    const res = comparePropertySections({ id: 'BE-03P11' }, { ref: '03P11' })
+    expect(res.compareGroups).toHaveLength(1)
+    const g = res.compareGroups[0]
+    expect(g.kind).toBe('idRef')
+    if (g.kind !== 'idRef') throw new Error('expected idRef')
+    expect(g.isEquivalentMatch).toBe(true)
+    expect(res.bothEqual).toEqual([])
+    expect(res.bothDifferent).toEqual([])
+    expect(res.onlyO).toEqual([])
+    expect(res.onlyS).toEqual([])
+  })
+
+  it('uses the last id segment and strips optional state prefix from ref', () => {
+    const res = comparePropertySections({ id: 'BE-XX-03P11' }, { ref: 'be-03p11' })
+    expect(res.compareGroups).toHaveLength(1)
+    const g = res.compareGroups[0]
+    expect(g.kind).toBe('idRef')
+    if (g.kind !== 'idRef') throw new Error('expected idRef')
+    expect(g.isEquivalentMatch).toBe(true)
+  })
+
+  it('shows id/ref as different when both are present but do not match', () => {
+    const res = comparePropertySections({ id: 'BE-03P11' }, { ref: '03P12' })
+    expect(res.compareGroups).toHaveLength(1)
+    const g = res.compareGroups[0]
+    expect(g.kind).toBe('idRef')
+    if (g.kind !== 'idRef') throw new Error('expected idRef')
+    expect(g.isEquivalentMatch).toBe(false)
+    expect(res.onlyO).toEqual([])
+    expect(res.onlyS).toEqual([])
+  })
+})
