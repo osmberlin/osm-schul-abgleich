@@ -349,17 +349,47 @@ export const de = {
   },
   status: {
     heading: 'Pipeline-Status',
+    kpiHeading: 'Aktueller Stand',
+    kpiLead:
+      'Diese drei Zeitpunkte zeigen den Datenstand der aktuell ausgelieferten Seite: OSM-Daten, amtliche JedeSchule-Daten und Zeitpunkt der letzten Auswertung.',
+    kpiError: 'KPI-Daten konnten nicht geladen werden.',
+    kpiOsmDataDate: 'OSM-Datenstand',
+    kpiOsmDataDateHint: 'Zeitpunkt der Overpass-Antwort, die für den Vergleich verwendet wurde.',
+    kpiJedeschuleDataDate: 'Amtliche Daten',
+    kpiJedeschuleDataDateHint: 'Neuster Zeitstempel aus den Daten von JedeSchule.',
+    kpiCompareDate: 'Abgleich / Auswertung',
+    kpiCompareDateHint:
+      'Zeitpunkt, an dem der aktuell sichtbare Datenvergleich zuletzt neu berechnet wurde.',
+    kpiMatchSkippedHint:
+      'Hinweis: Der zuletzt protokollierte Lauf hat den Abgleich übersprungen. Die Auswertung stammt daher vom letzten erfolgreichen Lauf davor.',
     runHistoryHeading: 'Letzte Läufe',
-    nationalMetaHeading: 'Bundesweite Download-Metadaten',
-    nationalMetaLead:
-      'Aktueller Stand der Dateien schools_official_de.meta.json und schools_osm_de.meta.json (unabhängig vom letzten Lauf in der Liste).',
+    technicalHeading: 'Zusätzliche technische Zeitstempel',
+    technicalLead:
+      'Diese Angaben sind für Debugging und Einordnung gedacht. Jeder Wert erklärt, was er für den Pipeline-Ablauf aussagt.',
     loading: 'Lade Status…',
     error: 'Statusdatei nicht verfügbar.',
     nationalMetaError: 'Meta-Dateien konnten nicht geladen werden.',
     nationalMetaMissing: 'Keine Meta-Datei (noch kein Download).',
-    sourceJedeschule: 'JedeSchule (offiziell)',
+    timestampMissing: 'Kein Zeitstempel verfügbar',
+    sourceJedeschule: 'JedeSchule (amtlich)',
     sourceOsmDe: 'OSM Deutschland',
-    refreshedAt: 'Stand',
+    technicalOfficialLead:
+      'Diese Werte helfen zu verstehen, wie aktuell die amtliche Quelle ist und ob beim letzten Abruf wirklich neue Inhalte vorhanden waren.',
+    technicalOsmLead:
+      'Diese Werte zeigen, wann der OSM-Datensatz vom Overpass-Endpunkt stammt und wann die lokale Meta-Datei erzeugt wurde.',
+    technicalGeneratedAtMeaning:
+      'Dieser Zeitpunkt zeigt, wann die lokale Meta-Datei im Pipeline-Lauf geschrieben wurde.',
+    technicalCsvMaxUpdateMeaning:
+      'Dieser Zeitpunkt kommt aus den CSV-Zeilen selbst und zeigt den jüngsten fachlichen Datenstand der Quelle.',
+    technicalHttpLastModifiedMeaning:
+      'Dieser HTTP-Header stammt vom Server der Quelle und hilft einzuordnen, ob dort seit dem letzten Abruf etwas verändert wurde.',
+    technicalUpstreamChangeMeaning:
+      'Vergleich mit dem letzten Lauf: So lässt sich erkennen, ob die Quelle inhaltlich wirklich einen neuen Stand geliefert hat.',
+    technicalOsmSnapshotMeaning:
+      'Dieser Zeitpunkt stammt aus der Overpass-Antwort und beschreibt den OSM-Snapshot, auf dem der Vergleich basiert.',
+    technicalErrorMeaning:
+      'Fehlermeldung des Abrufschritts. Hilft bei der Ursachenanalyse im Pipeline-Lauf.',
+    osmSnapshotAt: 'OSM Snapshot-Zeitpunkt',
     lastPullAt: 'Letzter erfolgreicher Datenabruf',
     sourceModeFresh: 'Frisch geladen',
     sourceModeReused: 'Vorheriger Stand wiederverwendet',
@@ -378,18 +408,18 @@ export const de = {
     okBadgeFail: 'Nicht OK',
     downloadOk: 'Download OK',
     downloadFail: 'Download fehlgeschlagen',
-    errors: 'Fehler',
-    states: 'Bundesländer',
-    runDownloads: 'Downloads im Lauf',
+    runCardHeading: 'Lauf',
+    runSectionWhen: 'Wann',
+    runSectionDownloads: 'Datenabruf',
+    runSectionCompare: 'Abgleich',
+    runSectionContext: 'Kontext',
+    runDownloadsMissing: 'Keine Download-Information in diesem Lauf protokolliert.',
     runsDroppedWarning:
       '{count} ältere oder ungültige Einträge konnten nicht gelesen werden und werden ausgeblendet.',
     runsDroppedDiagnostics:
       'Nicht lesbar: {parseErrors} JSONL-Zeilen, {schemaMismatches} Einträge mit ungültigem Schema.',
     statesCount: '{count} Bundesländer erfasst',
-    statesWithCounts: '{count} mit Kennzahlen',
-    statesMissingOsm: '{count} ohne OSM-Daten',
     runDetailsSummary: 'Details',
-    stateDiagnosticsSummary: 'State diagnostics',
     errorPayloadSummary: 'Error payload',
     gitSha: 'Git SHA',
     runContextScheduledWeeklyOfficial:
@@ -401,8 +431,10 @@ export const de = {
     runContextManualFull: 'Manueller Lauf (frische Daten geladen)',
     runContextManualOsmOnly: 'Manueller Lauf (amtliche Daten wiederverwendet)',
     runContextManualNightly: 'Manueller Nachtlauf (frische OSM- und Amtlich-Daten)',
-    runContextPushStored: 'Push-Deploy (verwendet gespeicherten Datenstand)',
+    runContextPushStored:
+      'Push-Deploy (nutzt den zuletzt gespeicherten Datensatz und führt die Auswertung darauf erneut aus)',
     runContextUnknown: 'Laufkontext nicht angegeben',
+    runContextDefaultHint: 'Standardkontext: geplanter Nachtlauf.',
     matchRan: 'Abgleich ausgeführt',
     matchSkipped: 'Abgleich übersprungen',
     matchNotRunMissingInputs: 'Abgleich nicht gelaufen (fehlende oder ungültige Eingaben).',

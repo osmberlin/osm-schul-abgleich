@@ -1,20 +1,15 @@
 import { de } from '../i18n/de'
 import { cn } from '../lib/cn'
 import { formatDurationMs } from '../lib/formatDuration'
-import type {
-  PipelineRunContextKnown,
-  PipelineSourceMeta,
-  PipelineSourceModeReasonKnown,
-} from '../lib/schemas'
-import { nationalPipelineMetaQueryOptions, runsQueryOptions } from '../lib/sharedDatasetQueries'
+import type { PipelineRunContextKnown, PipelineSourceModeReasonKnown } from '../lib/schemas'
+import {
+  nationalPipelineMetaQueryOptions,
+  runsQueryOptions,
+  summaryQueryOptions,
+} from '../lib/sharedDatasetQueries'
+import { StatusDateTime } from '../lib/statusDateTime'
 import { useQuery } from '@tanstack/react-query'
-
-type RunDownloadStatus = {
-  ok: boolean
-  generatedAt?: string
-  sourceMode?: 'fresh' | 'reused' | 'failed'
-  sourceModeReason?: string
-}
+import type { ReactNode } from 'react'
 
 const RUN_CONTEXT_LABELS: Record<PipelineRunContextKnown, string> = {
   refresh_scheduled_nightly: de.status.runContextScheduledNightly,
@@ -53,130 +48,430 @@ function isDefaultRunContext(runContext?: string) {
   return !runContext || runContext === 'refresh_scheduled_nightly'
 }
 
-function formatBerlinDateTime(value: string) {
-  return new Date(value).toLocaleString('de-DE', { timeZone: 'Europe/Berlin' })
+function statusBadgeClasses(ok: boolean) {
+  return cn(
+    'inline-flex rounded-full px-2 py-0.5 text-xs font-medium',
+    ok ? 'bg-emerald-900/50 text-emerald-100' : 'bg-red-950/60 text-red-200',
+  )
 }
 
-function shouldShowRunDownloads(run: {
-  matchSkipped?: boolean
-  downloads?: {
-    jedeschule: RunDownloadStatus
-    osm: RunDownloadStatus
+function renderKpiTimestampOrMissing(value?: string, tone?: 'sky' | 'emerald' | 'violet') {
+  const toneDateClass =
+    tone === 'sky' ? 'text-sky-400' : tone === 'emerald' ? 'text-emerald-400' : 'text-violet-400'
+  if (!value) {
+    return <p className="text-sm text-zinc-500">{de.status.timestampMissing}</p>
   }
-}) {
-  if (!run.downloads) return false
-  if (run.matchSkipped) return true
-  const statuses = [run.downloads.jedeschule, run.downloads.osm]
-  return statuses.some((s) => !s.ok || s.sourceMode === 'reused' || s.sourceMode === 'failed')
+  return (
+    <StatusDateTime
+      value={value}
+      variant="kpi"
+      className="w-full"
+      dateClassName={toneDateClass}
+      timeClassName="text-zinc-500"
+      relativeClassName="text-zinc-500"
+    />
+  )
 }
 
-function SourceMetaCard({
+function renderTechnicalTimestampOrMissing(value?: string) {
+  if (!value) {
+    return <p className="text-xs text-zinc-500">{de.status.timestampMissing}</p>
+  }
+  return (
+    <StatusDateTime value={value} className="text-zinc-300" relativeClassName="text-zinc-500" />
+  )
+}
+
+function DetailRow({
+  label,
+  children,
+  labelClassName,
+}: {
+  label: ReactNode
+  children: ReactNode
+  labelClassName?: string
+}) {
+  return (
+    <div className="px-4 py-4 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
+      <dt className={cn('text-sm font-medium text-zinc-100', labelClassName)}>{label}</dt>
+      <dd className="mt-1 text-sm text-zinc-300 sm:col-span-2 sm:mt-0">{children}</dd>
+    </div>
+  )
+}
+
+function DetailBox({
   title,
-  result,
-  latestRunDownload,
+  subtitle,
+  headerRight,
+  children,
+}: {
+  title: ReactNode
+  subtitle?: ReactNode
+  headerRight?: ReactNode
+  children: ReactNode
+}) {
+  return (
+    <div className="overflow-hidden rounded-lg border border-zinc-700 bg-zinc-900/40">
+      <div className="px-4 py-4 sm:px-6">
+        <div className="flex items-center justify-between gap-2">
+          <h3 className="text-base font-semibold text-zinc-100">{title}</h3>
+          {headerRight}
+        </div>
+        {subtitle ? <p className="mt-1 text-sm text-zinc-400">{subtitle}</p> : null}
+      </div>
+      <div className="border-t border-zinc-700">
+        <dl className="divide-y divide-zinc-700">{children}</dl>
+      </div>
+    </div>
+  )
+}
+
+function KpiCard({
+  title,
+  value,
+  note,
+  tone,
 }: {
   title: string
-  result: { present: false } | { present: true; data: PipelineSourceMeta }
-  latestRunDownload?: RunDownloadStatus
+  value?: string
+  note: string
+  tone: 'sky' | 'emerald' | 'violet'
 }) {
-  if (!result.present) {
-    return (
-      <div className="rounded-lg border border-zinc-700 p-3">
-        <p className="text-sm font-medium text-zinc-200">{title}</p>
-        <p className="mt-1 text-xs text-zinc-400">{de.status.nationalMetaMissing}</p>
-      </div>
-    )
-  }
-  const { data } = result
-  const mode = latestRunDownload?.sourceMode ?? data.sourceMode
-  const modeText = renderSourceMode(mode)
-  const modeReason = renderSourceModeReason(
-    latestRunDownload?.sourceModeReason ?? data.sourceModeReason,
-  )
-  const sourcePullAt = latestRunDownload?.generatedAt ?? data.generatedAt
+  const toneClasses = {
+    sky: {
+      footerBg: 'bg-sky-950/20',
+      footerBorder: 'border-sky-900/40',
+      border: 'border-sky-900/30',
+    },
+    emerald: {
+      footerBg: 'bg-emerald-950/20',
+      footerBorder: 'border-emerald-900/40',
+      border: 'border-emerald-900/30',
+    },
+    violet: {
+      footerBg: 'bg-violet-950/20',
+      footerBorder: 'border-violet-900/40',
+      border: 'border-violet-900/30',
+    },
+  }[tone]
+
   return (
-    <div className="rounded-lg border border-zinc-700 p-3">
-      <div className="flex flex-wrap items-center gap-2">
-        <p className="text-sm font-medium text-zinc-200">{title}</p>
-        <span
-          className={cn(
-            'inline-flex rounded-full px-2 py-0.5 text-xs font-medium',
-            data.ok ? 'bg-emerald-900/50 text-emerald-100' : 'bg-red-950/60 text-red-200',
-          )}
-        >
-          {data.ok ? de.status.downloadOk : de.status.downloadFail}
-        </span>
-        {modeText ? (
-          <span className="inline-flex rounded-full bg-zinc-800 px-2 py-0.5 text-xs font-medium text-zinc-200">
-            {modeText}
-          </span>
-        ) : null}
+    <article
+      className={cn(
+        'flex h-full flex-col overflow-hidden rounded-lg border bg-zinc-900/40',
+        toneClasses.border,
+      )}
+    >
+      <div className="min-w-0 flex-1 px-4 pt-4 sm:px-5">
+        <p className="truncate text-base font-normal text-zinc-100">{title}</p>
+        <div className="mt-2">{renderKpiTimestampOrMissing(value, tone)}</div>
       </div>
-      <p className="mt-1 text-xs text-zinc-400">
-        {de.status.lastPullAt}:{' '}
-        {new Date(sourcePullAt).toLocaleString('de-DE', { timeZone: 'Europe/Berlin' })}
-      </p>
-      {modeReason ? <p className="mt-1 text-xs text-zinc-400">{modeReason}</p> : null}
-      {data.pipelineStep === 'pipeline:download:jedeschule' && data.httpLastModified ? (
-        <p className="mt-1 text-xs text-zinc-400">
-          {de.status.jedeschuleHttpLastModified}: {data.httpLastModified}
-        </p>
-      ) : null}
-      {data.pipelineStep === 'pipeline:download:jedeschule' && data.csvMaxUpdateTimestamp ? (
-        <p className="mt-1 text-xs text-zinc-400">
-          {de.status.jedeschuleCsvMaxUpdate}: {data.csvMaxUpdateTimestamp}
-        </p>
-      ) : null}
-      {data.pipelineStep === 'pipeline:download:jedeschule' &&
-      data.upstreamDatasetChanged !== undefined ? (
-        <p className="mt-1 text-xs text-zinc-400">
-          {data.upstreamDatasetChanged
-            ? de.status.jedeschuleUpstreamChanged
-            : de.status.jedeschuleUpstreamSame}
-        </p>
-      ) : null}
-      {data.errorMessage ? (
-        <pre className="mt-1.5 max-h-24 overflow-auto rounded bg-zinc-900 p-1.5 text-xs">
-          {data.errorMessage}
-        </pre>
-      ) : null}
-    </div>
+      <div
+        className={cn(
+          'mt-4 border-t px-4 py-2.5 text-xs text-zinc-400 sm:px-5',
+          toneClasses.footerBg,
+          toneClasses.footerBorder,
+        )}
+      >
+        {note}
+      </div>
+    </article>
   )
 }
 
 export function StatusPage() {
   const runsQ = useQuery(runsQueryOptions())
-
+  const summaryQ = useQuery(summaryQueryOptions())
   const metaQ = useQuery(nationalPipelineMetaQueryOptions())
   const latestRun = runsQ.data ? [...runsQ.data.runs].reverse()[0] : null
+  const osmMeta = metaQ.data?.osm.present ? metaQ.data.osm.data : null
+  const officialMeta = metaQ.data?.jedeschule.present ? metaQ.data.jedeschule.data : null
+  const osmKpiDate =
+    osmMeta?.ok === true
+      ? (osmMeta.overpassResponseTimestamp ?? osmMeta.generatedAt)
+      : osmMeta?.generatedAt
+  const officialKpiDate = officialMeta?.csvMaxUpdateTimestamp ?? officialMeta?.generatedAt
 
   return (
     <div className="mx-auto max-w-4xl p-6 pb-16">
       <h1 className="text-2xl font-semibold text-zinc-100">{de.status.heading}</h1>
 
-      <section className="mt-8" aria-labelledby="national-meta-heading">
-        <h2 id="national-meta-heading" className="text-lg font-medium text-zinc-100">
-          {de.status.nationalMetaHeading}
+      <section className="mt-8" aria-labelledby="kpi-heading">
+        <h2 id="kpi-heading" className="text-lg font-medium text-zinc-100">
+          {de.status.kpiHeading}
         </h2>
-        <p className="mt-1 text-sm text-zinc-400">{de.status.nationalMetaLead}</p>
+        {(metaQ.isLoading || summaryQ.isLoading) && (
+          <p className="mt-3 text-sm text-zinc-400">{de.status.loading}</p>
+        )}
+        {metaQ.isError && summaryQ.isError && (
+          <p className="mt-3 text-sm text-amber-200">{de.status.kpiError}</p>
+        )}
+        {metaQ.isSuccess || summaryQ.isSuccess ? (
+          <>
+            <div className="mt-4 grid gap-3 sm:grid-cols-3">
+              <KpiCard
+                title={de.status.kpiOsmDataDate}
+                value={osmKpiDate}
+                note={de.status.kpiOsmDataDateHint}
+                tone="sky"
+              />
+              <KpiCard
+                title={de.status.kpiJedeschuleDataDate}
+                value={officialKpiDate}
+                note={de.status.kpiJedeschuleDataDateHint}
+                tone="emerald"
+              />
+              <KpiCard
+                title={de.status.kpiCompareDate}
+                value={summaryQ.data?.generatedAt}
+                note={de.status.kpiCompareDateHint}
+                tone="violet"
+              />
+            </div>
+            {latestRun?.matchSkipped ? (
+              <p className="mt-3 rounded-md border border-amber-800/60 bg-amber-950/30 px-3 py-2 text-xs text-amber-100">
+                {de.status.kpiMatchSkippedHint}
+              </p>
+            ) : null}
+          </>
+        ) : null}
+      </section>
+
+      <section className="mt-8">
         {metaQ.isLoading && <p className="mt-3 text-sm text-zinc-400">{de.status.loading}</p>}
         {metaQ.isError && (
           <p className="mt-3 text-sm text-amber-200">{de.status.nationalMetaError}</p>
         )}
-        {metaQ.isSuccess && (
-          <div className="mt-4 grid gap-3 sm:grid-cols-2">
-            <SourceMetaCard
-              title={de.status.sourceJedeschule}
-              result={metaQ.data.jedeschule}
-              latestRunDownload={latestRun?.downloads?.jedeschule}
-            />
-            <SourceMetaCard
-              title={de.status.sourceOsmDe}
-              result={metaQ.data.osm}
-              latestRunDownload={latestRun?.downloads?.osm}
-            />
-          </div>
-        )}
+        {metaQ.isSuccess ? (
+          <details className="mt-4 text-xs text-zinc-400">
+            <summary className="cursor-pointer hover:underline">
+              {de.status.technicalHeading}
+            </summary>
+            <div className="mt-3 space-y-4">
+              <div className="overflow-hidden rounded-lg border border-zinc-700 bg-zinc-900/40">
+                <div className="px-4 py-4 sm:px-6">
+                  <h3 className="text-base font-semibold text-zinc-100">
+                    {de.status.sourceJedeschule}
+                  </h3>
+                  <p className="mt-1 text-sm text-zinc-400">{de.status.technicalOfficialLead}</p>
+                </div>
+                {metaQ.data.jedeschule.present ? (
+                  <div className="border-t border-zinc-700">
+                    <dl className="divide-y divide-zinc-700">
+                      <div className="px-4 py-4 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
+                        <dt className="text-sm font-medium text-zinc-100">
+                          {de.status.downloadOk}
+                        </dt>
+                        <dd className="mt-1 text-sm text-zinc-300 sm:col-span-2 sm:mt-0">
+                          <div className="flex flex-wrap items-center gap-1.5">
+                            <span className={statusBadgeClasses(metaQ.data.jedeschule.data.ok)}>
+                              {metaQ.data.jedeschule.data.ok
+                                ? de.status.downloadOk
+                                : de.status.downloadFail}
+                            </span>
+                            {renderSourceMode(
+                              latestRun?.downloads?.jedeschule.sourceMode ??
+                                metaQ.data.jedeschule.data.sourceMode,
+                            ) ? (
+                              <span className="inline-flex rounded-full bg-zinc-800 px-2 py-0.5 text-xs font-medium text-zinc-200">
+                                {renderSourceMode(
+                                  latestRun?.downloads?.jedeschule.sourceMode ??
+                                    metaQ.data.jedeschule.data.sourceMode,
+                                )}
+                              </span>
+                            ) : null}
+                          </div>
+                        </dd>
+                      </div>
+                      {renderSourceModeReason(
+                        latestRun?.downloads?.jedeschule.sourceModeReason ??
+                          metaQ.data.jedeschule.data.sourceModeReason,
+                      ) ? (
+                        <div className="px-4 py-4 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
+                          <dt className="text-sm font-medium text-zinc-100">
+                            {de.status.runSectionContext}
+                          </dt>
+                          <dd className="mt-1 text-sm text-zinc-300 sm:col-span-2 sm:mt-0">
+                            {renderSourceModeReason(
+                              latestRun?.downloads?.jedeschule.sourceModeReason ??
+                                metaQ.data.jedeschule.data.sourceModeReason,
+                            )}
+                          </dd>
+                        </div>
+                      ) : null}
+                      <div className="px-4 py-4 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
+                        <dt className="text-sm font-medium text-zinc-100">
+                          {de.status.jedeschuleCsvMaxUpdate}
+                        </dt>
+                        <dd className="mt-1 text-sm text-zinc-300 sm:col-span-2 sm:mt-0">
+                          {renderTechnicalTimestampOrMissing(
+                            metaQ.data.jedeschule.data.csvMaxUpdateTimestamp,
+                          )}
+                          <p className="mt-1 text-xs text-zinc-500">
+                            {de.status.technicalCsvMaxUpdateMeaning}
+                          </p>
+                        </dd>
+                      </div>
+                      <div className="px-4 py-4 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
+                        <dt className="text-sm font-medium text-zinc-100">
+                          {de.status.lastPullAt}
+                        </dt>
+                        <dd className="mt-1 text-sm text-zinc-300 sm:col-span-2 sm:mt-0">
+                          {renderTechnicalTimestampOrMissing(
+                            metaQ.data.jedeschule.data.generatedAt,
+                          )}
+                          <p className="mt-1 text-xs text-zinc-500">
+                            {de.status.technicalGeneratedAtMeaning}
+                          </p>
+                        </dd>
+                      </div>
+                      {metaQ.data.jedeschule.data.httpLastModified ? (
+                        <div className="px-4 py-4 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
+                          <dt className="text-sm font-medium text-zinc-100">
+                            {de.status.jedeschuleHttpLastModified}
+                          </dt>
+                          <dd className="mt-1 text-sm text-zinc-300 sm:col-span-2 sm:mt-0">
+                            <StatusDateTime
+                              value={metaQ.data.jedeschule.data.httpLastModified}
+                              className="text-zinc-300"
+                            />
+                            <p className="mt-1 text-xs text-zinc-500">
+                              {de.status.technicalHttpLastModifiedMeaning}
+                            </p>
+                          </dd>
+                        </div>
+                      ) : null}
+                      {metaQ.data.jedeschule.data.upstreamDatasetChanged !== undefined ? (
+                        <div className="px-4 py-4 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
+                          <dt className="text-sm font-medium text-zinc-100">
+                            {metaQ.data.jedeschule.data.upstreamDatasetChanged
+                              ? de.status.jedeschuleUpstreamChanged
+                              : de.status.jedeschuleUpstreamSame}
+                          </dt>
+                          <dd className="mt-1 text-sm text-zinc-300 sm:col-span-2 sm:mt-0">
+                            <p className="text-xs text-zinc-500">
+                              {de.status.technicalUpstreamChangeMeaning}
+                            </p>
+                          </dd>
+                        </div>
+                      ) : null}
+                      {metaQ.data.jedeschule.data.errorMessage ? (
+                        <div className="px-4 py-4 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
+                          <dt className="text-sm font-medium text-amber-100">
+                            {de.status.technicalErrorMeaning}
+                          </dt>
+                          <dd className="mt-1 text-sm sm:col-span-2 sm:mt-0">
+                            <pre className="max-h-24 overflow-auto rounded bg-zinc-900 p-1.5 text-xs text-zinc-200">
+                              {metaQ.data.jedeschule.data.errorMessage}
+                            </pre>
+                          </dd>
+                        </div>
+                      ) : null}
+                    </dl>
+                  </div>
+                ) : (
+                  <div className="border-t border-zinc-700 px-4 py-4 text-sm text-zinc-400 sm:px-6">
+                    {de.status.nationalMetaMissing}
+                  </div>
+                )}
+              </div>
+
+              <div className="overflow-hidden rounded-lg border border-zinc-700 bg-zinc-900/40">
+                <div className="px-4 py-4 sm:px-6">
+                  <h3 className="text-base font-semibold text-zinc-100">{de.status.sourceOsmDe}</h3>
+                  <p className="mt-1 text-sm text-zinc-400">{de.status.technicalOsmLead}</p>
+                </div>
+                {metaQ.data.osm.present ? (
+                  <div className="border-t border-zinc-700">
+                    <dl className="divide-y divide-zinc-700">
+                      <div className="px-4 py-4 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
+                        <dt className="text-sm font-medium text-zinc-100">
+                          {de.status.downloadOk}
+                        </dt>
+                        <dd className="mt-1 text-sm text-zinc-300 sm:col-span-2 sm:mt-0">
+                          <div className="flex flex-wrap items-center gap-1.5">
+                            <span className={statusBadgeClasses(metaQ.data.osm.data.ok)}>
+                              {metaQ.data.osm.data.ok
+                                ? de.status.downloadOk
+                                : de.status.downloadFail}
+                            </span>
+                            {renderSourceMode(
+                              latestRun?.downloads?.osm.sourceMode ??
+                                metaQ.data.osm.data.sourceMode,
+                            ) ? (
+                              <span className="inline-flex rounded-full bg-zinc-800 px-2 py-0.5 text-xs font-medium text-zinc-200">
+                                {renderSourceMode(
+                                  latestRun?.downloads?.osm.sourceMode ??
+                                    metaQ.data.osm.data.sourceMode,
+                                )}
+                              </span>
+                            ) : null}
+                          </div>
+                        </dd>
+                      </div>
+                      {renderSourceModeReason(
+                        latestRun?.downloads?.osm.sourceModeReason ??
+                          metaQ.data.osm.data.sourceModeReason,
+                      ) ? (
+                        <div className="px-4 py-4 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
+                          <dt className="text-sm font-medium text-zinc-100">
+                            {de.status.runSectionContext}
+                          </dt>
+                          <dd className="mt-1 text-sm text-zinc-300 sm:col-span-2 sm:mt-0">
+                            {renderSourceModeReason(
+                              latestRun?.downloads?.osm.sourceModeReason ??
+                                metaQ.data.osm.data.sourceModeReason,
+                            )}
+                          </dd>
+                        </div>
+                      ) : null}
+                      <div className="px-4 py-4 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
+                        <dt className="text-sm font-medium text-zinc-100">
+                          {de.status.osmSnapshotAt}
+                        </dt>
+                        <dd className="mt-1 text-sm text-zinc-300 sm:col-span-2 sm:mt-0">
+                          {renderTechnicalTimestampOrMissing(
+                            metaQ.data.osm.data.overpassResponseTimestamp,
+                          )}
+                          <p className="mt-1 text-xs text-zinc-500">
+                            {de.status.technicalOsmSnapshotMeaning}
+                          </p>
+                        </dd>
+                      </div>
+                      <div className="px-4 py-4 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
+                        <dt className="text-sm font-medium text-zinc-100">
+                          {de.status.lastPullAt}
+                        </dt>
+                        <dd className="mt-1 text-sm text-zinc-300 sm:col-span-2 sm:mt-0">
+                          {renderTechnicalTimestampOrMissing(metaQ.data.osm.data.generatedAt)}
+                          <p className="mt-1 text-xs text-zinc-500">
+                            {de.status.technicalGeneratedAtMeaning}
+                          </p>
+                        </dd>
+                      </div>
+                      {metaQ.data.osm.data.errorMessage ? (
+                        <div className="px-4 py-4 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
+                          <dt className="text-sm font-medium text-amber-100">
+                            {de.status.technicalErrorMeaning}
+                          </dt>
+                          <dd className="mt-1 text-sm sm:col-span-2 sm:mt-0">
+                            <pre className="max-h-24 overflow-auto rounded bg-zinc-900 p-1.5 text-xs text-zinc-200">
+                              {metaQ.data.osm.data.errorMessage}
+                            </pre>
+                          </dd>
+                        </div>
+                      ) : null}
+                    </dl>
+                  </div>
+                ) : (
+                  <div className="border-t border-zinc-700 px-4 py-4 text-sm text-zinc-400 sm:px-6">
+                    {de.status.nationalMetaMissing}
+                  </div>
+                )}
+              </div>
+            </div>
+          </details>
+        ) : null}
       </section>
 
       <h2 className="mt-10 text-lg font-medium text-zinc-100">{de.status.runHistoryHeading}</h2>
@@ -201,136 +496,141 @@ export function StatusPage() {
               </p>
             </div>
           ) : null}
-          <ul className="mt-4 divide-y divide-zinc-700 overflow-hidden rounded-lg border border-zinc-700">
+          <ul className="mt-4 space-y-3">
             {[...runsQ.data.runs].reverse().map((run) => {
-              const statesWithCounts = run.states.filter((s) => !!s.counts).length
-              const missingOsmStates = run.states.filter((s) => s.osmSource === 'missing').length
               const runDownloads = run.downloads
-              const showRunDownloads = runDownloads ? shouldShowRunDownloads(run) : false
               return (
                 <li
                   key={`${run.startedAt}-${run.finishedAt}-${run.durationMs}-${run.gitSha ?? ''}`}
-                  className="px-2.5 py-2.5 sm:px-3 sm:py-3"
                 >
-                  <div className="flex flex-col items-start gap-1 text-sm sm:flex-row sm:flex-wrap sm:items-center sm:gap-x-3 sm:gap-y-1">
-                    <span className="min-w-0">
-                      {de.status.started}: {formatBerlinDateTime(run.startedAt)}
-                    </span>
-                    <span className="hidden text-zinc-400 sm:inline">·</span>
-                    <span>
-                      {de.status.finished}: {formatBerlinDateTime(run.finishedAt)}
-                    </span>
-                    <span className="hidden text-zinc-400 sm:inline">·</span>
-                    <span>
-                      {de.status.duration}: {formatDurationMs(run.durationMs)}
-                    </span>
-                    <span
-                      className={cn(
-                        'inline-flex w-fit items-center rounded-full px-2.5 py-0.5 text-xs font-medium sm:ml-auto',
-                        run.overallOk
-                          ? 'bg-emerald-900/50 text-emerald-100'
-                          : 'bg-red-950/60 text-red-200',
+                  <DetailBox
+                    title={de.status.runCardHeading}
+                    headerRight={
+                      <div className="flex items-center gap-2">
+                        {run.gitSha ? (
+                          <span className="text-xs text-zinc-500">
+                            {de.status.gitSha}: <span className="font-mono">{run.gitSha}</span>
+                          </span>
+                        ) : null}
+                        <span className={statusBadgeClasses(run.overallOk)}>
+                          {run.overallOk ? de.status.okBadgeOk : de.status.okBadgeFail}
+                        </span>
+                      </div>
+                    }
+                  >
+                    <DetailRow label={de.status.runSectionWhen}>
+                      <div className="space-y-1.5">
+                        <div className="flex flex-wrap items-baseline gap-x-2 gap-y-1">
+                          <span className="shrink-0 text-zinc-500">{de.status.started}:</span>
+                          <StatusDateTime
+                            value={run.startedAt}
+                            variant="inline"
+                            className="min-w-0 text-zinc-300"
+                          />
+                        </div>
+                        <div className="flex flex-wrap items-baseline gap-x-2 gap-y-1">
+                          <span className="shrink-0 text-zinc-500">{de.status.finished}:</span>
+                          <StatusDateTime
+                            value={run.finishedAt}
+                            variant="inline"
+                            className="min-w-0 text-zinc-300"
+                          />
+                        </div>
+                        <div className="flex flex-wrap items-baseline gap-x-2 gap-y-1">
+                          <span className="shrink-0 text-zinc-500">{de.status.duration}:</span>
+                          <span className="text-zinc-200">{formatDurationMs(run.durationMs)}</span>
+                        </div>
+                      </div>
+                    </DetailRow>
+
+                    <DetailRow label={de.status.runSectionDownloads}>
+                      {runDownloads ? (
+                        <div className="space-y-2 text-sm text-zinc-300">
+                          <div>
+                            <p className="font-medium text-zinc-300">
+                              {de.status.sourceJedeschule}
+                            </p>
+                            <p>
+                              {runDownloads.jedeschule.ok
+                                ? de.status.downloadOk
+                                : de.status.downloadFail}
+                              {runDownloads.jedeschule.sourceMode
+                                ? ` (${renderSourceMode(runDownloads.jedeschule.sourceMode)})`
+                                : ''}
+                            </p>
+                            {runDownloads.jedeschule.generatedAt ? (
+                              <StatusDateTime
+                                value={runDownloads.jedeschule.generatedAt}
+                                variant="inline"
+                                className="mt-1 text-zinc-300"
+                              />
+                            ) : null}
+                            {runDownloads.jedeschule.sourceModeReason ? (
+                              <p className="mt-1">
+                                {renderSourceModeReason(runDownloads.jedeschule.sourceModeReason)}
+                              </p>
+                            ) : null}
+                          </div>
+                          <div>
+                            <p className="font-medium text-zinc-300">{de.status.sourceOsmDe}</p>
+                            <p>
+                              {runDownloads.osm.ok ? de.status.downloadOk : de.status.downloadFail}
+                              {runDownloads.osm.sourceMode
+                                ? ` (${renderSourceMode(runDownloads.osm.sourceMode)})`
+                                : ''}
+                            </p>
+                            {runDownloads.osm.generatedAt ? (
+                              <StatusDateTime
+                                value={runDownloads.osm.generatedAt}
+                                variant="inline"
+                                className="mt-1 text-zinc-300"
+                              />
+                            ) : null}
+                            {runDownloads.osm.sourceModeReason ? (
+                              <p className="mt-1">
+                                {renderSourceModeReason(runDownloads.osm.sourceModeReason)}
+                              </p>
+                            ) : null}
+                          </div>
+                        </div>
+                      ) : (
+                        <p className="text-sm text-zinc-500">{de.status.runDownloadsMissing}</p>
                       )}
-                    >
-                      {run.overallOk ? de.status.okBadgeOk : de.status.okBadgeFail}
-                    </span>
-                  </div>
-                  {!isDefaultRunContext(run.runContext) ? (
-                    <p className="mt-1 text-xs text-zinc-400">{renderRunContext(run.runContext)}</p>
-                  ) : null}
+                    </DetailRow>
 
-                  {run.matchSkipped ? (
-                    <p className="mt-2 rounded-md bg-amber-950/40 px-2 py-1.5 text-xs text-amber-100">
-                      <span className="font-medium">{de.status.matchSkipped}.</span>{' '}
-                      {run.matchSkipReason ?? ''}
-                    </p>
-                  ) : run.states.length > 0 ? (
-                    <p className="mt-2 text-xs text-zinc-400">{de.status.matchRan}</p>
-                  ) : run.errors.length > 0 ? (
-                    <p className="mt-2 text-xs text-amber-200">
-                      {de.status.matchNotRunMissingInputs}
-                    </p>
-                  ) : null}
-
-                  <div className="mt-2 flex flex-wrap items-center gap-1.5 text-xs text-zinc-400">
-                    <span className="inline-flex rounded-full bg-zinc-800 px-2 py-0.5">
-                      {de.status.statesCount.replace('{count}', String(run.states.length))}
-                    </span>
-                    <span className="inline-flex rounded-full bg-zinc-800 px-2 py-0.5">
-                      {de.status.statesWithCounts.replace('{count}', String(statesWithCounts))}
-                    </span>
-                    {missingOsmStates > 0 ? (
-                      <span className="inline-flex rounded-full bg-amber-950/40 px-2 py-0.5 text-amber-100">
-                        {de.status.statesMissingOsm.replace('{count}', String(missingOsmStates))}
-                      </span>
-                    ) : null}
-                  </div>
-
-                  {showRunDownloads && runDownloads ? (
-                    <div className="mt-2 rounded-md bg-zinc-900/50 p-2 text-xs">
-                      <p className="font-medium text-zinc-200">{de.status.runDownloads}</p>
-                      <ul className="mt-1 list-inside list-disc space-y-0.5 text-zinc-400">
-                        <li>
-                          {de.status.sourceJedeschule}:{' '}
-                          {runDownloads.jedeschule.ok
-                            ? de.status.downloadOk
-                            : de.status.downloadFail}
-                          {runDownloads.jedeschule.sourceMode
-                            ? ` (${renderSourceMode(runDownloads.jedeschule.sourceMode)})`
-                            : ''}
-                          {runDownloads.jedeschule.generatedAt
-                            ? ` — ${formatBerlinDateTime(runDownloads.jedeschule.generatedAt)}`
-                            : ''}
-                        </li>
-                        <li>
-                          {de.status.sourceOsmDe}:{' '}
-                          {runDownloads.osm.ok ? de.status.downloadOk : de.status.downloadFail}
-                          {runDownloads.osm.sourceMode
-                            ? ` (${renderSourceMode(runDownloads.osm.sourceMode)})`
-                            : ''}
-                          {runDownloads.osm.generatedAt
-                            ? ` — ${formatBerlinDateTime(runDownloads.osm.generatedAt)}`
-                            : ''}
-                        </li>
-                      </ul>
-                    </div>
-                  ) : null}
-
-                  <details className="mt-2 text-xs text-zinc-400">
-                    <summary className="cursor-pointer hover:underline">
-                      {de.status.runDetailsSummary}
-                    </summary>
-                    <div className="mt-2 grid gap-1">
-                      {run.gitSha ? (
-                        <p>
-                          {de.status.gitSha}: <span className="font-mono">{run.gitSha}</span>
+                    <DetailRow label={de.status.runSectionCompare}>
+                      {run.matchSkipped ? (
+                        <p className="rounded-md border border-amber-800/60 bg-amber-950/30 px-2 py-1.5 text-sm text-amber-100">
+                          <span className="font-medium">{de.status.matchSkipped}.</span>{' '}
+                          {run.matchSkipReason ?? ''}
+                        </p>
+                      ) : run.states.length > 0 ? (
+                        <p className="text-sm text-zinc-300">{de.status.matchRan}</p>
+                      ) : run.errors.length > 0 ? (
+                        <p className="text-sm text-amber-200">
+                          {de.status.matchNotRunMissingInputs}
                         </p>
                       ) : null}
-                    </div>
-                  </details>
-                  <details className="mt-2 text-xs text-zinc-400">
-                    <summary className="cursor-pointer hover:underline">
-                      {de.status.stateDiagnosticsSummary}
-                    </summary>
-                    <ul className="mt-1 list-inside list-disc">
-                      {run.states.map((l) => (
-                        <li key={l.code}>
-                          {l.code} — {l.osmSource ?? '?'}
-                          {l.osmSnapshotAt ? ` (${l.osmSnapshotAt})` : ''}
-                        </li>
-                      ))}
-                    </ul>
-                  </details>
-                  {run.errors.length > 0 ? (
-                    <details className="mt-2 text-xs text-amber-100">
-                      <summary className="cursor-pointer hover:underline">
-                        {de.status.errorPayloadSummary}
-                      </summary>
-                      <pre className="mt-2 max-h-32 overflow-auto rounded bg-zinc-900 p-1.5 text-xs text-zinc-200">
-                        {run.errors.join('\n')}
-                      </pre>
-                    </details>
-                  ) : null}
+                    </DetailRow>
+
+                    <DetailRow label={de.status.runSectionContext}>
+                      <p className="text-sm text-zinc-300">{renderRunContext(run.runContext)}</p>
+                      {isDefaultRunContext(run.runContext) ? (
+                        <p className="text-sm text-zinc-500">{de.status.runContextDefaultHint}</p>
+                      ) : null}
+                    </DetailRow>
+
+                    {run.errors.length > 0 ? (
+                      <DetailRow
+                        label={de.status.errorPayloadSummary}
+                        labelClassName="text-amber-100"
+                      >
+                        <pre className="max-h-32 overflow-auto rounded bg-zinc-900 p-1.5 text-xs text-zinc-200">
+                          {run.errors.join('\n')}
+                        </pre>
+                      </DetailRow>
+                    ) : null}
+                  </DetailBox>
                 </li>
               )
             })}
