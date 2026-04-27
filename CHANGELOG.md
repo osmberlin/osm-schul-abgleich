@@ -4,6 +4,10 @@ Automatisch aus `changelog/registry.yaml` erzeugt.
 
 ## 2026-04
 
+### `3caf6cf`
+
+Add `/changelog` page and `CHANGELOG.md` file based on a custom changelog registry that monitors git commits to keep the changelog up to date. The changelog is linked from the home page and footer.
+
 ### `c5f02c450a220faa03369db2a9249abed71002be`
 
 Die `/status` Seite (siehe Footer) ist überarbeitet und jetzt deutlich hilfreicher. Sie zeigt vor allem die Daten der verschiedenen Datenquellen sowie die letzten Durchläufe des Datenabgleichs.

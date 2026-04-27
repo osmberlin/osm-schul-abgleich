@@ -1,9 +1,20 @@
 {
-  "generatedAt": "2026-04-27T19:05:08.585Z",
+  "generatedAt": "2026-04-27T19:52:13.681Z",
   "months": [
     {
       "month": "2026-04",
       "entries": [
+        {
+          "refs": [
+            "3caf6cf"
+          ],
+          "descriptionMd": "Add `/changelog` page and `CHANGELOG.md` file based on a custom changelog registry that monitors git commits to keep the changelog up to date. The changelog is linked from the home page and footer.",
+          "committedAtIso": "2026-04-27T22:50:45+03:00",
+          "committedAtShort": "2026-04-27",
+          "refsDisplay": [
+            "3caf6cf"
+          ]
+        },
         {
           "refs": [
             "c5f02c450a220faa03369db2a9249abed71002be"

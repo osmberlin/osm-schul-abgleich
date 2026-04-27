@@ -23,7 +23,9 @@ entries:
       - 'f9fed7b'
     hide: true
   - refs:
-      - '3e092f1'
+      - '3caf6cf'
     descriptionMd: |
-      feat(changelog): add generated changelog workflow and page
-      Add a YAML-backed changelog pipeline with prefill/verify/build scripts, pre-push enforcement, and a new /changelog UI with GitHub commit links so changelog upkeep stays lightweight and consistent.
+      Add `/changelog` page and `CHANGELOG.md` file based on a custom changelog registry that monitors git commits to keep the changelog up to date. The changelog is linked from the home page and footer.
+  - refs:
+      - '057428e'
+    hide: true
