@@ -1,4 +1,6 @@
 @import 'tailwindcss';
+@source '../node_modules/@tordans/changelog-kit/src/**/*.{ts,tsx,js,jsx}';
+@source '../node_modules/@tordans/changelog-kit/dist/**/*.{js,mjs,cjs}';
 @plugin '@tailwindcss/forms';
 @plugin '@tailwindcss/typography';
 
