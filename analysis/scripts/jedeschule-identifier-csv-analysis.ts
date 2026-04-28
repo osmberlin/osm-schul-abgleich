@@ -101,7 +101,7 @@ async function main() {
 
   for (const school of schools) {
     const id = school.id.trim()
-    const { prefix, suffix, parseablePattern } = splitId(id)
+    const { suffix, parseablePattern } = splitId(id)
     const parsedState = stateCodeFromSchoolId(id)
     const state = parsedState ?? '??'
     const agg = perState.get(state) ?? emptyAgg()
