@@ -8,13 +8,13 @@ import {
 } from './paths'
 import { parseRunHistoryFileTextWithDiagnostics } from './runHistoryJsonl'
 import {
-  changelogFileSchema,
   type PipelineSourceMeta,
   pipelineSourceMetaSchema,
   runRecordSchema,
   summaryFileSchema,
 } from './schemas'
 import { queryOptions } from '@tanstack/react-query'
+import { changelogFileSchema } from '@tordans/changelog-kit'
 
 /** Shared TanStack query options for datasets/summary.json */
 export function summaryQueryOptions() {

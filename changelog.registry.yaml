@@ -30,7 +30,9 @@ entries:
       Add `/changelog` page and `CHANGELOG.md` file based on a custom changelog registry that monitors git commits to keep the changelog up to date. The changelog is linked from the home page and footer.
   - refs:
       - '057428e'
-    hide: true
-  - refs:
       - '9ae38dcf1f7094f6ce59cf43ccfccab847efbd93'
+      - 'd99c83a'
+      - '8f5f5f5'
+      - '97ce658'
+      - '307a258'
     hide: true

@@ -3,6 +3,11 @@ import { type StateCode, STATE_LABEL_DE } from '../lib/stateConfig'
 import { AppBreadcrumb, type AppBreadcrumbCrumb } from './AppBreadcrumb'
 import { useRouterState } from '@tanstack/react-router'
 
+function normalizePathname(pathname: string) {
+  if (!pathname || pathname === '/') return '/'
+  return pathname.replace(/\/+$/, '') || '/'
+}
+
 function shortSchoolKeySegment(encoded: string) {
   const d = decodeURIComponent(encoded)
   return d.length > 40 ? `${d.slice(0, 37)}…` : d
@@ -10,14 +15,18 @@ function shortSchoolKeySegment(encoded: string) {
 
 /** Brotkrumen in der globalen Kopfleiste (ersetzt den separaten Titel). */
 export function PageBreadcrumb() {
-  const pathname = useRouterState({ select: (s) => s.location.pathname })
+  const pathnameRaw = useRouterState({ select: (s) => s.location.pathname })
+  const pathname = normalizePathname(pathnameRaw)
 
   const crumbs: { homeCurrent: boolean; items: AppBreadcrumbCrumb[] } = (() => {
-    if (pathname === '/' || pathname === '') {
+    if (pathname === '/') {
       return { homeCurrent: true, items: [] }
     }
     if (pathname === '/status') {
       return { homeCurrent: false, items: [{ name: de.navStatus, current: true }] }
+    }
+    if (pathname === '/changelog') {
+      return { homeCurrent: false, items: [{ name: de.navChangelog, current: true }] }
     }
     if (pathname === '/aenderungen') {
       return { homeCurrent: false, items: [{ name: de.osm.reviewBreadcrumb, current: true }] }
