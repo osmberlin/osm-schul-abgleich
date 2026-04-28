@@ -11,7 +11,7 @@
         "@heroicons/react": "^2.2.0",
         "@tailwindcss/forms": "^0.5.11",
         "@tailwindcss/typography": "^0.5.19",
-        "@tanstack/react-query": "^5.100.5",
+        "@tanstack/react-query": "^5.100.6",
         "@tanstack/react-router": "^1.168.25",
         "@tordans/changelog-kit": "github:tordans/changelog-kit#main",
         "@turf/bbox": "^7.3.5",
@@ -401,9 +401,9 @@
 
     "@tanstack/history": ["@tanstack/history@1.161.6", "", {}, "sha512-NaOGLRrddszbQj9upGat6HG/4TKvXLvu+osAIgfxPYA+eIvYKv8GKDJOrY2D3/U9MRnKfMWD7bU4jeD4xmqyIg=="],
 
-    "@tanstack/query-core": ["@tanstack/query-core@5.100.5", "", {}, "sha512-t20KrhKkf0HXzqQkPbJ5erhFesup68BAbwFgYmTrS7bxMF7O5MdmL8jUkik4thsG7Hg00fblz30h6yF1d5TxGg=="],
+    "@tanstack/query-core": ["@tanstack/query-core@5.100.6", "", {}, "sha512-Os2CPUr98to98RYm+D4qGqGkiffn7MGSyl2547a4MljVkHE30AMJRqTiyCqBfMwzAx/I91vCkAxp5tHSla6Twg=="],
 
-    "@tanstack/react-query": ["@tanstack/react-query@5.100.5", "", { "dependencies": { "@tanstack/query-core": "5.100.5" }, "peerDependencies": { "react": "^18 || ^19" } }, "sha512-aNwj1mi2v2bQ9IxkyR1grLOUkv3BYWoykHy9KDyLNbjC3tsahbOHJibK+Wjtr1wRhG59/AvJhiJG5OlthaCgJA=="],
+    "@tanstack/react-query": ["@tanstack/react-query@5.100.6", "", { "dependencies": { "@tanstack/query-core": "5.100.6" }, "peerDependencies": { "react": "^18 || ^19" } }, "sha512-uVSrps0PV16Cxmcn2rvL+dUhwTpTUtiRW347AEeYxMZXO2pZe9ja7E24PAMGoQ5u2g89DD8u4QhOviBk+RN8RA=="],
 
     "@tanstack/react-router": ["@tanstack/react-router@1.168.25", "", { "dependencies": { "@tanstack/history": "1.161.6", "@tanstack/react-store": "^0.9.3", "@tanstack/router-core": "1.168.17", "isbot": "^5.1.22" }, "peerDependencies": { "react": ">=18.0.0 || >=19.0.0", "react-dom": ">=18.0.0 || >=19.0.0" } }, "sha512-4U/E76dc+fYuLixjV1RLNfqrkQoexSL8MqGNpIHOodtvY3fMPGaALrvDVtBDQYBEU4z5r5fHaV6+kclWAVFP9A=="],
 
@@ -417,7 +417,7 @@
 
     "@tanstack/virtual-core": ["@tanstack/virtual-core@3.13.23", "", {}, "sha512-zSz2Z2HNyLjCplANTDyl3BcdQJc2k1+yyFoKhNRmCr7V7dY8o8q5m8uFTI1/Pg1kL+Hgrz6u3Xo6eFUB7l66cg=="],
 
-    "@tordans/changelog-kit": ["@tordans/changelog-kit@github:tordans/changelog-kit#bfd3fb8", { "dependencies": { "yaml": "^2.8.1", "zod": "^3.24.1" }, "peerDependencies": { "react": ">=18.0.0" }, "bin": { "changelog-kit-build": "./dist/cli/build.js", "changelog-kit-prefill": "./dist/cli/prefill.js", "changelog-kit-verify": "./dist/cli/verify.js" } }, "tordans-changelog-kit-bfd3fb8", "sha512-jCVsRnQnq/ilwCsYBKpuTNrK/8T6FI3KkYNG4aSJfUdcmtwqwqgXLatGmayyxNWM3mdrPxR9K2gdK3D12Pxxrg=="],
+    "@tordans/changelog-kit": ["@tordans/changelog-kit@github:tordans/changelog-kit#c941cce", { "dependencies": { "yaml": "^2.8.1", "zod": "^3.24.1" }, "peerDependencies": { "react": ">=18.0.0" }, "bin": { "changelog-kit-build": "./dist/cli/build.js", "changelog-kit-prefill": "./dist/cli/prefill.js", "changelog-kit-verify": "./dist/cli/verify.js" } }, "tordans-changelog-kit-c941cce", "sha512-pkpAOj14qYUT81U6oSZ45FIDIHuoOpYQe9K7AZDwkGJDIm65D54typ94jhVYQoKdO4fvNZYN+gpwXQb3jOJVAg=="],
 
     "@turf/bbox": ["@turf/bbox@7.3.5", "", { "dependencies": { "@turf/helpers": "7.3.5", "@turf/meta": "7.3.5", "@types/geojson": "^7946.0.10", "tslib": "^2.8.1" } }, "sha512-oG1ya/HtBjAIg4TimbWx+nOYPbY0bCvt82Bq8tm6sBw3qqtbOyRSfDz79Sq90TnH7DXJprJ1qnVGKNtZ6jemfw=="],
 
