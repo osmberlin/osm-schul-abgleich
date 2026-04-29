@@ -46,12 +46,19 @@ type OverpassOk = {
 
 const RATE_LIMIT_STATUS = 429
 const INTERPRETER_RETRYABLE_STATUS = new Set([408, 429, 500, 502, 503, 504])
+const DEFAULT_OVERPASS_USER_AGENT =
+  'osm-schulabgleich/1 (+https://github.com/osmberlin/osm-schulabgleich)'
+const DEFAULT_OVERPASS_REFERER = 'https://github.com/osmberlin/osm-schulabgleich'
 
 function overpassRequestInit(query: string): BunFetchRequestInit {
   const init: BunFetchRequestInit = {
     method: 'POST',
     body: `data=${encodeURIComponent(query)}`,
-    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+    headers: {
+      'Content-Type': 'application/x-www-form-urlencoded',
+      'User-Agent': DEFAULT_OVERPASS_USER_AGENT,
+      Referer: DEFAULT_OVERPASS_REFERER,
+    },
   }
   // Bun on GitHub-hosted runners sometimes fails Overpass HTTPS with
   // "unknown certificate verification error" (BoringSSL vs public CA edge cases).
