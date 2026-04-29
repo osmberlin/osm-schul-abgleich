@@ -4,6 +4,9 @@ on:
   push:
     branches: [main]
   workflow_dispatch:
+  workflow_run:
+    workflows: ['Refresh Datasets']
+    types: [completed]
 
 permissions:
   contents: read
@@ -21,7 +24,17 @@ concurrency:
 
 jobs:
   build:
-    if: github.event_name != 'push' || (github.actor != 'github-actions[bot]' && !contains(github.event.head_commit.message || '', '[skip ci]'))
+    # Keep `workflow_run` as the canonical trigger after successful dataset refreshes.
+    # Push/manual runs stay available for code-only changes and emergency redeploys.
+    # Bot pushes are excluded to avoid duplicate deploys (push + workflow_run).
+    if: |
+      (github.event_name == 'workflow_run' &&
+        github.event.workflow_run.conclusion == 'success' &&
+        github.event.workflow_run.head_branch == 'main') ||
+      github.event_name == 'workflow_dispatch' ||
+      (github.event_name == 'push' &&
+        github.actor != 'github-actions[bot]' &&
+        !contains(github.event.head_commit.message || '', '[skip ci]'))
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v6
