@@ -13,10 +13,9 @@ export function StatBlocksRow({
     <dl
       aria-label={ariaLabel}
       className={
-        `flex min-w-0 flex-col gap-y-4 sm:flex-row sm:flex-nowrap sm:items-stretch sm:gap-x-0 sm:gap-y-0 ` +
+        `grid min-w-0 grid-cols-2 gap-x-3 gap-y-4 ` +
         `[&>*]:min-w-0 ` +
-        `max-sm:[&>*]:border-t max-sm:[&>*]:border-l-0 max-sm:[&>*]:border-white/15 max-sm:[&>*]:pt-4 max-sm:[&>*]:pl-0 ` +
-        `max-sm:[&>*]:first:border-t-0 max-sm:[&>*]:first:pt-0 ` +
+        `sm:flex sm:flex-row sm:flex-nowrap sm:items-stretch sm:gap-0 ` +
         `sm:[&>*]:flex-1 sm:[&>*]:basis-0 sm:[&>*]:border-t-0 sm:[&>*]:border-l sm:[&>*]:border-white/15 sm:[&>*]:pt-0 sm:[&>*]:pl-3 ` +
         `sm:[&>*]:first:border-l-0 sm:[&>*]:first:pl-0 ` +
         className
