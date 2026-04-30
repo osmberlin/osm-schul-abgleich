@@ -6,7 +6,7 @@ on:
     - cron: '0 3 * * *'
 
 permissions:
-  contents: read
+  contents: write
   actions: read
 
 env:
@@ -28,6 +28,14 @@ jobs:
       - run: bun install --frozen-lockfile
         env:
           HUSKY: '0'
+      - name: Restore run history from GitHub Actions cache
+        id: run-history-restore
+        uses: actions/cache/restore@v4
+        with:
+          path: public/datasets/status/runs.jsonl
+          key: run-history-${{ github.run_id }}
+          restore-keys: |
+            run-history-
 
       - name: Refresh official source (JedeSchule)
         run: bun run pipeline:download:jedeschule
@@ -77,6 +85,24 @@ jobs:
 
       - name: Validate rebuilt snapshot
         run: bun run pipeline:ci:validate-rebuilt-snapshot
+
+      - name: Save run history to GitHub Actions cache
+        if: always()
+        uses: actions/cache/save@v4
+        with:
+          path: public/datasets/status/runs.jsonl
+          key: run-history-${{ github.run_id }}
+
+      - name: Commit updated run history
+        run: |
+          if git diff --quiet -- public/datasets/status/runs.jsonl; then
+            echo "No run history changes to commit."
+            exit 0
+          fi
+          git add public/datasets/status/runs.jsonl
+          git -c user.name='github-actions[bot]' -c user.email='41898282+github-actions[bot]@users.noreply.github.com' \
+            commit -m "chore(data): persist run history [skip ci]"
+          git push
 
       - name: Upload reusable dataset artifact
         uses: actions/upload-artifact@v4
