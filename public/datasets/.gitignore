@@ -3,6 +3,9 @@
 
 # Downloaded / pipeline-generated artifacts.
 jedeschule-latest.csv
+
+# National index written by the pipeline (`pipelineVersion`, per-Land entries, …).
+summary.json
 # Legacy national aggregates (no longer produced; ignore if present locally).
 schools_official_de.geojson
 schools_osm_de.geojson
