@@ -8,6 +8,9 @@ entries:
     descriptionMd: |
       Die `/status` Seite (siehe Footer) ist überarbeitet und jetzt deutlich hilfreicher. Sie zeigt vor allem die Daten der verschiedenen Datenquellen sowie die letzten Durchläufe des Datenabgleichs.
   - refs:
+      - '1f1bf1c7344f85cfb1a35879cc83ccd7800d454d'
+    hide: true
+  - refs:
       - '76674a2b5ad12683bf2b643bd4b67cdab1a35528'
     descriptionMd: |
       In der Suche auf der Startseite kann man jetzt für "Grundschulen" und "Weiterführende Schulen" verschiedene Filter anweden. Darüber ist es bspw. einfacher solche zu finden, bei denen Tags fehlen. Die Auswahl hat einen Hinweis, welche Handlung vermutlich sinnvoll ist mit den Daten dieser Kategorie.
