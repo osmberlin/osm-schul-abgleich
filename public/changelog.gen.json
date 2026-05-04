@@ -1,6 +1,33 @@
 {
-  "generatedAt": "2026-04-30T05:01:43.643Z",
+  "generatedAt": "2026-05-04T04:51:39.440Z",
   "months": [
+    {
+      "month": "2026-05",
+      "entries": [
+        {
+          "refs": [
+            "da38bb7"
+          ],
+          "descriptionMd": "Die Daten werden jetzt um 2:00 Berliner Zeit aktualisiert.",
+          "committedAtIso": "2026-05-04T07:48:59+03:00",
+          "committedAtShort": "2026-05-04",
+          "refsDisplay": [
+            "da38bb7"
+          ]
+        },
+        {
+          "refs": [
+            "c27a7eb"
+          ],
+          "descriptionMd": "Beim Abgleich wird jetzt `education=school|college` gleich behandelt mit `amenity`.",
+          "committedAtIso": "2026-05-04T07:48:59+03:00",
+          "committedAtShort": "2026-05-04",
+          "refsDisplay": [
+            "c27a7eb"
+          ]
+        }
+      ]
+    },
     {
       "month": "2026-04",
       "entries": [

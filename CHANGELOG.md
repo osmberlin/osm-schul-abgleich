@@ -2,6 +2,16 @@
 
 Automatisch aus `changelog.registry.yaml` erzeugt.
 
+## 2026-05
+
+### `da38bb7`
+
+Die Daten werden jetzt um 2:00 Berliner Zeit aktualisiert.
+
+### `c27a7eb`
+
+Beim Abgleich wird jetzt `education=school|college` gleich behandelt mit `amenity`.
+
 ## 2026-04
 
 ### `9c3458f`

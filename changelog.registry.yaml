@@ -41,8 +41,18 @@ entries:
       - 'e31f524'
       - 'de36e97'
       - '0390ef9'
+      - 'a30928e'
+      - 'ab8dbb8'
     hide: true
   - refs:
       - '9c3458f'
     descriptionMd: |
       Neuer Filter: fehlender `ref`-Tag in OSM, aber erkennbare ID aus den amtlichen Daten (sinnvoll zum Nachtaggern).
+  - refs:
+      - 'da38bb7'
+    descriptionMd: |
+      Die Daten werden jetzt um 2:00 Berliner Zeit aktualisiert.
+  - refs:
+      - 'c27a7eb'
+    descriptionMd: |
+      Beim Abgleich wird jetzt `education=school|college` gleich behandelt mit `amenity`.
