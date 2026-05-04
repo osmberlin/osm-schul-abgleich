@@ -1,9 +1,20 @@
 {
-  "generatedAt": "2026-05-04T04:51:39.440Z",
+  "generatedAt": "2026-05-04T05:02:52.459Z",
   "months": [
     {
       "month": "2026-05",
       "entries": [
+        {
+          "refs": [
+            "e04826d"
+          ],
+          "descriptionMd": "Schulen mit einem `school_type` \"Integrierte Sekundarschule\" werden jetzt intern als \"gymnasium\"\nverstanden, so dass die Such-Filter sie verstehen, so dass es tagging-Button gibt und Gruppierung in der Tag-Tabelle.",
+          "committedAtIso": "2026-05-04T08:01:16+03:00",
+          "committedAtShort": "2026-05-04",
+          "refsDisplay": [
+            "e04826d"
+          ]
+        },
         {
           "refs": [
             "da38bb7"

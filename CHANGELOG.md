@@ -4,6 +4,11 @@ Automatisch aus `changelog.registry.yaml` erzeugt.
 
 ## 2026-05
 
+### `e04826d`
+
+Schulen mit einem `school_type` "Integrierte Sekundarschule" werden jetzt intern als "gymnasium"
+verstanden, so dass die Such-Filter sie verstehen, so dass es tagging-Button gibt und Gruppierung in der Tag-Tabelle.
+
 ### `da38bb7`
 
 Die Daten werden jetzt um 2:00 Berliner Zeit aktualisiert.

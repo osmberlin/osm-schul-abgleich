@@ -56,3 +56,8 @@ entries:
       - 'c27a7eb'
     descriptionMd: |
       Beim Abgleich wird jetzt `education=school|college` gleich behandelt mit `amenity`.
+  - refs:
+      - 'e04826d'
+    descriptionMd: |
+      Schulen mit einem `school_type` "Integrierte Sekundarschule" werden jetzt intern als "gymnasium"
+      verstanden, so dass die Such-Filter sie verstehen, so dass es tagging-Button gibt und Gruppierung in der Tag-Tabelle.
