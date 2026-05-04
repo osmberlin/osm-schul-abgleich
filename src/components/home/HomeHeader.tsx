@@ -6,9 +6,9 @@ import { Link } from '@tanstack/react-router'
 const headerLinkClass =
   'font-medium text-emerald-300 underline decoration-emerald-300/30 underline-offset-2 hover:decoration-emerald-400'
 
-/** In-body links: match surrounding copy until hover (then same as `headerLinkClass`). */
+/** In-body links: same weight as visible links so width does not shift; color/underline on hover only. */
 const leadLinkClass =
-  'text-inherit font-normal no-underline decoration-transparent underline-offset-2 transition-[color,font-weight,text-decoration-color] duration-150 hover:font-medium hover:text-emerald-300 hover:underline hover:decoration-emerald-300/30 hover:decoration-emerald-400'
+  'font-medium text-inherit no-underline decoration-transparent underline-offset-2 transition-colors duration-150 hover:text-emerald-300 hover:underline hover:decoration-emerald-300/30 hover:decoration-emerald-400'
 
 export function HomeHeader() {
   const h = de.home
