@@ -58,6 +58,7 @@ export function resolveSecondarySchoolKindFromSchoolType(
   if (typeof s !== 'string' || !s.trim()) return null
   const v = norm(s)
   if (v.includes('gesamtschule')) return 'gesamtschule'
+  if (v.includes('integrierte sekundarschule')) return 'gymnasium'
   if (v.includes('gymnasium') || v.includes('gymnasien')) return 'gymnasium'
   if (v.includes('hauptschule') || v.includes('realschule')) return 'hauptReal'
   return null

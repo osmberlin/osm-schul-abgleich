@@ -178,6 +178,22 @@ describe('comparePropertySections secondary school group', () => {
     expect(g.isEquivalentMatch).toBe(true)
   })
 
+  it('creates gymnasium secondary group for Integrierte Sekundarschule on isced:level=2;3', () => {
+    const res = comparePropertySections(
+      { school_type: 'Integrierte Sekundarschule', name: 'ISS' },
+      { name: 'ISS', 'isced:level': '2;3' },
+    )
+    expect(res.compareGroups).toHaveLength(1)
+    const g = res.compareGroups[0]
+    expect(g.kind).toBe('secondarySchool')
+    if (g.kind !== 'secondarySchool') throw new Error('expected secondarySchool')
+    expect(g.variant).toBe('gymnasium')
+    expect(g.isEquivalentMatch).toBe(true)
+    expect(g.osmValues['isced:level']).toBe('2;3')
+    expect(res.onlyO).toEqual([])
+    expect(res.onlyS).toEqual([])
+  })
+
   it('creates gesamtschule group and matches on isced:level=2', () => {
     const res = comparePropertySections(
       { school_type: 'Integrierte Gesamtschule' },

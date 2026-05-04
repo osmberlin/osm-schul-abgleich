@@ -12,6 +12,10 @@ describe('resolveSecondarySchoolKindFromSchoolType', () => {
     expect(resolveSecondarySchoolKindFromSchoolType('Gymnasien')).toBe('gymnasium')
   })
 
+  it('resolves Integrierte Sekundarschule like gymnasium', () => {
+    expect(resolveSecondarySchoolKindFromSchoolType('Integrierte Sekundarschule')).toBe('gymnasium')
+  })
+
   it('resolves gesamtschule by substring with priority over gymnasium', () => {
     expect(resolveSecondarySchoolKindFromSchoolType('Integrierte Gesamtschule')).toBe(
       'gesamtschule',
@@ -45,6 +49,12 @@ describe('isOfficialSecondarySchoolKind', () => {
       isOfficialSecondarySchoolKind({
         officialName: 'Schule X',
         officialProperties: { school_type: 'Gymnasium' },
+      }),
+    ).toBe(true)
+    expect(
+      isOfficialSecondarySchoolKind({
+        officialName: 'Schule X',
+        officialProperties: { school_type: 'Integrierte Sekundarschule' },
       }),
     ).toBe(true)
     expect(
