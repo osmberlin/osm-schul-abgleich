@@ -1,9 +1,31 @@
 {
-  "generatedAt": "2026-05-04T05:02:52.459Z",
+  "generatedAt": "2026-05-04T20:56:07.706Z",
   "months": [
     {
       "month": "2026-05",
       "entries": [
+        {
+          "refs": [
+            "63d654e"
+          ],
+          "descriptionMd": "Logo, Favicon und Social Sharing sind aktualisiert.",
+          "committedAtIso": "2026-05-04T23:53:07+03:00",
+          "committedAtShort": "2026-05-04",
+          "refsDisplay": [
+            "63d654e"
+          ]
+        },
+        {
+          "refs": [
+            "01a2e5e"
+          ],
+          "descriptionMd": "Auf der Detailseite werden Schulen die zwar zugeordnet werden konnten aber bei denen einige der wichtigen OSM Tags fehlen mit einem roten Ring hervorgehoben.",
+          "committedAtIso": "2026-05-04T23:49:16+03:00",
+          "committedAtShort": "2026-05-04",
+          "refsDisplay": [
+            "01a2e5e"
+          ]
+        },
         {
           "refs": [
             "e04826d"

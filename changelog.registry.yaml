@@ -61,3 +61,14 @@ entries:
     descriptionMd: |
       Schulen mit einem `school_type` "Integrierte Sekundarschule" werden jetzt intern als "gymnasium"
       verstanden, so dass die Such-Filter sie verstehen, so dass es tagging-Button gibt und Gruppierung in der Tag-Tabelle.
+  - refs:
+      - '01a2e5e'
+    descriptionMd: |
+      Auf der Detailseite werden Schulen die zwar zugeordnet werden konnten aber bei denen einige der wichtigen OSM Tags fehlen mit einem roten Ring hervorgehoben.
+  - refs:
+      - '63d654e'
+    descriptionMd: |
+      Logo, Favicon und Social Sharing sind aktualisiert.
+  - refs:
+      - 'd30b232'
+    hide: true

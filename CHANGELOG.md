@@ -4,6 +4,14 @@ Automatisch aus `changelog.registry.yaml` erzeugt.
 
 ## 2026-05
 
+### `63d654e`
+
+Logo, Favicon und Social Sharing sind aktualisiert.
+
+### `01a2e5e`
+
+Auf der Detailseite werden Schulen die zwar zugeordnet werden konnten aber bei denen einige der wichtigen OSM Tags fehlen mit einem roten Ring hervorgehoben.
+
 ### `e04826d`
 
 Schulen mit einem `school_type` "Integrierte Sekundarschule" werden jetzt intern als "gymnasium"
