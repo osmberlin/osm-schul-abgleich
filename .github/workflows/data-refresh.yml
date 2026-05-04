@@ -3,7 +3,8 @@ name: Refresh Datasets
 on:
   workflow_dispatch:
   schedule:
-    - cron: '0 3 * * *'
+    - cron: '0 2 * * *'
+      timezone: 'Europe/Berlin'
 
 permissions:
   contents: write
