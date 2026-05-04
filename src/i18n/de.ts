@@ -359,6 +359,7 @@ export const de = {
   },
   status: {
     heading: 'Pipeline-Status',
+    githubActionsLink: 'GitHub Actions…',
     kpiHeading: 'Aktueller Stand',
     kpiLead:
       'Diese drei Zeitpunkte zeigen den Datenstand der aktuell ausgelieferten Seite: OSM-Daten, amtliche JedeSchule-Daten und Zeitpunkt der letzten Auswertung.',

@@ -1,6 +1,9 @@
 /** Public repo for “edit on GitHub” and issue links (aligned with AppFooter). */
 export const GITHUB_REPO_ROOT = 'https://github.com/osmberlin/osm-schul-abgleich'
 
+/** CI / scheduled runs (repo slug matches the live GitHub org project). */
+export const GITHUB_ACTIONS_URL = 'https://github.com/osmberlin/osm-schulabgleich/actions'
+
 /** Deployed app + `public/datasets/` (canonical public URL; Vite `base` is `/` on Pages). */
 export const GITHUB_PAGES_SITE_ROOT = 'https://schulabgleich.osm-verkehrswende.org'
 
