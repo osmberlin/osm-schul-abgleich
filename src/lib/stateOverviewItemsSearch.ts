@@ -87,8 +87,13 @@ function hasGeoBoundaryIssue(row: StateMatchRow): boolean {
 
 export function matchRowToItemsJsDoc(row: StateMatchRow) {
   const amenity = toNonEmptyString(row.osmTags?.amenity)
+  const education = toNonEmptyString(row.osmTags?.education)
   const osmAmenity: StateFacetOsmAmenity =
-    amenity === 'school' || amenity === 'college' ? amenity : 'none'
+    amenity === 'college' || education === 'college'
+      ? 'college'
+      : amenity === 'school' || education === 'school'
+        ? 'school'
+        : 'none'
   const schoolKindDe = toNonEmptyString(row.schoolKindDe) ?? STATE_MATCH_FACET_SCHOOL_KIND_NONE
   const iscedLevel = toNonEmptyString(row.osmTags?.['isced:level']) != null ? 'yes' : 'no'
   const hasOfficial = toNonEmptyString(row.officialId) != null ? 'yes' : 'no'

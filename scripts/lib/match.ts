@@ -63,7 +63,7 @@ function normalizedOsmNameVariantMapFachschule(
 }
 
 function osmAmenityIsCollege(tags: Record<string, string>): boolean {
-  return tags.amenity === 'college'
+  return tags.amenity === 'college' || tags.education === 'college'
 }
 
 function officialsNearOsmFachschule(
@@ -770,7 +770,7 @@ export function matchSchools(
   for (let idx = 0; idx < rows.length; idx++) {
     const row = rows[idx]
     if (row.category !== 'osm_only') continue
-    if (row.osmTags?.amenity === 'college') continue
+    if (osmAmenityIsCollege(row.osmTags ?? {})) continue
     const rowLand = rowLandByOsmRef(row, opts)
     const tags = row.osmTags
     const keys =
@@ -848,7 +848,7 @@ export function matchSchools(
 
   for (let idx = 0; idx < rows.length; idx++) {
     const base = rows[idx]
-    if (base.category !== 'osm_only' || base.osmTags?.amenity !== 'college') continue
+    if (base.category !== 'osm_only' || !osmAmenityIsCollege(base.osmTags ?? {})) continue
     const rowLand = rowLandByOsmRef(base, opts)
     const variantMap = normalizedOsmNameVariantMapFachschule(base.osmTags ?? {})
     if (variantMap.size === 0) continue
@@ -902,7 +902,7 @@ export function matchSchools(
   for (let idx = 0; idx < rows.length; idx++) {
     const row = rows[idx]
     if (row.category !== 'osm_only') continue
-    if (row.osmTags?.amenity === 'college') continue
+    if (osmAmenityIsCollege(row.osmTags ?? {})) continue
     const rowLand = rowLandByOsmRef(row, opts)
     const key = osmRowWebsiteKey(row)
     if (!key) continue
@@ -977,7 +977,7 @@ export function matchSchools(
   for (let idx = 0; idx < rows.length; idx++) {
     const row = rows[idx]
     if (row.category !== 'osm_only') continue
-    if (row.osmTags?.amenity === 'college') continue
+    if (osmAmenityIsCollege(row.osmTags ?? {})) continue
     const rowLand = rowLandByOsmRef(row, opts)
     const key = osmRowAddressKey(row)
     if (!key) continue

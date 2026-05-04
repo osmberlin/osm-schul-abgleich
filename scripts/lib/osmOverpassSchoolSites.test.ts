@@ -77,4 +77,76 @@ describe('injectSchoolSiteRelationsFromOverpass', () => {
     expect(out.features).toHaveLength(1)
     expect(String(out.features[0]?.id)).toBe('way/1')
   })
+
+  it('drops education=school member ways for type=site + education=school relation', () => {
+    const ringA = [
+      { lat: 52.0, lon: 13.0 },
+      { lat: 52.001, lon: 13.0 },
+      { lat: 52.001, lon: 13.001 },
+      { lat: 52.0, lon: 13.001 },
+      { lat: 52.0, lon: 13.0 },
+    ]
+    const ringB = [
+      { lat: 52.002, lon: 13.0 },
+      { lat: 52.003, lon: 13.0 },
+      { lat: 52.003, lon: 13.001 },
+      { lat: 52.002, lon: 13.001 },
+      { lat: 52.002, lon: 13.0 },
+    ]
+    const raw = {
+      elements: [
+        { type: 'way', id: 1, tags: { education: 'school' }, geometry: ringA },
+        { type: 'way', id: 2, tags: { education: 'school' }, geometry: ringB },
+        {
+          type: 'relation',
+          id: 9,
+          bounds: { minlat: 52, maxlat: 52.003, minlon: 13, maxlon: 13.001 },
+          members: [
+            { type: 'way', ref: 1, role: '', geometry: ringA },
+            { type: 'way', ref: 2, role: '', geometry: ringB },
+          ],
+          tags: { education: 'school', type: 'site', name: 'Campus' },
+        },
+      ],
+    }
+    const gjRaw = osm2geojson(raw) as FeatureCollection
+    const out = injectSchoolSiteRelationsFromOverpass(raw, gjRaw)
+    expect(out.features.map((f) => String(f.id))).toEqual(['relation/9'])
+  })
+
+  it('drops education=college member ways for type=site + education=college relation', () => {
+    const ringA = [
+      { lat: 52.0, lon: 13.0 },
+      { lat: 52.001, lon: 13.0 },
+      { lat: 52.001, lon: 13.001 },
+      { lat: 52.0, lon: 13.001 },
+      { lat: 52.0, lon: 13.0 },
+    ]
+    const ringB = [
+      { lat: 52.002, lon: 13.0 },
+      { lat: 52.003, lon: 13.0 },
+      { lat: 52.003, lon: 13.001 },
+      { lat: 52.002, lon: 13.001 },
+      { lat: 52.002, lon: 13.0 },
+    ]
+    const raw = {
+      elements: [
+        { type: 'way', id: 1, tags: { education: 'college' }, geometry: ringA },
+        { type: 'way', id: 2, tags: { education: 'college' }, geometry: ringB },
+        {
+          type: 'relation',
+          id: 9,
+          bounds: { minlat: 52, maxlat: 52.003, minlon: 13, maxlon: 13.001 },
+          members: [
+            { type: 'way', ref: 1, role: '', geometry: ringA },
+            { type: 'way', ref: 2, role: '', geometry: ringB },
+          ],
+          tags: { education: 'college', type: 'site', name: 'Campus' },
+        },
+      ],
+    }
+    const gjRaw = osm2geojson(raw) as FeatureCollection
+    const out = injectSchoolSiteRelationsFromOverpass(raw, gjRaw)
+    expect(out.features.map((f) => String(f.id))).toEqual(['relation/9'])
+  })
 })

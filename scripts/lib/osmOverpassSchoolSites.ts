@@ -21,8 +21,9 @@ function relationIdPresentInFc(fc: FeatureCollection, relationId: number): boole
 }
 
 /**
- * One campus per `type=site` + `amenity=school` or `amenity=college` relation: remove member ways that are
- * also tagged with the same amenity, so matching uses the relation feature from osm2geojson-ultra (with geometry).
+ * One campus per `type=site` + school/college tagging (`amenity` and/or `education` with `school` or `college`):
+ * remove member ways that carry the same school/college tags, so matching uses the relation feature from
+ * osm2geojson-ultra (with geometry).
  *
  * Only drops ways when the corresponding `relation/{id}` exists in `fc` (normal Overpass `out geom` + ultra).
  */
@@ -39,10 +40,12 @@ export function injectSchoolSiteRelationsFromOverpass(
     if (el.type !== 'relation' || typeof el.id !== 'number') continue
     const tags = el.tags
     if (!tags || tags.type !== 'site') continue
-    if (tags.amenity !== 'school' && tags.amenity !== 'college') continue
+    const isCollegeSite = tags.amenity === 'college' || tags.education === 'college'
+    const isSchoolSite = tags.amenity === 'school' || tags.education === 'school'
+    if (!isCollegeSite && !isSchoolSite) continue
     if (!relationIdPresentInFc(fc, el.id)) continue
 
-    const targetSet = tags.amenity === 'college' ? wayIdsToDropCollege : wayIdsToDropSchool
+    const targetSet = isCollegeSite ? wayIdsToDropCollege : wayIdsToDropSchool
     for (const m of el.members ?? []) {
       if (m.type === 'way' && typeof m.ref === 'number') targetSet.add(m.ref)
     }
@@ -53,13 +56,16 @@ export function injectSchoolSiteRelationsFromOverpass(
   const filtered = fc.features.filter((f) => {
     if (typeof f.id !== 'string' || !f.id.startsWith('way/')) return true
     const wid = Number(f.id.slice(4))
-    const amenity =
+    const props =
       f.properties && typeof f.properties === 'object'
-        ? (f.properties as { amenity?: string }).amenity
+        ? (f.properties as { amenity?: string; education?: string })
         : undefined
-    const a = String(amenity)
-    if (a === 'school' && wayIdsToDropSchool.has(wid)) return false
-    if (a === 'college' && wayIdsToDropCollege.has(wid)) return false
+    const a = String(props?.amenity ?? '')
+    const edu = String(props?.education ?? '')
+    const isCollegeWay = a === 'college' || edu === 'college'
+    if (isCollegeWay && wayIdsToDropCollege.has(wid)) return false
+    const isSchoolWay = a === 'school' || edu === 'school'
+    if (isSchoolWay && wayIdsToDropSchool.has(wid)) return false
     return true
   })
 

@@ -96,10 +96,25 @@ export const de = {
         href: 'https://jedeschule.codefor.de/ueber/',
         label: 'jedeschule.codefor.de',
       },
-      osmSchoolTag: {
-        href: 'https://wiki.openstreetmap.org/wiki/DE:Tag:amenity%3Dschool',
-        label: 'amenity=school',
-      },
+      /** OSM-Tags im Einleitungssatz: Kommas und „und“ werden in `HomeHeader` gesetzt. */
+      osmSchoolTags: [
+        {
+          href: 'https://wiki.openstreetmap.org/wiki/DE:Tag:amenity%3Dschool',
+          label: 'amenity=school',
+        },
+        {
+          href: 'https://wiki.openstreetmap.org/wiki/Tag:education%3Dschool',
+          label: 'education=school',
+        },
+        {
+          href: 'https://wiki.openstreetmap.org/wiki/DE:Tag:amenity%3Dcollege',
+          label: 'amenity=college',
+        },
+        {
+          href: 'https://wiki.openstreetmap.org/wiki/Tag:education%3Dcollege',
+          label: 'education=college',
+        },
+      ] as const,
     },
     loading: 'Lade Zusammenfassung…',
     error: 'Zusammenfassung konnte nicht geladen werden.',
@@ -211,9 +226,9 @@ export const de = {
       geoBoundaryNo: 'Kein Rand-Hinweis',
       schoolKindHeading: 'Schulart (OSM school / school:de)',
       schoolKindNone: 'Keine Schulart ermittelbar',
-      osmAmenityHeading: 'OSM-Objekt (amenity)',
-      osmAmenitySchool: 'Schule (amenity=school)',
-      osmAmenityCollege: 'Berufliche Einrichtung (amenity=college)',
+      osmAmenityHeading: 'OSM-Objekt (Schule / Berufsschule)',
+      osmAmenitySchool: 'Schule (amenity=school oder education=school)',
+      osmAmenityCollege: 'Berufliche Einrichtung (amenity=college oder education=college)',
       osmAmenityNone: 'Kein OSM-Objekt / sonstiges',
       schoolFormHeading: 'Schulform-Kombination',
       schoolFormFamilyGrundschule: 'Grundschulen',

@@ -21,14 +21,14 @@ export function HomeHeader() {
           {h.links.jedeschule.label}
         </a>
         {h.leadBetween}
-        <a
-          href={h.links.osmSchoolTag.href}
-          className={headerLinkClass}
-          target="_blank"
-          rel="noreferrer"
-        >
-          {h.links.osmSchoolTag.label}
-        </a>
+        {h.links.osmSchoolTags.map((tag, idx) => (
+          <span key={tag.href}>
+            {idx > 0 ? (idx === h.links.osmSchoolTags.length - 1 ? ' und ' : ', ') : null}
+            <a href={tag.href} className={headerLinkClass} target="_blank" rel="noreferrer">
+              {tag.label}
+            </a>
+          </span>
+        ))}
         {h.leadOutro}
       </p>
       <div className="mt-2 flex items-center justify-between gap-4 text-sm text-zinc-400">

@@ -11,6 +11,18 @@ const DEFAULT_WIKI_LINKS: readonly SchoolOsmWikiLink[] = [
     label: 'Tag:amenity=school',
   },
   {
+    href: 'https://wiki.openstreetmap.org/wiki/Tag:education%3Dschool',
+    label: 'Tag:education=school',
+  },
+  {
+    href: 'https://wiki.openstreetmap.org/wiki/DE:Tag:amenity%3Dcollege',
+    label: 'Tag:amenity=college',
+  },
+  {
+    href: 'https://wiki.openstreetmap.org/wiki/Tag:education%3Dcollege',
+    label: 'Tag:education=college',
+  },
+  {
     href: 'https://wiki.openstreetmap.org/wiki/DE:Key:school',
     label: 'Key:school',
   },

@@ -39,7 +39,7 @@ type StateRouteSearch = {
   lisc?: YesNo[]
   lgeo?: YesNo[]
   lsk?: string[]
-  /** Facet: OSM amenity (school / college / none). */
+  /** Facet: OSM school vs college (`loa`): `school` = `amenity=school` or `education=school`; `college` = `amenity=college` or `education=college`. */
   loa?: StateFacetOsmAmenity[]
   /** Facet: school-form family (`grundschule`/`weiterfuehrend`). */
   lsfam?: StateFacetSchoolFormFamily[]

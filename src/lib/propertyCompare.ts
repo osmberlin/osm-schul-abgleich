@@ -21,7 +21,7 @@ type CompareRowSingle = [string, string]
 type AddressCompareOsmKey = 'street' | 'housenumber'
 type GrundschuleCompareOsmKey = 'isced:level' | 'school'
 type SecondarySchoolCompareOsmKey = 'isced:level' | 'school'
-type FachschuleCompareOsmKey = 'amenity'
+type FachschuleCompareOsmKey = 'amenity' | 'education'
 type ProviderOperatorCompareOsmKey = 'operator'
 type LegalStatusOperatorTypeCompareOsmKey = 'operator:type'
 type IdRefCompareOsmKey = 'ref'
@@ -61,7 +61,7 @@ export type FachschuleCompareGroup = {
   kind: 'fachschule'
   officialKey: 'school_type'
   officialValue: string | null
-  osmKeys: readonly ['amenity']
+  osmKeys: readonly ['amenity', 'education']
   osmValues: Record<FachschuleCompareOsmKey, string | null>
   isEquivalentMatch: boolean
   consumedKeys: string[]
@@ -186,6 +186,10 @@ function buildGrundschuleCompareGroup(
   }
 }
 
+function osmTagValueIsCollege(value: string | null): boolean {
+  return tagValueEqualsProposed(value ?? undefined, 'college')
+}
+
 function buildFachschuleCompareGroup(
   offMap: Map<string, string>,
   osmMap: Map<string, string>,
@@ -194,17 +198,19 @@ function buildFachschuleCompareGroup(
   if (officialValue == null || !schoolTypeStringIndicatesFachschule(officialValue)) return null
 
   const amenity = osmMap.get('amenity') ?? null
-  if (amenity == null) return null
-  const isEquivalentMatch = tagValueEqualsProposed(amenity ?? undefined, 'college')
+  const education = osmMap.get('education') ?? null
+  if (amenity == null && education == null) return null
+
+  const isEquivalentMatch = osmTagValueIsCollege(amenity) || osmTagValueIsCollege(education)
 
   return {
     kind: 'fachschule',
     officialKey: 'school_type',
     officialValue,
-    osmKeys: ['amenity'],
-    osmValues: { amenity },
+    osmKeys: ['amenity', 'education'],
+    osmValues: { amenity, education },
     isEquivalentMatch,
-    consumedKeys: ['school_type', 'amenity'],
+    consumedKeys: ['school_type', 'amenity', 'education'],
   }
 }
 

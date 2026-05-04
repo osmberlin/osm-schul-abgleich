@@ -27,6 +27,40 @@ function matchedRow(input: {
   }
 }
 
+describe('stateOverviewItemsSearch osmAmenity facet', () => {
+  it('treats education=school without amenity as school', () => {
+    const row: StateMatchRow = {
+      ...matchedRow({ key: 'e', officialId: 'BE-03P11', ref: null }),
+      osmTags: { education: 'school', name: 'X' },
+    }
+    expect(matchRowToItemsJsDoc(row).osmAmenity).toBe('school')
+  })
+
+  it('prefers college when amenity=college even if education=school is present', () => {
+    const row: StateMatchRow = {
+      ...matchedRow({ key: 'f', officialId: 'BE-03P11', ref: null }),
+      osmTags: { amenity: 'college', education: 'school', name: 'X' },
+    }
+    expect(matchRowToItemsJsDoc(row).osmAmenity).toBe('college')
+  })
+
+  it('treats education=college without amenity as college', () => {
+    const row: StateMatchRow = {
+      ...matchedRow({ key: 'g', officialId: 'BE-03P11', ref: null }),
+      osmTags: { education: 'college', name: 'X' },
+    }
+    expect(matchRowToItemsJsDoc(row).osmAmenity).toBe('college')
+  })
+
+  it('prefers college when education=college even if amenity=school is present', () => {
+    const row: StateMatchRow = {
+      ...matchedRow({ key: 'h', officialId: 'BE-03P11', ref: null }),
+      osmTags: { amenity: 'school', education: 'college', name: 'X' },
+    }
+    expect(matchRowToItemsJsDoc(row).osmAmenity).toBe('college')
+  })
+})
+
 describe('stateOverviewItemsSearch refStatus facet', () => {
   it('marks matched rows with usable official id and missing osm ref as missing_possible_ref', () => {
     const doc = matchRowToItemsJsDoc(matchedRow({ key: 'a', officialId: 'BE-03P11', ref: null }))

@@ -20,12 +20,12 @@ function areaIdFromRelation(relationId: number) {
   return 3_600_000_000 + relationId
 }
 
-/** OSM relation for Germany (country) — `area()` filter for nationwide `amenity=school|college` query. */
+/** OSM relation for Germany (country) — `area()` filter for nationwide schools extract (`amenity`, `education`). */
 const GERMANY_COUNTRY_RELATION_ID = 51477
 
 function buildSchoolsQueryGermany() {
   const aid = areaIdFromRelation(GERMANY_COUNTRY_RELATION_ID)
-  // One statement per geometry type (vs separate =school and =college) reduces area-scoped work.
+  // Union: `amenity~"^(school|college)$"` plus `education=school|college` (elements with both appear once).
   return `
 [out:json][timeout:600];
 area(${aid})->.de;
@@ -33,6 +33,12 @@ area(${aid})->.de;
   node["amenity"~"^(school|college)$"](area.de);
   way["amenity"~"^(school|college)$"](area.de);
   relation["amenity"~"^(school|college)$"](area.de);
+  node["education"="school"](area.de);
+  way["education"="school"](area.de);
+  relation["education"="school"](area.de);
+  node["education"="college"](area.de);
+  way["education"="college"](area.de);
+  relation["education"="college"](area.de);
 );
 out geom;
 `.trim()

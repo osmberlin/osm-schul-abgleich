@@ -250,7 +250,9 @@ describe('comparePropertySections fachschule group', () => {
     expect(g.kind).toBe('fachschule')
     if (g.kind !== 'fachschule') throw new Error('expected fachschule')
     expect(g.officialValue).toBe('Landwirtschaftliche Fachschulen')
+    expect(g.osmKeys).toEqual(['amenity', 'education'])
     expect(g.osmValues.amenity).toBe('college')
+    expect(g.osmValues.education).toBeNull()
     expect(g.isEquivalentMatch).toBe(true)
 
     expect(res.bothEqual).toEqual([['name', 'X', 'X']])
@@ -271,12 +273,52 @@ describe('comparePropertySections fachschule group', () => {
     const g = res.compareGroups[0]
     expect(g.kind).toBe('fachschule')
     if (g.kind !== 'fachschule') throw new Error('expected fachschule')
+    expect(g.osmValues.education).toBeNull()
     expect(g.isEquivalentMatch).toBe(false)
     expect(res.onlyO).toEqual([])
     expect(res.onlyS).toEqual([])
   })
 
-  it('does not create fachschule group when amenity key is missing', () => {
+  it('creates fachschule group on education=college when amenity is absent', () => {
+    const res = comparePropertySections(
+      { school_type: 'Berufsfachschule', name: 'X' },
+      { name: 'X', education: 'college' },
+    )
+    expect(res.compareGroups).toHaveLength(1)
+    const g = res.compareGroups[0]
+    expect(g.kind).toBe('fachschule')
+    if (g.kind !== 'fachschule') throw new Error('expected fachschule')
+    expect(g.osmValues.amenity).toBeNull()
+    expect(g.osmValues.education).toBe('college')
+    expect(g.isEquivalentMatch).toBe(true)
+    expect(res.onlyS).toEqual([])
+  })
+
+  it('matches on amenity=college and education=college together', () => {
+    const res = comparePropertySections(
+      { school_type: 'Berufsfachschule', name: 'X' },
+      { name: 'X', amenity: 'college', education: 'college' },
+    )
+    const g = res.compareGroups[0]
+    expect(g.kind).toBe('fachschule')
+    if (g.kind !== 'fachschule') throw new Error('expected fachschule')
+    expect(g.osmValues.amenity).toBe('college')
+    expect(g.osmValues.education).toBe('college')
+    expect(g.isEquivalentMatch).toBe(true)
+  })
+
+  it('treats amenity=school with education=college as college for equivalence', () => {
+    const res = comparePropertySections(
+      { school_type: 'Berufsfachschule', name: 'X' },
+      { name: 'X', amenity: 'school', education: 'college' },
+    )
+    const g = res.compareGroups[0]
+    expect(g.kind).toBe('fachschule')
+    if (g.kind !== 'fachschule') throw new Error('expected fachschule')
+    expect(g.isEquivalentMatch).toBe(true)
+  })
+
+  it('does not create fachschule group when amenity and education are both missing', () => {
     const res = comparePropertySections({ school_type: 'Berufsfachschule' }, { name: 'FS X' })
     expect(res.compareGroups).toHaveLength(0)
     expect(res.onlyO).toEqual([['school_type', 'Berufsfachschule']])
