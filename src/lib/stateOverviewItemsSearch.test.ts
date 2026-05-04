@@ -1,6 +1,7 @@
 import {
   collectFilteredIdsFromSearchResult,
   createStateMatchItemsJsEngine,
+  matchedSchoolShowsOsmTagAttentionInSearch,
   matchRowToItemsJsDoc,
   searchStateMatchesWithExplorer,
   type StateMatchRow,
@@ -99,5 +100,63 @@ describe('stateOverviewItemsSearch refStatus facet', () => {
     })
     const ids = collectFilteredIdsFromSearchResult(result)
     expect(ids).toEqual(new Set(['missing']))
+  })
+})
+
+describe('matchedSchoolShowsOsmTagAttentionInSearch', () => {
+  it('is false for non-matched categories', () => {
+    const row: StateMatchRow = {
+      key: 'osm-1',
+      category: 'osm_only',
+      matchCategory: 'osm_only',
+      officialId: null,
+      officialName: null,
+      officialProperties: null,
+      osmId: '1',
+      osmType: 'way',
+      distanceMeters: null,
+      osmName: 'X',
+      osmTags: { amenity: 'school' },
+    }
+    expect(matchedSchoolShowsOsmTagAttentionInSearch(row)).toBe(false)
+  })
+
+  it('is true when isced:level is missing', () => {
+    const row = matchedRow({ key: 'k', officialId: 'BE-03P11', ref: '03P11' })
+    expect(matchedSchoolShowsOsmTagAttentionInSearch(row)).toBe(true)
+  })
+
+  it('is false when isced is set, ref present, and school form complete', () => {
+    const row: StateMatchRow = {
+      ...matchedRow({ key: 'l', officialId: 'BE-03P11', ref: '03P11' }),
+      osmTags: {
+        amenity: 'school',
+        ref: '03P11',
+        'isced:level': '1',
+      },
+      schoolFormCombo: 'matching_tags',
+    }
+    expect(matchedSchoolShowsOsmTagAttentionInSearch(row)).toBe(false)
+  })
+
+  it('is true when ref is missing but a ref candidate exists', () => {
+    expect(
+      matchedSchoolShowsOsmTagAttentionInSearch(
+        matchedRow({ key: 'm', officialId: 'BE-03P11', ref: null }),
+      ),
+    ).toBe(true)
+  })
+
+  it('is true when schoolFormCombo is matching_but_lacking_tags even if isced set', () => {
+    const row: StateMatchRow = {
+      ...matchedRow({ key: 'n', officialId: 'BE-03P11', ref: '03P11' }),
+      osmTags: {
+        amenity: 'school',
+        ref: '03P11',
+        'isced:level': '2',
+      },
+      schoolFormCombo: 'matching_but_lacking_tags',
+    }
+    expect(matchedSchoolShowsOsmTagAttentionInSearch(row)).toBe(true)
   })
 })

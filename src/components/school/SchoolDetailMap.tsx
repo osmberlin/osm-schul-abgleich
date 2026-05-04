@@ -37,6 +37,8 @@ import MapGL, {
 } from 'react-map-gl/maplibre'
 
 export const OTHER_SCHOOLS_LAYER_HALO = 'other-schools-halo'
+/** Stroke-only ring above category halo: matched neighbours with Explorer-flagged tag gaps. */
+export const OTHER_SCHOOLS_LAYER_OSM_TAG_RING = 'other-schools-osm-tag-ring'
 export const OTHER_SCHOOLS_LAYER_CORE = 'other-schools-core'
 export const DETAIL_MAP_LAYER_CENTROID_CORE = 'c-centroid-core'
 export const DETAIL_MAP_LAYER_CENTROID_HALO = 'c-centroid-halo'
@@ -123,6 +125,20 @@ function DetailMapLegendPointDot({
     <span className="relative inline-flex size-[18px] shrink-0 items-center justify-center">
       <span className={`absolute size-[15px] rounded-full ${haloClassName}`} />
       <span className={`relative size-1 rounded-full ring-1 ring-zinc-600/35 ${coreClassName}`} />
+    </span>
+  )
+}
+
+function DetailMapLegendOsmTagAttentionRingSwatch() {
+  return (
+    <span className="relative inline-flex size-[18px] shrink-0 items-center justify-center">
+      <span className="absolute size-[15px] rounded-full bg-emerald-500/30" />
+      <span className="relative size-1 rounded-full bg-emerald-500 ring-1 ring-zinc-600/35" />
+      <span
+        className="pointer-events-none absolute inset-0 rounded-full border-[1.5px] border-red-800"
+        style={{ boxSizing: 'border-box' }}
+        aria-hidden
+      />
     </span>
   )
 }
@@ -428,6 +444,25 @@ export function SchoolDetailMap({
               }}
             />
             <Layer
+              id={OTHER_SCHOOLS_LAYER_OSM_TAG_RING}
+              type="circle"
+              filter={[
+                'all',
+                ['==', ['geometry-type'], 'Point'],
+                ['==', ['get', 'matchCat'], 'matched'],
+                ['==', ['get', 'osmTagAttention'], true],
+              ]}
+              layout={{ 'circle-sort-key': paintMatchCatSortKey }}
+              paint={{
+                'circle-radius': ['interpolate', ['linear'], ['zoom'], 10, 9, 14, 11, 18, 13],
+                'circle-color': 'rgba(0,0,0,0)',
+                'circle-opacity': 1,
+                'circle-stroke-width': 1.5,
+                'circle-stroke-color': '#991b1b',
+                'circle-stroke-opacity': 1,
+              }}
+            />
+            <Layer
               id={OTHER_SCHOOLS_LAYER_CORE}
               type="circle"
               layout={{ 'circle-sort-key': paintMatchCatSortKey }}
@@ -446,6 +481,10 @@ export function SchoolDetailMap({
   )
 }
 
+function otherSchoolFeaturesNeedOsmTagLegend(features: readonly Feature[]): boolean {
+  return features.some((f) => f.properties?.osmTagAttention === true)
+}
+
 export function SchoolDetailMapLegend({
   mapOsmCentroid,
   hasOsmAreaPolygons,
@@ -456,6 +495,7 @@ export function SchoolDetailMapLegend({
   allOtherSchoolPointFeatures: Feature[]
 }) {
   const { showMapMask, setShowMapMask } = useDetailMapMask()
+  const showOsmTagAttentionLegend = otherSchoolFeaturesNeedOsmTagLegend(allOtherSchoolPointFeatures)
   return (
     <div className="mt-2 flex min-w-0 flex-col gap-y-2 sm:flex-row sm:flex-wrap sm:items-center sm:justify-between sm:gap-x-3 sm:gap-y-2">
       <div className="flex w-full min-w-0 flex-wrap items-center gap-x-3 gap-y-1 text-xs leading-snug text-zinc-400 sm:flex-1">
@@ -496,6 +536,14 @@ export function SchoolDetailMapLegend({
               </span>
             )
           })}
+        {showOsmTagAttentionLegend && (
+          <span className="inline-flex max-w-full min-w-0 items-start gap-1.5 sm:max-w-[min(100%,22rem)]">
+            <span className={DETAIL_MAP_LEGEND_POINT_TILE} aria-hidden>
+              <DetailMapLegendOsmTagAttentionRingSwatch />
+            </span>
+            <span className="min-w-0 text-zinc-400">{de.detail.mapLegendOsmTagAttentionRing}</span>
+          </span>
+        )}
       </div>
       <label className="inline-flex shrink-0 cursor-pointer items-center gap-1.5">
         <span className="relative inline-flex h-5 w-9 shrink-0 items-center">

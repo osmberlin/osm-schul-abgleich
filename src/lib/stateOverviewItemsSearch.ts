@@ -129,6 +129,25 @@ export function matchRowToItemsJsDoc(row: StateMatchRow) {
   }
 }
 
+/**
+ * True when Explorer facets flag ISCED, ref, or Schulform gaps for a matched school
+ * (detail map “open OSM tags” ring for neighbours).
+ */
+export function matchedSchoolShowsOsmTagAttentionInSearch(row: StateMatchRow): boolean {
+  const resolved = row.matchCategory ?? row.category
+  if (resolved !== 'matched') return false
+  const doc = matchRowToItemsJsDoc({
+    ...row,
+    category: 'matched',
+    matchCategory: 'matched',
+  })
+  return (
+    doc.iscedLevel === 'no' ||
+    doc.refStatus === 'missing_possible_ref' ||
+    doc.schoolFormCombo === 'matching_but_lacking_tags'
+  )
+}
+
 export function createStateMatchItemsJsEngine(rows: StateMatchRow[]) {
   const data = rows.map(matchRowToItemsJsDoc)
   return itemsjs(data, {

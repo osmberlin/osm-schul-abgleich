@@ -20,6 +20,10 @@ import {
   type StateSchoolsBundle,
   type StateSchoolsMatchRow,
 } from '../../lib/stateDatasetQueries'
+import {
+  matchedSchoolShowsOsmTagAttentionInSearch,
+  type StateMatchRow,
+} from '../../lib/stateOverviewItemsSearch'
 import { useDetailMapParam } from '../../lib/useDetailMapParam'
 import { deriveSchoolDetailMapFeatures } from '../../lib/useSchoolDetailMapFeatures'
 import type { StateMapBbox } from '../../lib/useStateMapBbox'
@@ -129,6 +133,7 @@ export function SchoolDetailMapSection({
           schoolKey: match.key,
           name: matchRowDisplayName(match),
           matchCat: match.matchCategory ?? match.category,
+          osmTagAttention: matchedSchoolShowsOsmTagAttentionInSearch(match as StateMatchRow),
         }),
       )
     }

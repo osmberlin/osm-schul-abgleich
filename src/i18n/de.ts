@@ -329,6 +329,8 @@ export const de = {
     ambiguousJedeschule: 'JedeSchule',
     mapLegendSelectedSchool: 'Ausgewählte Schule',
     mapLegendOsmSchoolArea: 'Fläche Schule OSM',
+    /** Detailkarte: roter Ring = Nachbar mit fehlenden oder unvollständigen OSM-Tags (noch ergänzbar). */
+    mapLegendOsmTagAttentionRing: 'Ring: OSM-Tags unvollständig',
     /** Weitere Schulen: gleiche Farben/Semantik wie `state.categoryLabel`, mit „Schule …“ für die Detail-Legende. */
     mapLegendOtherSchool: {
       matched: 'Schule in beiden Daten',
