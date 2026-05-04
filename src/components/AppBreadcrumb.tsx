@@ -1,5 +1,5 @@
 import { de } from '../i18n/de'
-import { HomeIcon } from '@heroicons/react/20/solid'
+import { APP_LOGO_SRC } from '../lib/branding'
 import { Link } from '@tanstack/react-router'
 
 export type AppBreadcrumbCrumb =
@@ -45,8 +45,9 @@ type Props = {
 
 export function AppBreadcrumb({ appTitle, homeCurrent, items, hideAppTitleOnMobile }: Props) {
   const homeSegmentClass =
-    'flex items-center gap-2 text-sm font-medium text-zinc-400 hover:text-zinc-200'
-  const homeIconClass = 'size-5 shrink-0 text-zinc-400 md:-ml-0.5'
+    'group flex items-center gap-2 text-sm font-medium text-zinc-400 hover:text-zinc-200'
+  const homeLogoClass =
+    'h-5 w-auto max-w-[7.5rem] shrink-0 object-contain opacity-90 md:-ml-0.5 group-hover:opacity-100'
 
   /** Row height matches parent `AppHeader` (`h-14`); chevrons use `h-full`. */
   const rowClass = 'h-14'
@@ -58,17 +59,17 @@ export function AppBreadcrumb({ appTitle, homeCurrent, items, hideAppTitleOnMobi
         <li className="flex shrink-0 items-center">
           {homeCurrent ? (
             <span className={homeSegmentClass} aria-current="page">
-              <HomeIcon aria-hidden className={homeIconClass} />
+              <img src={APP_LOGO_SRC} alt="" aria-hidden className={homeLogoClass} />
               <span className={appTitleClass}>{appTitle}</span>
               <span className="sr-only">{de.breadcrumb.home}</span>
             </span>
           ) : (
             <Link
               to="/"
-              className={`${homeSegmentClass} hover:[&_svg]:text-zinc-300`}
+              className={homeSegmentClass}
               aria-label={`${de.breadcrumb.home} — ${appTitle}`}
             >
-              <HomeIcon aria-hidden className={homeIconClass} />
+              <img src={APP_LOGO_SRC} alt="" aria-hidden className={homeLogoClass} />
               <span className={appTitleClass}>{appTitle}</span>
             </Link>
           )}
