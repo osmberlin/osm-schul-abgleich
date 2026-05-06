@@ -92,6 +92,10 @@ export const de = {
     githubIssuesLinkLabel: 'Feedback bitte als GitHub-Issues beitragen',
     changelogLinkLabel: 'Changelog',
     links: {
+      launchBlogPost: {
+        href: 'https://www.osm-verkehrswende.org/schulabgleich/posts/schulabgleich/',
+        label: 'Mehr im Launch-Blogpost…',
+      },
       jedeschule: {
         href: 'https://jedeschule.codefor.de/ueber/',
         label: 'jedeschule.codefor.de',

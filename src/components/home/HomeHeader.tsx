@@ -38,6 +38,16 @@ export function HomeHeader() {
             ))}
             {h.leadOutro}
           </p>
+          <p className="mt-2 text-sm text-zinc-400">
+            <a
+              href={h.links.launchBlogPost.href}
+              className={headerLinkClass}
+              target="_blank"
+              rel="noreferrer"
+            >
+              {h.links.launchBlogPost.label}
+            </a>
+          </p>
           <div className="mt-2 flex items-center justify-between gap-4 text-sm text-zinc-400">
             <p>
               <a
