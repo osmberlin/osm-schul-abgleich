@@ -6,7 +6,7 @@ entries:
   - refs:
       - 'c5f02c450a220faa03369db2a9249abed71002be'
     descriptionMd: |
-      Die `/status` Seite (siehe Footer) ist überarbeitet und jetzt deutlich hilfreicher. Sie zeigt vor allem die Daten der verschiedenen Datenquellen sowie die letzten Durchläufe des Datenabgleichs.
+      Die [`/status`](/status) Seite (siehe Footer) ist überarbeitet und jetzt deutlich hilfreicher. Sie zeigt vor allem die Daten der verschiedenen Datenquellen sowie die letzten Durchläufe des Datenabgleichs.
   - refs:
       - '1f1bf1c7344f85cfb1a35879cc83ccd7800d454d'
     hide: true
@@ -27,7 +27,7 @@ entries:
       - '0e7f5308f157b12719c127aa06aaae147dfa3155'
       - '3691fcbd5ce9b8984031cc9c37bb5c312ad7495a'
     descriptionMd: |
-      Add `/changelog` page and `CHANGELOG.md` file based on a custom changelog registry that monitors git commits to keep the changelog up to date. The changelog is linked from the home page and footer.
+      Add [`/changelog`](/changelog) page and `CHANGELOG.md` file based on a custom changelog registry that monitors git commits to keep the changelog up to date. The changelog is linked from the home page and footer.
   - refs:
       - '057428e'
       - '9ae38dcf1f7094f6ce59cf43ccfccab847efbd93'
@@ -78,4 +78,3 @@ entries:
       - 'a4edf93'
       - 'f1b09b2'
     hide: true
-  

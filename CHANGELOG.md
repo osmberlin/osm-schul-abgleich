@@ -33,11 +33,11 @@ Neuer Filter: fehlender `ref`-Tag in OSM, aber erkennbare ID aus den amtlichen D
 
 ### `3caf6cf`, `0e7f530`, `3691fcb`
 
-Add `/changelog` page and `CHANGELOG.md` file based on a custom changelog registry that monitors git commits to keep the changelog up to date. The changelog is linked from the home page and footer.
+Add [`/changelog`](/changelog) page and `CHANGELOG.md` file based on a custom changelog registry that monitors git commits to keep the changelog up to date. The changelog is linked from the home page and footer.
 
 ### `c5f02c4`
 
-Die `/status` Seite (siehe Footer) ist überarbeitet und jetzt deutlich hilfreicher. Sie zeigt vor allem die Daten der verschiedenen Datenquellen sowie die letzten Durchläufe des Datenabgleichs.
+Die [`/status`](/status) Seite (siehe Footer) ist überarbeitet und jetzt deutlich hilfreicher. Sie zeigt vor allem die Daten der verschiedenen Datenquellen sowie die letzten Durchläufe des Datenabgleichs.
 
 ### `05622a9`
 
