@@ -1,8 +1,8 @@
 import { de } from '../../i18n/de'
 import { buildOpenStreetMapOrgPinUrl } from '../../lib/editorLinks'
 import { formatDeInteger } from '../../lib/formatNumber'
+import { InlineMarkdown } from '../../lib/InlineMarkdown'
 import { JEDESCHULE_DUPLICATE_GROUP_SIZE_KEY } from '../../lib/jedeschuleDuplicateGroup'
-import { miniMarkdownNodes } from '../../lib/miniMarkdown'
 import type { StateMatchCategory } from '../../lib/stateMatchCategories'
 import { ExclamationTriangleIcon, InformationCircleIcon } from '@heroicons/react/20/solid'
 import type { ReactNode } from 'react'
@@ -117,15 +117,17 @@ export function SchoolDetailAmbiguousAlert({
       icon={<InformationCircleIcon aria-hidden className="size-5 text-violet-500" />}
     >
       <div className="mt-2 text-sm text-violet-100/80">
-        <p className="leading-relaxed">{miniMarkdownNodes(de.detail.ambiguousIntro)}</p>
+        <p className="leading-relaxed">
+          <InlineMarkdown>{de.detail.ambiguousIntro}</InlineMarkdown>
+        </p>
         {showNameNoGeoText && (
           <p className="mt-2 leading-relaxed">
-            {miniMarkdownNodes(de.detail.ambiguousNameNoGeoAlertText)}
+            <InlineMarkdown>{de.detail.ambiguousNameNoGeoAlertText}</InlineMarkdown>
           </p>
         )}
         {showNoLocalGeoText && (
           <p className="mt-2 leading-relaxed">
-            {miniMarkdownNodes(de.detail.ambiguousNoLocalGeoText)}
+            <InlineMarkdown>{de.detail.ambiguousNoLocalGeoText}</InlineMarkdown>
           </p>
         )}
       </div>

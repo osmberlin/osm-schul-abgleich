@@ -66,6 +66,8 @@
     "date-fns": "^4.1.0",
     "itemsjs": "^2.4.4",
     "maplibre-gl": "^5.24.0",
+    "micromark": "^4.0.2",
+    "micromark-extension-gfm-strikethrough": "^2.1.0",
     "osm-api": "^4.0.0",
     "osm2geojson-ultra": "^4.0.1",
     "react": "^19.2.5",
