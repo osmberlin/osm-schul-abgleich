@@ -4,6 +4,15 @@ Automatisch aus `changelog.registry.yaml` erzeugt.
 
 ## 2026-05
 
+### `ab7b259`
+
+Packages: Add min release age
+Co-authored-by: Cursor <cursoragent@cursor.com>
+
+### `c5f77dd`
+
+Update packages and changelog helper scripts
+
 ### `63d654e`
 
 Logo, Favicon und Social Sharing sind aktualisiert.

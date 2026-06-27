@@ -1,9 +1,31 @@
 {
-  "generatedAt": "2026-05-06T20:08:58.503Z",
+  "generatedAt": "2026-06-27T20:17:31.082Z",
   "months": [
     {
       "month": "2026-05",
       "entries": [
+        {
+          "refs": [
+            "ab7b259"
+          ],
+          "descriptionMd": "Packages: Add min release age\nCo-authored-by: Cursor <cursoragent@cursor.com>",
+          "committedAtIso": "2026-05-20T12:00:08+02:00",
+          "committedAtShort": "2026-05-20",
+          "refsDisplay": [
+            "ab7b259"
+          ]
+        },
+        {
+          "refs": [
+            "c5f77dd"
+          ],
+          "descriptionMd": "Update packages and changelog helper scripts",
+          "committedAtIso": "2026-05-12T09:48:14+02:00",
+          "committedAtShort": "2026-05-12",
+          "refsDisplay": [
+            "c5f77dd"
+          ]
+        },
         {
           "refs": [
             "63d654e"

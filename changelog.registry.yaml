@@ -78,3 +78,15 @@ entries:
       - 'a4edf93'
       - 'f1b09b2'
     hide: true
+  - refs:
+      - 'c5f77dd'
+    descriptionMd: |
+      Update packages and changelog helper scripts
+  - refs:
+      - 'ab7b259'
+    descriptionMd: |
+      Packages: Add min release age
+      Co-authored-by: Cursor <cursoragent@cursor.com>
+  - refs:
+      - '683715f'
+    hide: true
