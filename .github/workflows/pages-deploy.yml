@@ -97,7 +97,7 @@ jobs:
         env:
           VITE_OSM_OAUTH_CLIENT_ID: ${{ secrets.VITE_OSM_OAUTH_CLIENT_ID }}
 
-      - uses: actions/upload-pages-artifact@v3
+      - uses: actions/upload-pages-artifact@v5
         with:
           path: dist
 
