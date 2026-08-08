@@ -22,12 +22,36 @@ function schoolDetailUrl(stateKey: StateCode, schoolKey: string): string {
   return `${GITHUB_PAGES_SITE_ROOT}/bundesland/${stateKey}/schule/${enc}`
 }
 
+/** Normalize a school website string to an https URL, or null if empty. */
+export function schoolWebsiteHref(raw: unknown): string | null {
+  if (typeof raw !== 'string') return null
+  const t = raw.trim()
+  if (!t) return null
+  if (/^https?:\/\//i.test(t)) return t
+  if (t.startsWith('//')) return `https:${t}`
+  return `https://${t}`
+}
+
+/** Prefer amtliche website, then OSM `website` / `contact:website`. */
+export function resolveSchoolWebsiteHref(input: {
+  officialProperties?: Record<string, unknown> | null
+  osmTags?: Record<string, string> | null
+}): string | null {
+  const fromOfficial = schoolWebsiteHref(input.officialProperties?.website)
+  if (fromOfficial) return fromOfficial
+  const tags = input.osmTags
+  if (!tags) return null
+  return schoolWebsiteHref(tags.website) ?? schoolWebsiteHref(tags['contact:website'])
+}
+
 export function buildMaprouletteTaskMarkdown(input: {
   stateKey: StateCode
   schoolKey: string
   schoolName: string | null | undefined
   osmTypeId: string
   suggestions: OsmTagSuggestionsResult
+  officialProperties?: Record<string, unknown> | null
+  osmTags?: Record<string, string> | null
 }): string {
   const pendingGroups = groupsWithPendingTags(
     input.suggestions.groups,
@@ -51,6 +75,14 @@ export function buildMaprouletteTaskMarkdown(input: {
     `* [Schulabgleich Detailseite](${schoolDetailUrl(input.stateKey, input.schoolKey)})`,
     `* [OpenStreetMap](https://www.openstreetmap.org/${input.osmTypeId})`,
   )
+
+  const websiteHref = resolveSchoolWebsiteHref({
+    officialProperties: input.officialProperties,
+    osmTags: input.osmTags,
+  })
+  if (websiteHref) {
+    lines.push(`* [Website der Schule](${websiteHref})`)
+  }
 
   return lines.join('\n')
 }

@@ -96,6 +96,8 @@ export function buildMaprouletteTagFixTask(input: {
     schoolName: input.schoolName,
     osmTypeId,
     suggestions,
+    officialProperties: input.officialProperties,
+    osmTags: input.osmTags,
   }).replaceAll('\n', ' \n')
 
   return {
