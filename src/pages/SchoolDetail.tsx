@@ -1,5 +1,3 @@
-import { OeffentlicheTraegerschaftOsmSuggest } from '../components/school/OeffentlicheTraegerschaftOsmSuggest'
-import { PrimarySchoolOsmSuggest } from '../components/school/PrimarySchoolOsmSuggest'
 import { SchoolDetailActionLinks } from '../components/school/SchoolDetailActionLinks'
 import {
   SchoolDetailAmbiguousAlert,
@@ -12,8 +10,7 @@ import { SchoolDetailCompareBody } from '../components/school/SchoolDetailCompar
 import { SchoolDetailLicenceWarnings } from '../components/school/SchoolDetailLicence'
 import { SchoolDetailMapSection } from '../components/school/SchoolDetailMapSection'
 import { SchoolDetailMatchExplanation } from '../components/school/SchoolDetailMatchExplanation'
-import { SchoolRefOsmSuggest } from '../components/school/SchoolRefOsmSuggest'
-import { SecondarySchoolOsmSuggest } from '../components/school/SecondarySchoolOsmSuggest'
+import { SchoolOsmSuggestBlocks } from '../components/school/SchoolOsmSuggestBlocks'
 import { de } from '../i18n/de'
 import { findOfficialSchoolFeature } from '../lib/findOfficialSchoolFeature'
 import { formatDeInteger } from '../lib/formatNumber'
@@ -166,22 +163,7 @@ export function SchoolDetail() {
             officialProperties={matchRow.officialProperties ?? null}
           />
 
-          <PrimarySchoolOsmSuggest
-            row={matchRow}
-            lon={mapOsmCentroid?.[0] ?? null}
-            lat={mapOsmCentroid?.[1] ?? null}
-          />
-          <SecondarySchoolOsmSuggest
-            row={matchRow}
-            lon={mapOsmCentroid?.[0] ?? null}
-            lat={mapOsmCentroid?.[1] ?? null}
-          />
-          <OeffentlicheTraegerschaftOsmSuggest
-            row={matchRow}
-            lon={mapOsmCentroid?.[0] ?? null}
-            lat={mapOsmCentroid?.[1] ?? null}
-          />
-          <SchoolRefOsmSuggest
+          <SchoolOsmSuggestBlocks
             row={matchRow}
             lon={mapOsmCentroid?.[0] ?? null}
             lat={mapOsmCentroid?.[1] ?? null}

@@ -31,3 +31,6 @@ export const stateOfficialPointsUrl = (code: string) =>
 /** Simplified Bundesland outline (GeoJSON Feature) for map overlay; checked in under `public/bundesland-boundaries/`. */
 export const stateBoundaryUrl = (code: string) =>
   datasetsUrl(`/bundesland-boundaries/${code}.geojson`)
+
+/** MapRoulette Tag Fix feed under `public/maproulette/` (local Vite + Pages). */
+export const maprouletteTagFixesJsonUrl = () => datasetsUrl('/maproulette/school-tagfixes.json')

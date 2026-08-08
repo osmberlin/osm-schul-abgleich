@@ -30,6 +30,7 @@ import type { FilterSpecification } from 'maplibre-gl'
 import { useState } from 'react'
 import MapGL, {
   Layer,
+  type MapEvent,
   type MapLayerMouseEvent,
   type ViewStateChangeEvent,
   Source,
@@ -247,7 +248,7 @@ export function StateMap({
         initialViewState={initialViewState}
         mapStyle={OPENFREEMAP_STYLE}
         {...flatMapGlProps}
-        onLoad={(e) => {
+        onLoad={(e: MapEvent) => {
           const map = e.target
           applyFlatMapRotationLocks(map)
           setCurrentBbox(boundsToBboxParam(map.getBounds()))

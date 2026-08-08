@@ -1,6 +1,12 @@
 import { de } from '../../i18n/de'
-import { buildIdUrl, buildJosmLoadObject, buildOsmBrowseUrl } from '../../lib/editorLinks'
+import {
+  buildIdUrl,
+  buildJosmLoadObject,
+  buildMaprouletteIdEditorUrlFromBbox,
+  buildOsmBrowseUrl,
+} from '../../lib/editorLinks'
 import { jedeschuleSchoolJsonUrl } from '../../lib/jedeschuleUrls'
+import { stateHasMaproulette } from '../../lib/maprouletteAvailability'
 import { computeSchoolDetailMapActionBounds } from '../../lib/schoolDetailMapActionBounds'
 import { resolveSchoolMapOsmCentroid } from '../../lib/schoolDetailMapOsmCentroid'
 import type { StateSchoolsBundle, StateSchoolsMatchRow } from '../../lib/stateDatasetQueries'
@@ -30,6 +36,9 @@ export function SchoolDetailActionLinks({
   const bounds = computeSchoolDetailMapActionBounds(data, matchRow, mapOsmCentroid, osmAreasByKey)
   const idUrl = buildIdUrl(matchRow.osmType, matchRow.osmId, bounds)
   const josmUrl = buildJosmLoadObject(matchRow.osmType, matchRow.osmId, bounds)
+  const maprouletteUrl = stateHasMaproulette(stateKey)
+    ? buildMaprouletteIdEditorUrlFromBbox(bounds)
+    : null
   const jedeschuleItemUrl =
     matchRow.officialId &&
     !(matchRow.ambiguousOfficialIds && matchRow.ambiguousOfficialIds.length > 0)
@@ -47,6 +56,11 @@ export function SchoolDetailActionLinks({
       {josmUrl && (
         <a href={josmUrl} target="_blank" rel="noreferrer" className={EDIT_LINK_CLASS_NAME}>
           {de.detail.editJosm}
+        </a>
+      )}
+      {maprouletteUrl && (
+        <a href={maprouletteUrl} target="_blank" rel="noreferrer" className={EDIT_LINK_CLASS_NAME}>
+          {de.detail.editMaproulette}
         </a>
       )}
       {(jedeschuleItemUrl || osmBrowseUrl || osmLicenceCompatible) && (

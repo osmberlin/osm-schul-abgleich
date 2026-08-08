@@ -44,7 +44,7 @@ export function OsmLocateSearchDialog({ open, onClose }: { open: boolean; onClos
               <MagnifyingGlassIcon aria-hidden className="size-5 text-emerald-400" />
             </div>
             <div className="mt-3 min-w-0 flex-1 text-center sm:mt-0 sm:text-left">
-              <DialogTitle as="h3" className="text-base font-semibold text-zinc-100">
+              <DialogTitle className="text-base font-semibold text-zinc-100">
                 {de.osmLocate.title}
               </DialogTitle>
               <p className="mt-2 text-sm text-zinc-400">{de.osmLocate.description}</p>

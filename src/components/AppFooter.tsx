@@ -1,4 +1,5 @@
 import { de } from '../i18n/de'
+import { maprouletteTagFixesJsonUrl } from '../lib/paths'
 import { HeartIcon } from '@heroicons/react/20/solid'
 import { Link } from '@tanstack/react-router'
 
@@ -82,6 +83,20 @@ export function AppFooter() {
           <Link to="/changelog" className={endFooterLinkClass}>
             {de.navChangelog}
           </Link>
+          <span
+            aria-hidden
+            className="mx-1.5 text-zinc-500 transition-colors duration-150 group-hover/footer:text-emerald-300/70"
+          >
+            ·
+          </span>
+          <a
+            href={maprouletteTagFixesJsonUrl()}
+            className={endFooterLinkClass}
+            target="_blank"
+            rel="noreferrer"
+          >
+            {f.maprouletteFeedLabel}
+          </a>
           <span
             aria-hidden
             className="mx-1.5 text-zinc-500 transition-colors duration-150 group-hover/footer:text-emerald-300/70"

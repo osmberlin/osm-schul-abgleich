@@ -14,7 +14,7 @@ import { featureCollection, point } from '@turf/helpers'
 import { getFeature, getAuthToken, configure, uploadChangeset, isLoggedIn } from 'osm-api'
 import 'maplibre-gl/dist/maplibre-gl.css'
 import { useState } from 'react'
-import MapGL, { Layer, Source } from 'react-map-gl/maplibre'
+import MapGL, { Layer, type MapEvent, Source } from 'react-map-gl/maplibre'
 
 function syncOsmAuthHeader() {
   const t = getAuthToken()
@@ -139,7 +139,7 @@ export function AenderungenPage() {
               mapStyle={OPENFREEMAP_STYLE}
               reuseMaps
               {...flatMapGlProps}
-              onLoad={(e) => applyFlatMapRotationLocks(e.target)}
+              onLoad={(e: MapEvent) => applyFlatMapRotationLocks(e.target)}
             >
               <Source id="pending-osm" type="geojson" data={mapFc}>
                 <Layer

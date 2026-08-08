@@ -20,6 +20,7 @@ import {
   serializeJedeschuleStatsCompact,
 } from './jedeschuleCsv'
 import { JEDESCHULE_WEEKLY_CSV_URL, jedeschuleDumpAbsolutePath } from './jedeschuleDumpConfig'
+import { writeMaprouletteSchoolTagFixes } from './maprouletteSchoolTagFixes'
 import {
   buildOsmSchoolsFromGeoJson,
   type MatchRowOut,
@@ -872,6 +873,9 @@ export async function runStateFirstPipeline(
     }
   }
   await writeJson(summaryPath, merged)
+
+  const mr = await writeMaprouletteSchoolTagFixes(projectRoot)
+  errors.push(...mr.errors)
 
   const finishedAt = new Date().toISOString()
   const durationMs = Math.round(performance.now() - t0)

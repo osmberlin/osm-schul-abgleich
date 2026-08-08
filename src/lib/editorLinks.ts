@@ -1,5 +1,40 @@
+import { schoolTagFixesChallengeId } from './maprouletteIds.const'
+
 const JOSM = 'http://127.0.0.1:8111'
 const CHANGESET_HASHTAG = '#schulabgleich'
+
+/** Experimental MapRoulette-in-iD (https://github.com/tordans/iD/pull/4). */
+const MAPROULETTE_ID_EDITOR_ORIGIN = 'https://deploy-preview-4--tordans-id-experiments.netlify.app'
+
+export type MapView = { lat: number; lon: number; zoom: number }
+
+/** Center + zoom from a WGS84 bbox [west, south, east, north] — shared by iD fallback and MapRoulette. */
+export function mapViewFromBbox(bbox: [number, number, number, number]): MapView {
+  const [w, s, e, n] = bbox
+  const lat = (s + n) / 2
+  const lon = (w + e) / 2
+  const span = Math.max(n - s, e - w)
+  const zoom = Math.min(18, Math.max(11, Math.round(14 - Math.log2(span * 45))))
+  return { lat, lon, zoom }
+}
+
+/**
+ * Open the school Tag Fix challenge in MapRoulette-enabled iD at a map position.
+ * Challenge browse equivalent: `https://maproulette.org/browse/challenges/{id}`.
+ */
+export function buildMaprouletteIdEditorUrl(view: MapView): string | null {
+  if (schoolTagFixesChallengeId == null) return null
+  const map = `map=${view.zoom.toFixed(2)}/${view.lat.toFixed(5)}/${view.lon.toFixed(5)}`
+  const hash = `disable_features=boundaries&${map}&maproulette=${schoolTagFixesChallengeId}`
+  return `${MAPROULETTE_ID_EDITOR_ORIGIN}/#${hash}`
+}
+
+export function buildMaprouletteIdEditorUrlFromBbox(
+  bbox: [number, number, number, number] | null | undefined,
+): string | null {
+  if (!bbox || bbox.length !== 4) return null
+  return buildMaprouletteIdEditorUrl(mapViewFromBbox(bbox))
+}
 
 export function buildIdUrl(
   osmType: 'way' | 'relation' | 'node' | null,
@@ -17,11 +52,7 @@ export function buildIdUrl(
   }
   if (!bbox || bbox.length !== 4) return null
   {
-    const [w, s, e, n] = bbox
-    const lat = (s + n) / 2
-    const lon = (w + e) / 2
-    const span = Math.max(n - s, e - w)
-    const zoom = Math.min(18, Math.max(11, Math.round(14 - Math.log2(span * 45))))
+    const { lat, lon, zoom } = mapViewFromBbox(bbox)
     u.searchParams.set('lat', lat.toFixed(5))
     u.searchParams.set('lon', lon.toFixed(5))
     u.searchParams.set('zoom', String(zoom))

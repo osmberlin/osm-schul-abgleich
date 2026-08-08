@@ -1,24 +1,17 @@
-import { de } from '../../i18n/de'
-import { isOfficialGrundschule } from '../../lib/officialGrundschule'
+import type { OsmSuggestGroup } from '../../lib/osmTagSuggestions'
 import type { SchoolsMatchRow } from '../../lib/schemas'
-import { PRIMARY_SUGGEST_TAGS } from '../../lib/schoolFormRules'
 import { SchoolOsmSuggestSection } from './SchoolOsmSuggestSection'
 
 type Props = {
   row: SchoolsMatchRow
   lon: number | null
   lat: number | null
+  groups: readonly OsmSuggestGroup[]
 }
 
-export function PrimarySchoolOsmSuggest({ row, lon, lat }: Props) {
-  if (
-    !isOfficialGrundschule({
-      officialName: row.officialName,
-      officialProperties: row.officialProperties ?? null,
-    })
-  ) {
-    return null
-  }
+export function PrimarySchoolOsmSuggest({ row, lon, lat, groups }: Props) {
+  const group = groups.find((g) => g.kind === 'grundschule')
+  if (!group) return null
 
   return (
     <SchoolOsmSuggestSection
@@ -26,9 +19,9 @@ export function PrimarySchoolOsmSuggest({ row, lon, lat }: Props) {
       lon={lon}
       lat={lat}
       sectionHeadingId="primary-school-osm-suggest-title"
-      sectionTitle={de.osm.grundschuleSectionTitle}
-      sectionLead={de.osm.grundschuleSectionLead}
-      suggestTags={PRIMARY_SUGGEST_TAGS}
+      sectionTitle={group.title}
+      sectionLead={group.lead}
+      suggestTags={group.tags}
     />
   )
 }

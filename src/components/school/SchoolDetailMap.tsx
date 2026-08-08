@@ -30,6 +30,7 @@ import type { Feature } from 'geojson'
 import { Fragment, useState } from 'react'
 import MapGL, {
   Layer,
+  type MapEvent,
   type MapLayerMouseEvent,
   Source,
   type ViewStateChangeEvent,
@@ -274,12 +275,12 @@ export function SchoolDetailMap({
               ? 'pointer'
               : 'default'
         }
-        onLoad={(e) => {
+        onLoad={(e: MapEvent) => {
           const map = e.target
           applyFlatMapRotationLocks(map)
           onMapBboxChange(boundsToBboxParam(map.getBounds()))
         }}
-        onMove={(e) => {
+        onMove={(e: ViewStateChangeEvent) => {
           onMapBboxChange(boundsToBboxParam(e.target.getBounds()))
         }}
         onMoveEnd={onMoveEnd}
