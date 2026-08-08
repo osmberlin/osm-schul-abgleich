@@ -7,11 +7,20 @@ import { GITHUB_PAGES_SITE_ROOT } from './githubRepo'
 export const maprouletteProjectId = 64568
 
 /**
- * School Tag Fix challenge.
+ * School Tag Fix challenge (official / licence-gated).
  * https://maproulette.org/admin/project/64568/challenge/56330
  * https://maproulette.org/browse/challenges/56330
  */
 export const schoolTagFixesChallengeId: number | null = 56330
 
+/**
+ * OSM-heuristic Tag Fix challenge (nationwide; no official licence required).
+ * Set after creating the challenge in MapRoulette; rebuild skips while null.
+ */
+export const schoolTagFixesOsmHeuristicChallengeId: number | null = null
+
 /** Absolute Pages URL for MapRoulette `remoteGeoJson` (must be publicly reachable). */
 export const maprouletteTagFixesPublicUrl = `${GITHUB_PAGES_SITE_ROOT}/maproulette/school-tagfixes.json`
+
+/** Absolute Pages URL for the OSM-heuristic Tag Fix feed. */
+export const maprouletteOsmHeuristicTagFixesPublicUrl = `${GITHUB_PAGES_SITE_ROOT}/maproulette/school-tagfixes-osm-heuristic.json`

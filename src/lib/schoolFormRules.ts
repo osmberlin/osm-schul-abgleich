@@ -81,6 +81,169 @@ export function resolveSchoolFormRuleFromOfficial(input: {
   return null
 }
 
+/** Name tags scanned for OSM-only Schulform heuristics (match order). */
+export const OSM_HEURISTIC_NAME_TAGS = ['official_name', 'name', 'name:de'] as const
+
+/** Website tags scanned for OSM-only Schulform heuristics. */
+export const OSM_HEURISTIC_URL_TAGS = ['website', 'contact:website', 'url', 'contact:url'] as const
+
+/** Distinct form-family tokens used for compound-name rejection. */
+const OSM_FORM_FAMILY_PATTERNS: readonly { family: string; re: RegExp }[] = [
+  { family: 'grundschule', re: /grundschule/i },
+  { family: 'gymnasium', re: /gymnasium/i },
+  { family: 'gesamtschule', re: /gesamtschule/i },
+  { family: 'gemeinschaftsschule', re: /gemeinschaftsschule/i },
+  { family: 'realschule', re: /realschule/i },
+  { family: 'hauptschule', re: /hauptschule/i },
+  { family: 'foerderschule', re: /f[öo]rderschule/i },
+  { family: 'oberschule', re: /oberschule/i },
+  { family: 'mittelschule', re: /mittelschule/i },
+  { family: 'stadtteilschule', re: /stadtteilschule/i },
+  { family: 'beruf', re: /beruf(s|liche|skolleg|sfach)/i },
+  { family: 'waldorf', re: /waldorf/i },
+]
+
+/** Priority-ordered single-form resolvers for OSM name/URL text (Tier A). */
+const OSM_TEXT_RULE_PATTERNS: readonly {
+  re: RegExp
+  rule: SchoolFormRule
+  token: string
+}[] = [
+  { re: /gesamtschule/i, rule: 'gesamtschule', token: 'gesamtschule' },
+  { re: /gemeinschaftsschule/i, rule: 'gesamtschule', token: 'gemeinschaftsschule' },
+  { re: /gymnasium/i, rule: 'gymnasium', token: 'gymnasium' },
+  { re: /hauptschule/i, rule: 'hauptReal', token: 'hauptschule' },
+  { re: /realschule/i, rule: 'hauptReal', token: 'realschule' },
+  // `oberschule` omitted: in Berlin often ISS/Gymnasium-equivalent; ambiguous nationwide.
+  { re: /mittelschule/i, rule: 'hauptReal', token: 'mittelschule' },
+  { re: /grundschule/i, rule: 'grundschule', token: 'grundschule' },
+]
+
+const COMPOUND_PHRASE_RES: readonly RegExp[] = [
+  /grund[\s-]*und[\s-]*(haupt|real|gemeinschaft|förder|foerder)/i,
+  /grund[-/](real|haupt)/i,
+]
+
+/** Join OSM name-like tags into one blob for heuristic matching. */
+export function osmHeuristicNameBlob(tags: Record<string, string> | null | undefined): string {
+  if (!tags) return ''
+  return OSM_HEURISTIC_NAME_TAGS.map((k) => tags[k] ?? '')
+    .filter(Boolean)
+    .join(' ')
+}
+
+/** Join OSM website-like tags into one blob for heuristic matching. */
+export function osmHeuristicUrlBlob(tags: Record<string, string> | null | undefined): string {
+  if (!tags) return ''
+  return OSM_HEURISTIC_URL_TAGS.map((k) => tags[k] ?? '')
+    .filter(Boolean)
+    .join(' ')
+}
+
+/** True when text names more than one Schulform family (unsafe for auto Tag Fix). */
+export function isCompoundOsmSchoolFormText(text: string | null | undefined): boolean {
+  if (typeof text !== 'string' || !text.trim()) return false
+  if (COMPOUND_PHRASE_RES.some((re) => re.test(text))) return true
+  let hit = 0
+  for (const { re } of OSM_FORM_FAMILY_PATTERNS) {
+    if (re.test(text)) hit += 1
+    if (hit > 1) return true
+  }
+  return false
+}
+
+function resolveSingleOsmTextRule(text: string): { rule: SchoolFormRule; token: string } | null {
+  if (!text.trim() || isCompoundOsmSchoolFormText(text)) return null
+  for (const { re, rule, token } of OSM_TEXT_RULE_PATTERNS) {
+    if (re.test(text)) return { rule, token }
+  }
+  return null
+}
+
+export type OsmTextFormSource = 'name' | 'url'
+
+export type OsmTextFormResolution = {
+  rule: SchoolFormRule
+  source: OsmTextFormSource
+  matchedToken: string
+}
+
+/**
+ * Infer Schulform from OSM name/URL text only (no official data).
+ * Prefers name over URL. A compound multi-form **name** blocks URL fallback entirely
+ * (combined campuses must not get a single-form Tag Fix from the website).
+ */
+export function resolveSchoolFormRuleFromOsmText(input: {
+  nameBlob?: string | null | undefined
+  urlBlob?: string | null | undefined
+}): OsmTextFormResolution | null {
+  const nameBlob = input.nameBlob ?? ''
+  if (isCompoundOsmSchoolFormText(nameBlob)) return null
+
+  const fromName = resolveSingleOsmTextRule(nameBlob)
+  if (fromName) {
+    return { rule: fromName.rule, source: 'name', matchedToken: fromName.token }
+  }
+  const urlBlob = input.urlBlob ?? ''
+  const fromUrl = resolveSingleOsmTextRule(urlBlob)
+  if (fromUrl) {
+    return { rule: fromUrl.rule, source: 'url', matchedToken: fromUrl.token }
+  }
+  return null
+}
+
+/** Single-value `school:de` → SchoolFormRule (multi-value / unknown → null). */
+const SCHOOL_DE_TO_RULE: Record<string, SchoolFormRule> = {
+  Grundschule: 'grundschule',
+  Gymnasium: 'gymnasium',
+  Gesamtschule: 'gesamtschule',
+  Gemeinschaftsschule: 'gesamtschule',
+  Stadtteilschule: 'gesamtschule',
+  Realschule: 'hauptReal',
+  Hauptschule: 'hauptReal',
+  Oberschule: 'hauptReal',
+  Mittelschule: 'hauptReal',
+}
+
+/**
+ * Map a clean single-segment `school:de=*` to a SchoolFormRule.
+ * Composite values (`Hauptschule;Förderschule`) are rejected.
+ */
+export function resolveSchoolFormRuleFromSchoolDe(
+  schoolDe: string | null | undefined,
+): SchoolFormRule | null {
+  if (typeof schoolDe !== 'string' || !schoolDe.trim()) return null
+  const trimmed = schoolDe.trim()
+  if (/[;,|/]/.test(trimmed)) return null
+  return SCHOOL_DE_TO_RULE[trimmed] ?? null
+}
+
+/** Recommended Tag Fix specs for a SchoolFormRule (Gesamtschule keeps isced alternatives for UI). */
+export function suggestTagsForSchoolFormRule(rule: SchoolFormRule): readonly OSMTagSuggestSpec[] {
+  if (rule === 'grundschule') return PRIMARY_SUGGEST_TAGS
+  return SECONDARY_SUGGEST_TAGS_BY_KIND[rule]
+}
+
+/**
+ * Tier B: complete the other half of a primary form pair when one side is already set.
+ * Does not invent `isced:level` for bare `school=secondary`.
+ */
+export function partialPrimaryFormTagCompletions(
+  tags: Record<string, string> | null | undefined,
+): OSMTagSuggestSpec[] {
+  const out: OSMTagSuggestSpec[] = []
+  if (!tags) return out
+  const school = tags.school?.trim()
+  const isced = tags['isced:level']?.trim()
+  if (isced === '1' && school !== 'primary') {
+    out.push({ key: TAG_SCHOOL, value: 'primary' })
+  }
+  if (school === 'primary' && isced !== '1') {
+    out.push({ key: TAG_ISCED, value: '1' })
+  }
+  return out
+}
+
 function isTag(
   tags: Record<string, string> | null | undefined,
   key: string,

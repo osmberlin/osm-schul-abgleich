@@ -2,7 +2,7 @@ name: Rebuild MapRoulette Tasks
 
 on:
   workflow_dispatch:
-  # After Pages publishes public/maproulette/school-tagfixes.json (nightly data refresh or code deploy).
+  # After Pages publishes public/maproulette/*.json (nightly data refresh or code deploy).
   workflow_run:
     workflows: ['Deploy GitHub Pages']
     types: [completed]
@@ -32,14 +32,22 @@ jobs:
       - run: bun install --frozen-lockfile
         env:
           HUSKY: '0'
-      - name: Confirm hosted Tag Fix feed is reachable
+      - name: Confirm hosted Tag Fix feeds are reachable
         run: |
           set -euo pipefail
           META_URL="https://schulabgleich.osm-verkehrswende.org/maproulette/school-tagfixes.meta.json"
           echo "Probing ${META_URL}"
           curl --fail -sS -o /tmp/mr-meta.json "${META_URL}"
           bun -e 'const m = await Bun.file("/tmp/mr-meta.json").json(); console.log(`taskCount=${m.taskCount} generatedAt=${m.generatedAt}`)'
-      - name: Trigger MapRoulette challenge rebuild
+
+          HEURISTIC_META_URL="https://schulabgleich.osm-verkehrswende.org/maproulette/school-tagfixes-osm-heuristic.meta.json"
+          echo "Probing ${HEURISTIC_META_URL}"
+          if curl --fail -sS -o /tmp/mr-heuristic-meta.json "${HEURISTIC_META_URL}"; then
+            bun -e 'const m = await Bun.file("/tmp/mr-heuristic-meta.json").json(); console.log(`taskCount=${m.taskCount} generatedAt=${m.generatedAt}`)'
+          else
+            echo "::warning::OSM-heuristic Tag Fix meta not reachable yet (ok until first pipeline deploy after enablement)"
+          fi
+      - name: Trigger MapRoulette challenge rebuild(s)
         env:
           MAPROULETTE_API_KEY: ${{ secrets.MAPROULETTE_API_KEY }}
         run: bun run maproulette:rebuild

@@ -34,3 +34,7 @@ export const stateBoundaryUrl = (code: string) =>
 
 /** MapRoulette Tag Fix feed under `public/maproulette/` (local Vite + Pages). */
 export const maprouletteTagFixesJsonUrl = () => datasetsUrl('/maproulette/school-tagfixes.json')
+
+/** Nationwide OSM-heuristic Tag Fix feed (no official licence gate). */
+export const maprouletteOsmHeuristicTagFixesJsonUrl = () =>
+  datasetsUrl('/maproulette/school-tagfixes-osm-heuristic.json')

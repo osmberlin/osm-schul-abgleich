@@ -1,4 +1,5 @@
 import {
+  buildMaprouletteOsmHeuristicTaskMarkdown,
   buildMaprouletteTaskMarkdown,
   resolveSchoolWebsiteHref,
   schoolWebsiteHref,
@@ -68,5 +69,39 @@ describe('buildMaprouletteTaskMarkdown', () => {
       osmTags: {},
     })
     expect(md).not.toContain('Website der Schule')
+  })
+})
+
+describe('buildMaprouletteOsmHeuristicTaskMarkdown', () => {
+  it('states OSM-only provenance and lists pending tags', () => {
+    const md = buildMaprouletteOsmHeuristicTaskMarkdown({
+      stateKey: 'BY',
+      schoolKey: 'osm-BY-1',
+      schoolName: 'Muster-Grundschule',
+      osmTypeId: 'node/1',
+      suggestions: {
+        groups: [
+          {
+            kind: 'grundschule',
+            title: 'Vorschlag aus OSM-Namen (Grundschule)',
+            lead: 'Im OSM-Namen kommt „grundschule“ vor.',
+            tags: [
+              { key: 'school', value: 'primary' },
+              { key: 'isced:level', value: '1' },
+            ],
+          },
+        ],
+        pendingTags: { school: 'primary', 'isced:level': '1' },
+        signalSource: 'name',
+        schoolFormRule: 'grundschule',
+        matchedToken: 'grundschule',
+      },
+      osmTags: { name: 'Muster-Grundschule', website: 'https://gs.example.de' },
+    })
+    expect(md).toContain('nicht aus amtlichen Schuldaten')
+    expect(md).toContain('Vorschlag aus OSM-Namen')
+    expect(md).toContain('`school=primary`')
+    expect(md).toContain('Website der Schule')
+    expect(md).not.toContain('amtlichen Daten')
   })
 })

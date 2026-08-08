@@ -1,9 +1,12 @@
 #!/usr/bin/env bun
 /**
- * Trigger MapRoulette rebuild from remoteGeoJson.
- * Requires MAPROULETTE_API_KEY and schoolTagFixesChallengeId.
+ * Trigger MapRoulette rebuild from remoteGeoJson for configured challenges.
+ * Requires MAPROULETTE_API_KEY. Skips challenges whose id is still null.
  */
-import { schoolTagFixesChallengeId } from '../../src/lib/maprouletteIds.const'
+import {
+  schoolTagFixesChallengeId,
+  schoolTagFixesOsmHeuristicChallengeId,
+} from '../../src/lib/maprouletteIds.const'
 
 function requireApiKey(): string {
   const key = process.env.MAPROULETTE_API_KEY?.trim()
@@ -14,25 +17,42 @@ function requireApiKey(): string {
   return key
 }
 
-async function main() {
-  const id = schoolTagFixesChallengeId
-  if (id == null) {
-    console.warn(
-      'schoolTagFixesChallengeId is null — skip rebuild (set the id in src/lib/maprouletteIds.const.ts)',
-    )
-    process.exit(0)
-  }
-  const apiKey = requireApiKey()
+async function rebuildChallenge(id: number, label: string, apiKey: string): Promise<void> {
   const apiUrl = `https://maproulette.org/api/v2/challenge/${id}/rebuild?removeUnmatched=true&skipSnapshot=true`
   const response = await fetch(apiUrl, {
     method: 'PUT',
     headers: { apiKey, accept: '*/*' },
   })
   if (!response.ok) {
-    console.error('Rebuild failed', response.status, await response.text())
+    console.error(`Rebuild failed for ${label}`, response.status, await response.text())
     process.exit(1)
   }
-  console.info('Rebuild triggered for challenge', id)
+  console.info(`Rebuild triggered for ${label} challenge`, id)
+}
+
+async function main() {
+  const apiKey = requireApiKey()
+  const jobs: { id: number | null; label: string }[] = [
+    { id: schoolTagFixesChallengeId, label: 'official' },
+    { id: schoolTagFixesOsmHeuristicChallengeId, label: 'osm-heuristic' },
+  ]
+
+  let any = false
+  for (const job of jobs) {
+    if (job.id == null) {
+      console.warn(
+        `${job.label}: challenge id is null — skip rebuild (set id in src/lib/maprouletteIds.const.ts)`,
+      )
+      continue
+    }
+    any = true
+    await rebuildChallenge(job.id, job.label, apiKey)
+  }
+
+  if (!any) {
+    console.warn('No MapRoulette challenge ids configured — nothing to rebuild')
+    process.exit(0)
+  }
 }
 
 await main()

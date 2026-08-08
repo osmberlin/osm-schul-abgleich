@@ -1,4 +1,5 @@
 import { GITHUB_PAGES_SITE_ROOT } from './githubRepo'
+import type { OsmHeuristicTagSuggestionsResult } from './osmHeuristicTagSuggestions'
 import {
   groupsWithPendingTags,
   type OsmSuggestGroup,
@@ -44,6 +45,33 @@ export function resolveSchoolWebsiteHref(input: {
   return schoolWebsiteHref(tags.website) ?? schoolWebsiteHref(tags['contact:website'])
 }
 
+function appendHilfsmittel(
+  lines: string[],
+  input: {
+    stateKey: StateCode
+    schoolKey: string
+    osmTypeId: string
+    officialProperties?: Record<string, unknown> | null
+    osmTags?: Record<string, string> | null
+    /** When false, skip Schulabgleich detail link. */
+    includeDetailLink?: boolean
+  },
+): void {
+  lines.push('## Hilfsmittel', '')
+  if (input.includeDetailLink !== false) {
+    lines.push(`* [Schulabgleich Detailseite](${schoolDetailUrl(input.stateKey, input.schoolKey)})`)
+  }
+  lines.push(`* [OpenStreetMap](https://www.openstreetmap.org/${input.osmTypeId})`)
+
+  const websiteHref = resolveSchoolWebsiteHref({
+    officialProperties: input.officialProperties,
+    osmTags: input.osmTags,
+  })
+  if (websiteHref) {
+    lines.push(`* [Website der Schule](${websiteHref})`)
+  }
+}
+
 export function buildMaprouletteTaskMarkdown(input: {
   stateKey: StateCode
   schoolKey: string
@@ -69,21 +97,50 @@ export function buildMaprouletteTaskMarkdown(input: {
     lines.push('')
   }
 
-  lines.push(
-    '## Hilfsmittel',
-    '',
-    `* [Schulabgleich Detailseite](${schoolDetailUrl(input.stateKey, input.schoolKey)})`,
-    `* [OpenStreetMap](https://www.openstreetmap.org/${input.osmTypeId})`,
-  )
+  appendHilfsmittel(lines, input)
+  return lines.join('\n')
+}
 
-  const websiteHref = resolveSchoolWebsiteHref({
-    officialProperties: input.officialProperties,
-    osmTags: input.osmTags,
-  })
-  if (websiteHref) {
-    lines.push(`* [Website der Schule](${websiteHref})`)
+/**
+ * Task markdown for the nationwide OSM-heuristic challenge (no official-data claims).
+ * Prefers OSM website only in Hilfsmittel.
+ */
+export function buildMaprouletteOsmHeuristicTaskMarkdown(input: {
+  stateKey: StateCode
+  schoolKey: string
+  schoolName: string | null | undefined
+  osmTypeId: string
+  suggestions: OsmHeuristicTagSuggestionsResult
+  osmTags?: Record<string, string> | null
+  includeDetailLink?: boolean
+}): string {
+  const name = input.schoolName?.trim() || 'Schule'
+  const land = STATE_LABEL_DE[input.stateKey]
+  const lines: string[] = [
+    `## ${name}`,
+    '',
+    `${land} · OSM \`${input.osmTypeId}\``,
+    '',
+    '_Hinweis: Vorschläge stammen aus vorhandenen OSM-Tags (Name, URL oder `school`/`isced:level`/`school:de`), nicht aus amtlichen Schuldaten._',
+    '',
+  ]
+
+  for (const group of input.suggestions.groups) {
+    lines.push(`### ${group.title}`, '', group.lead, '')
+    for (const tag of group.tags) {
+      lines.push(`* \`${tag.key}=${tag.value}\``)
+    }
+    lines.push('')
   }
 
+  appendHilfsmittel(lines, {
+    stateKey: input.stateKey,
+    schoolKey: input.schoolKey,
+    osmTypeId: input.osmTypeId,
+    officialProperties: null,
+    osmTags: input.osmTags,
+    includeDetailLink: input.includeDetailLink,
+  })
   return lines.join('\n')
 }
 

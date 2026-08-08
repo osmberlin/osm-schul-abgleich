@@ -48,6 +48,25 @@ export const de = {
     refSectionTitle: 'Vorschlag aus amtlichen Daten (ref)',
     refSectionLead:
       'Für diese Schule ist eine amtliche Kennung verfügbar, die als OSM-Tag `ref=*` geeignet sein kann.',
+    /** OSM-only heuristics (MapRoulette nationwide feed; no official licence required). */
+    osmHeuristicFormLabels: {
+      grundschule: 'Grundschule',
+      gymnasium: 'Gymnasium',
+      gesamtschule: 'Gesamtschule',
+      hauptReal: 'Hauptschule/Realschule',
+    },
+    osmHeuristicFromNameTitle: 'Vorschlag aus OSM-Namen ({form})',
+    osmHeuristicFromNameLead:
+      'Im OSM-Namen kommt „{token}“ vor und deutet auf {form} hin. Prüfe die Vorschläge und übernimm sie in MapRoulette, wenn sie passen.',
+    osmHeuristicFromUrlTitle: 'Vorschlag aus Website-URL ({form})',
+    osmHeuristicFromUrlLead:
+      'In der OSM-Website-URL kommt „{token}“ vor und deutet auf {form} hin. Prüfe die Vorschläge und übernimm sie in MapRoulette, wenn sie passen.',
+    osmHeuristicFromSchoolDeTitle: 'Vorschlag aus school:de ({form})',
+    osmHeuristicFromSchoolDeLead:
+      'Das OSM-Tag `school:de={token}` deutet auf {form} hin. Prüfe die Vorschläge und übernimm sie in MapRoulette, wenn sie passen.',
+    osmPartialCompletionTitle: 'Vervollständigung bestehender OSM-Tags',
+    osmPartialCompletionLead:
+      'Aus vorhandenen `school`/`isced:level`-Tags fehlen noch empfohlene Partner-Tags. Prüfe die Vorschläge und übernimm sie in MapRoulette, wenn sie passen.',
     schoolTagWikiLead: 'Bitte informiere dich auf den Wiki-Seiten:',
     /** Shown after the monospace tag in Grundschule action buttons. */
     proposeOsmTagVerb: 'taggen',
