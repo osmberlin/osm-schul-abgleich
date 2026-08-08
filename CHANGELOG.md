@@ -4,16 +4,17 @@ Automatisch aus `changelog.registry.yaml` erzeugt.
 
 ## 2026-08
 
-### `01f3313`
+### `d7da64f`
+
+In MapRoulette-Aufgaben erscheint unter Hilfsmittel ein Link zur Website der Schule, wenn amtliche oder OSM-Daten eine URL haben.
+
+### `6220d1d`
 
 MapRoulette Tag-Fix-Challenge für OSM-lizenzkompatible Länder (BE, BB, SH): Vorschläge zu Schulform, `ref` und Betreiber.
 
 - Auf Übersicht und Schuldetail gibt es einen MapRoulette-Link; die Startseite kennzeichnet Länder mit MapRoulette.
 - Nach dem Pages-Deploy wird die Challenge aus dem veröffentlichten GeoJSON-Feed neu aufgebaut.
-
-### `519fa92`
-
-Die Lizenz-Tabelle listet recherchierte Nutzungsbedingungen für weitere Länder (u. a. BW, HB, RP, SL, ST, TH) mit Verweis auf die Research-Notizen.
+- Die Lizenz-Tabelle listet recherchierte Nutzungsbedingungen für weitere Länder (u. a. BW, HB, RP, SL, ST, TH) mit Verweis auf die Research-Notizen.
 
 ## 2026-05
 
