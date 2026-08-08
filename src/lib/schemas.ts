@@ -34,6 +34,8 @@ export const jedeschuleSchoolSchema = z.object({
   legal_status: z.string().nullable().optional(),
   provider: z.string().nullable().optional(),
   update_timestamp: z.string().nullable().optional(),
+  /** ISO 3166-2:DE code without `DE-` (JedeSchule CSV `state`). */
+  state: z.string().nullable().optional(),
 })
 
 export const jedeschuleStatSchema = z.object({

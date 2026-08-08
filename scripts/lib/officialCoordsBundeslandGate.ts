@@ -1,4 +1,4 @@
-import { stateCodeFromSchoolId } from '../../src/lib/stateConfig'
+import { officialStateCode } from '../../src/lib/stateConfig'
 import { stateCodeForPoint } from './bundeslandBoundaries'
 import type { Feature, FeatureCollection, Point } from 'geojson'
 
@@ -8,13 +8,14 @@ export type ErrorOutsideBoundary = {
 }
 
 /**
- * If the official Point lies outside the Bundesland implied by the JedeSchule id prefix,
+ * If the official Point lies outside the Bundesland from CSV `state`,
  * clear geometry and record the original position on properties for downstream UI.
  * Requires {@link initBundeslandBoundaries} for the same project root.
  */
 export function voidOfficialPointOutsideDeclaredState(f: Feature): Feature {
-  const id = String(f.id ?? (f.properties as { id?: string } | null | undefined)?.id ?? '')
-  const declaredLand = stateCodeFromSchoolId(id)
+  const declaredLand = officialStateCode(
+    (f.properties as Record<string, unknown> | null | undefined) ?? null,
+  )
   if (!declaredLand) return f
 
   const g = f.geometry

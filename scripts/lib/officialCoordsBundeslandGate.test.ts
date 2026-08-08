@@ -19,10 +19,17 @@ function pointFeature(
   lat: number,
   extraProps: Record<string, unknown> = {},
 ) {
+  const dash = id.indexOf('-')
+  const stateFromId = dash > 0 ? id.slice(0, dash) : undefined
   return {
     type: 'Feature',
     id,
-    properties: { id, name: 'Test', ...extraProps },
+    properties: {
+      id,
+      name: 'Test',
+      ...(stateFromId ? { state: stateFromId } : {}),
+      ...extraProps,
+    },
     geometry: { type: 'Point', coordinates: [lon, lat] },
   } as Feature
 }
@@ -56,7 +63,7 @@ describe('voidOfficialPointOutsideDeclaredState', () => {
     expect(out.properties?._error_outside_boundary).toEqual({ latitude: 55.0, longitude: 6.0 })
   })
 
-  it('passes through features without a valid school id land prefix', () => {
+  it('passes through features without a valid state', () => {
     initBundeslandBoundaries(PROJECT_ROOT)
     const f = pointFeature('nope', 13.405, 52.52)
     const out = voidOfficialPointOutsideDeclaredState(f)

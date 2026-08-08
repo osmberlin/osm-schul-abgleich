@@ -5,7 +5,7 @@ import {
   normalizeWebsiteMatchKey,
 } from '../../src/lib/compareMatchKeys'
 import { JEDESCHULE_DUPLICATE_GROUP_SIZE_KEY } from '../../src/lib/jedeschuleDuplicateGroup'
-import { stateCodeFromSchoolId } from '../../src/lib/stateConfig'
+import { officialStateCode } from '../../src/lib/stateConfig'
 import type { OfficialInput } from './match'
 
 export { JEDESCHULE_DUPLICATE_GROUP_SIZE_KEY }
@@ -106,7 +106,7 @@ function hasFiniteCoord(o: OfficialInput): boolean {
 }
 
 function fingerprintKey(off: OfficialInput): string {
-  const land = stateCodeFromSchoolId(off.id)
+  const land = officialStateCode(off.properties)
   if (!land) {
     return `singleton|${off.id}|${roundCoord(off.lon)}|${roundCoord(off.lat)}|${propertySignatureForFingerprint(off.properties)}`
   }

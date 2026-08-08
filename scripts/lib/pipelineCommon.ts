@@ -1,4 +1,4 @@
-import { type StateCode, stateCodeFromSchoolId } from '../../src/lib/stateConfig'
+import { type StateCode, stateCodeFromJedeschuleSchool } from '../../src/lib/stateConfig'
 import type { JedeschuleSchool } from './jedeschuleCsv'
 import { feature, featureCollection, point } from '@turf/helpers'
 import type { FeatureCollection } from 'geojson'
@@ -30,17 +30,17 @@ export function officialGeojsonForState(
   schools: JedeschuleSchool[],
   state: StateCode,
 ): FeatureCollection {
-  const filtered = schools.filter((s) => stateCodeFromSchoolId(s.id) === state)
+  const filtered = schools.filter((s) => stateCodeFromJedeschuleSchool(s) === state)
   return officialGeojsonNational(filtered)
 }
 
-/** Nationwide FeatureCollection; `properties.state` from school id prefix when valid. */
+/** Nationwide FeatureCollection; `properties.state` from the CSV `state` column. */
 export function officialGeojsonNational(schools: JedeschuleSchool[]) {
   return featureCollection(
     schools.map((s) => {
       const lat = s.latitude ?? null
       const lon = s.longitude ?? null
-      const state = stateCodeFromSchoolId(s.id)
+      const state = stateCodeFromJedeschuleSchool(s)
       const has = typeof lat === 'number' && typeof lon === 'number' && Number.isFinite(lat + lon)
       const props = { ...schoolToOfficialProps({ ...s }), ...(state ? { state } : {}) }
       if (has) {

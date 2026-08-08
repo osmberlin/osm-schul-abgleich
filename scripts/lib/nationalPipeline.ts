@@ -5,7 +5,7 @@ import { parseRunHistoryFileText, stringifyRunHistoryJsonl } from '../../src/lib
 import { classifySchoolFormCombo } from '../../src/lib/schoolFormRules'
 import {
   type StateCode,
-  stateCodeFromSchoolId,
+  officialStateCode,
   STATE_MAP_CENTER,
   STATE_ORDER,
 } from '../../src/lib/stateConfig'
@@ -329,11 +329,14 @@ function enrichRowsWithPipelineState(
 ): MatchRowOut[] {
   return rows.map((r) => {
     let state: StateCode | undefined
-    if (r.officialId) state = stateCodeFromSchoolId(r.officialId) ?? undefined
+    if (r.officialId) state = officialStateCode(r.officialProperties) ?? undefined
     if (!state && r.osmId && r.osmType)
       state = osmStateByKey.get(osmTypeIdKey(r.osmType, r.osmId)) ?? undefined
-    if (!state && r.ambiguousOfficialIds?.length)
-      state = stateCodeFromSchoolId(r.ambiguousOfficialIds[0]) ?? undefined
+    if (!state && r.ambiguousOfficialIds?.length) {
+      const ambId = r.ambiguousOfficialIds[0]!
+      const snap = r.ambiguousOfficialSnapshots?.find((s) => s.id === ambId)
+      state = officialStateCode(snap?.properties ?? null) ?? undefined
+    }
     return state ? { ...r, pipelineState: state } : { ...r }
   })
 }

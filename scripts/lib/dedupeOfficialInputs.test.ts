@@ -5,12 +5,14 @@ import { describe, expect, it } from 'vitest'
 
 function off(id: string, lon: number, lat: number, props: Record<string, unknown>): OfficialInput {
   const name = String(props.name ?? '')
+  const dash = id.indexOf('-')
+  const state = dash > 0 ? id.slice(0, dash) : undefined
   return {
     id,
     name,
     lon,
     lat,
-    properties: { ...props, id, name },
+    properties: { ...(state ? { state } : {}), ...props, id, name },
   }
 }
 

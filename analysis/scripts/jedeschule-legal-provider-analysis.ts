@@ -3,7 +3,11 @@
 // analysis/out/06-legal-status-provider.md (see package.json analysis:matches-legal-provider).
 import { parseSchoolsFromCsvText } from '../../scripts/lib/jedeschuleCsv'
 import { jedeschuleDumpAbsolutePath } from '../../scripts/lib/jedeschuleDumpConfig'
-import { STATE_LABEL_DE, STATE_ORDER, stateCodeFromSchoolId } from '../../src/lib/stateConfig'
+import {
+  STATE_LABEL_DE,
+  STATE_ORDER,
+  stateCodeFromJedeschuleSchool,
+} from '../../src/lib/stateConfig'
 import { mkdir, writeFile } from 'node:fs/promises'
 import path from 'node:path'
 
@@ -83,8 +87,8 @@ function formatPct(count: number, total: number): string {
   return `${((count / total) * 100).toFixed(1)} %`
 }
 
-function stateFromSchoolId(id: string): string {
-  return stateCodeFromSchoolId(id) ?? '??'
+function stateFromSchool(s: { id: string; state?: string | null }): string {
+  return stateCodeFromJedeschuleSchool(s) ?? '??'
 }
 
 async function main() {
@@ -99,7 +103,7 @@ async function main() {
   const totalRecords = schools.length
 
   for (const s of schools) {
-    const state = stateFromSchoolId(s.id)
+    const state = stateFromSchool(s)
     if (!perState.has(state)) {
       perState.set(state, {
         legalHas: 0,
@@ -148,7 +152,7 @@ async function main() {
   const md =
     headerBlock('Official `legal_status` and `provider` (JedeSchule CSV)', csvPath) +
     '## Scope\n\n' +
-    'Same **JedeSchule** nationwide CSV used to build `schools_official*.geojson` in the pipeline (`jedeschule-latest.csv` or `JEDESCHULE_CSV`). One row per school; Bundesland from the school `id` prefix (e.g. `NW-…`).\n\n' +
+    'Same **JedeSchule** nationwide CSV used to build `schools_official*.geojson` in the pipeline (`jedeschule-latest.csv` or `JEDESCHULE_CSV`). One row per school; Bundesland from the CSV `state` column.\n\n' +
     'If `legal_status` or `provider` is null/empty/whitespace in the CSV, it counts as **`none`**.\n\n' +
     '## Global value counts\n\n' +
     `Up to **${TOP_N}** value rows per field (by frequency), plus **(other)** if there are more distinct values. **none** means no value in the CSV for that field.\n\n` +
