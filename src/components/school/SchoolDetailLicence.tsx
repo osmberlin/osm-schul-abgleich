@@ -4,6 +4,7 @@ import {
   licenceTableRowHash,
   type BundeslandOfficialSourceRow,
 } from '../../lib/bundeslandOfficialSources'
+import { isOsmLicenceCompatibleForTagFix } from '../../lib/maprouletteAvailability'
 import { type StateCode, STATE_ORDER } from '../../lib/stateConfig'
 import { useSchoolDetailRoute } from '../../lib/useSchoolDetailRoute'
 import { ExclamationTriangleIcon, ShieldCheckIcon } from '@heroicons/react/20/solid'
@@ -22,9 +23,7 @@ export function getSchoolDetailLicenceInfo(routeStateCode: string): SchoolDetail
   const officialLicenceRow = licenceStateCode ? BUNDESLAND_OFFICIAL_SOURCES[licenceStateCode] : null
   const licenceHash = licenceStateCode ? licenceTableRowHash(licenceStateCode) : ''
   const osmLicenceCompatible =
-    officialLicenceRow != null &&
-    (officialLicenceRow.osmCompatible === 'yes_licence' ||
-      officialLicenceRow.osmCompatible === 'yes_waiver')
+    officialLicenceRow != null && isOsmLicenceCompatibleForTagFix(officialLicenceRow.osmCompatible)
   return { officialLicenceRow, licenceHash, osmLicenceCompatible }
 }
 

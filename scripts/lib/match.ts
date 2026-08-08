@@ -18,7 +18,7 @@ import type {
   SchoolFormRule,
 } from '../../src/lib/schoolFormRules'
 import type { StateCode } from '../../src/lib/stateConfig'
-import { stateCodeFromSchoolId } from '../../src/lib/stateConfig'
+import { officialStateCode } from '../../src/lib/stateConfig'
 import distance from '@turf/distance'
 import { point } from '@turf/helpers'
 import type { FeatureCollection, Geometry } from 'geojson'
@@ -208,7 +208,7 @@ function rowLandByOsmRef(
 function groupOfficialsByState(officials: OfficialInput[]): Map<StateCode, OfficialInput[]> {
   const byLand = new Map<StateCode, OfficialInput[]>()
   for (const off of officials) {
-    const land = stateCodeFromSchoolId(off.id)
+    const land = officialStateCode(off.properties)
     if (!land) continue
     const arr = byLand.get(land)
     if (arr) arr.push(off)
@@ -250,7 +250,7 @@ function officialsNearOsm(
   const [lon, lat] = o.centroid
   return withCoord.filter((off) => {
     if (excludeReserved?.has(off.id)) return false
-    const offLand = stateCodeFromSchoolId(off.id)
+    const offLand = officialStateCode(off.properties)
     if (offLand != null && offLand !== osmState) return false
     const d = distance(point([off.lon, off.lat]), point([lon, lat]), { units: 'kilometers' })
     return d <= MATCH_RADIUS_KM
@@ -351,7 +351,7 @@ export function buildOsmSchoolsFromGeoJson(fc: FeatureCollection): OsmSchoolInpu
 
 export type MatchSchoolsOptions = {
   /**
-   * Federal state per OSM feature (`way/123`, …). Only officials whose JedeSchule ID prefix matches that
+   * Federal state per OSM feature (`way/123`, …). Only officials whose `properties.state` matches that
    * state participate in distance-radius matching and in the no-coordinates name fallback. Every
    * `osmSchools` entry must have a map entry.
    */
@@ -363,7 +363,7 @@ function buildOfficialRefMatchIndex(withCoord: OfficialInput[]): Map<string, Off
   const seenTwice = new Set<string>()
   const m = new Map<string, OfficialInput>()
   for (const off of withCoord) {
-    const land = stateCodeFromSchoolId(off.id)
+    const land = officialStateCode(off.properties)
     if (!land) continue
     const suffix = normalizeOfficialIdRefSegment(off.id)
     if (!suffix) continue
@@ -854,7 +854,7 @@ export function matchSchools(
     if (variantMap.size === 0) continue
     const matches = statewideFallbackOfficials.filter((off) => {
       if (statewideFallbackMatched.has(off.id)) return false
-      if (stateCodeFromSchoolId(off.id) !== rowLand) return false
+      if (officialStateCode(off.properties) !== rowLand) return false
       if (!isFachschuleOfficialName(off.name)) return false
       const offN = normalizeForFachschuleCollegeMatch(off.name)
       for (const K of variantMap.keys()) {

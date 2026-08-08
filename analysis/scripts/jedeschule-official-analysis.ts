@@ -2,7 +2,7 @@
 import { parseSchoolsFromCsvText } from '../../scripts/lib/jedeschuleCsv'
 import { jedeschuleDumpAbsolutePath } from '../../scripts/lib/jedeschuleDumpConfig'
 import { officialGeojsonNational } from '../../scripts/lib/pipelineCommon'
-import { stateCodeFromSchoolId, STATE_ORDER } from '../../src/lib/stateConfig'
+import { officialStateCode, STATE_ORDER } from '../../src/lib/stateConfig'
 /**
  * Reads `public/datasets/jedeschule-latest.csv` (or `JEDESCHULE_CSV`) and writes
  * markdown reports under `analysis/out/`.
@@ -169,10 +169,7 @@ type SchoolRow = {
 }
 
 function stateFromProps(p: Record<string, unknown>): string {
-  const stateProp = p.state
-  if (typeof stateProp === 'string' && stateProp.length === 2) return stateProp
-  const id = typeof p.id === 'string' ? p.id : ''
-  return stateCodeFromSchoolId(id) ?? '??'
+  return officialStateCode(p) ?? '??'
 }
 
 async function main() {

@@ -1,8 +1,9 @@
 import { de } from '../../i18n/de'
 import { formatDeInteger } from '../../lib/formatNumber'
+import { stateHasMaproulette } from '../../lib/maprouletteAvailability'
 import { CATEGORY_INNER_HEX } from '../../lib/matchCategoryTheme'
 import { type StateCode, STATE_LABEL_DE, STATE_ORDER } from '../../lib/stateConfig'
-import { ChevronRightIcon } from '@heroicons/react/20/solid'
+import { CheckIcon, ChevronRightIcon } from '@heroicons/react/20/solid'
 import { Link } from '@tanstack/react-router'
 import { type ReactNode } from 'react'
 
@@ -154,6 +155,15 @@ export function HomeStateList({ byCode }: { byCode: Map<string, StateSummaryLike
                         {de.state.categoryLabel.official_no_coord}{' '}
                         {formatDeInteger(row.counts.official_no_coord)}
                         {row.osmSource === 'cached' ? ' · OSM-Cache' : ''}
+                        {stateHasMaproulette(code) && (
+                          <>
+                            {' · '}
+                            <span className="inline-flex items-center gap-0.5 align-middle">
+                              <CheckIcon className="size-3.5 shrink-0" aria-hidden />
+                              {de.home.maprouletteAvailable}
+                            </span>
+                          </>
+                        )}
                       </div>
                     )}
                     {!row && (

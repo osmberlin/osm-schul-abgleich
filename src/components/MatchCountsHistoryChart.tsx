@@ -142,11 +142,15 @@ export function MatchCountsHistoryChart({ points, categoryLabels, chartDescripti
               width={44}
             />
             <Tooltip
-              content={({ active, payload, label }) => (
+              content={(props: {
+                active?: boolean
+                payload?: TooltipPayload
+                label?: string | number
+              }) => (
                 <HistoryTooltip
-                  active={active}
-                  payload={payload}
-                  label={label}
+                  active={props.active}
+                  payload={props.payload}
+                  label={props.label}
                   categoryLabels={categoryLabels}
                 />
               )}

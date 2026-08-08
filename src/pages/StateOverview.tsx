@@ -160,7 +160,7 @@ export function StateOverview() {
         isCategoryEnabled={isCategoryEnabled}
         setCategoryEnabled={setCategoryEnabled}
       />
-      <div className="mt-4 mb-6 flex flex-wrap gap-2">
+      <div className="mt-4 mb-6 flex flex-wrap items-center gap-2">
         {!showSearch && (
           <button
             type="button"

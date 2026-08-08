@@ -1,5 +1,4 @@
-import { de } from '../../i18n/de'
-import { officialRefCandidateFromSchoolId } from '../../lib/officialRefCandidate'
+import type { OsmSuggestGroup } from '../../lib/osmTagSuggestions'
 import type { SchoolsMatchRow } from '../../lib/schemas'
 import { SchoolOsmSuggestSection } from './SchoolOsmSuggestSection'
 import type { SchoolOsmWikiLink } from './SchoolOsmTagWikiLinks'
@@ -15,11 +14,12 @@ type Props = {
   row: SchoolsMatchRow
   lon: number | null
   lat: number | null
+  groups: readonly OsmSuggestGroup[]
 }
 
-export function SchoolRefOsmSuggest({ row, lon, lat }: Props) {
-  const refCandidate = officialRefCandidateFromSchoolId(row.officialId)
-  if (!refCandidate) return null
+export function SchoolRefOsmSuggest({ row, lon, lat, groups }: Props) {
+  const group = groups.find((g) => g.kind === 'ref')
+  if (!group) return null
 
   return (
     <SchoolOsmSuggestSection
@@ -27,9 +27,9 @@ export function SchoolRefOsmSuggest({ row, lon, lat }: Props) {
       lon={lon}
       lat={lat}
       sectionHeadingId="official-ref-osm-suggest-title"
-      sectionTitle={de.osm.refSectionTitle}
-      sectionLead={de.osm.refSectionLead}
-      suggestTags={[{ key: 'ref', value: refCandidate }]}
+      sectionTitle={group.title}
+      sectionLead={group.lead}
+      suggestTags={group.tags}
       wikiLinks={REF_WIKI_LINKS}
     />
   )

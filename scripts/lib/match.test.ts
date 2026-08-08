@@ -6,18 +6,36 @@ import {
 import type { StateCode } from '../../src/lib/stateConfig'
 import {
   MATCH_RADIUS_KM,
-  matchSchools,
+  matchSchools as matchSchoolsRaw,
   normalizeSchoolNameForMatch,
   normalizedOsmNameVariantMap,
   osmDisplayNameCandidatesFromTags,
   primaryOsmDisplayNameFromTags,
   type OfficialInput,
+  type MatchSchoolsOptions,
   type OsmSchoolInput,
 } from './match'
 import { describe, expect, it } from 'vitest'
 
 function landOpts(osm: OsmSchoolInput, land: StateCode): { osmStateByKey: Map<string, StateCode> } {
   return { osmStateByKey: new Map([[`${osm.osmType}/${osm.osmId}`, land]]) }
+}
+
+/** Pipeline trusts CSV `state`; inject it on fixtures from the id prefix when missing. */
+function withState(off: OfficialInput): OfficialInput {
+  if (typeof off.properties.state === 'string' && off.properties.state.trim() !== '') return off
+  const dash = off.id.indexOf('-')
+  const state = dash > 0 ? off.id.slice(0, dash) : ''
+  if (!state) return off
+  return { ...off, properties: { ...off.properties, state } }
+}
+
+function matchSchools(
+  officials: OfficialInput[],
+  osmSchools: OsmSchoolInput[],
+  opts: MatchSchoolsOptions,
+) {
+  return matchSchoolsRaw(officials.map(withState), osmSchools, opts)
 }
 
 describe('matchSchools', () => {
@@ -182,7 +200,7 @@ describe('matchSchools', () => {
     expect(MATCH_RADIUS_KM).toBe(0.15)
   })
 
-  it('ignores officials from other Bundesland id prefix', () => {
+  it('ignores officials from other Bundesland state', () => {
     const mixed: OfficialInput[] = [
       { id: 'BE-x', name: 'S', lon: 13.4, lat: 52.52, properties: { id: 'BE-x' } },
       { id: 'RP-x', name: 'S', lon: 13.4, lat: 52.52, properties: { id: 'RP-x' } },

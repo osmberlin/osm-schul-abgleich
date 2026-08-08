@@ -19,6 +19,7 @@ function school(
     legal_status: partial.legal_status ?? null,
     provider: partial.provider ?? null,
     update_timestamp: partial.update_timestamp ?? null,
+    state: partial.state ?? null,
   }
 }
 

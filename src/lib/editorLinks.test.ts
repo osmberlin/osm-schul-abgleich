@@ -1,4 +1,12 @@
-import { buildIdUrl, buildJosmLoadObject, buildOpenStreetMapOrgPinUrl } from './editorLinks'
+import {
+  buildIdUrl,
+  buildJosmLoadObject,
+  buildMaprouletteIdEditorUrl,
+  buildMaprouletteIdEditorUrlFromBbox,
+  buildOpenStreetMapOrgPinUrl,
+  mapViewFromBbox,
+} from './editorLinks'
+import { schoolTagFixesChallengeId } from './maprouletteIds.const'
 import { describe, expect, it } from 'vitest'
 
 describe('buildIdUrl', () => {
@@ -19,6 +27,28 @@ describe('buildIdUrl', () => {
     expect(url).toContain('lat=52.50000')
     expect(url).toContain('lon=13.42000')
     expect(url).toContain('zoom=')
+  })
+})
+
+describe('buildMaprouletteIdEditorUrl', () => {
+  const bbox: [number, number, number, number] = [13.4, 52.49, 13.44, 52.51]
+
+  it('builds iD MapRoulette URL with challenge id and map hash from bbox', () => {
+    const view = mapViewFromBbox(bbox)
+    const url = buildMaprouletteIdEditorUrlFromBbox(bbox)
+    expect(url).toBe(
+      `https://deploy-preview-4--tordans-id-experiments.netlify.app/#disable_features=boundaries&map=${view.zoom.toFixed(2)}/${view.lat.toFixed(5)}/${view.lon.toFixed(5)}&maproulette=${schoolTagFixesChallengeId}`,
+    )
+  })
+
+  it('returns null without bbox', () => {
+    expect(buildMaprouletteIdEditorUrlFromBbox(null)).toBeNull()
+  })
+
+  it('builds from explicit map view', () => {
+    const url = buildMaprouletteIdEditorUrl({ lat: 52.29434, lon: 13.63293, zoom: 18.5 })
+    expect(url).toContain('map=18.50/52.29434/13.63293')
+    expect(url).toContain(`maproulette=${schoolTagFixesChallengeId}`)
   })
 })
 

@@ -1,4 +1,5 @@
 import { jedeschuleSchoolSchema, jedeschuleStatSchema } from '../../src/lib/schemas'
+import { stateCodeFromJedeschuleSchool } from '../../src/lib/stateConfig'
 import { parse } from 'csv-parse/sync'
 import { subMonths } from 'date-fns'
 import { z } from 'zod'
@@ -59,6 +60,7 @@ function rowToSchool(row: Record<string, string>): JedeschuleSchool {
     legal_status: emptyToNull(row.legal_status),
     provider: emptyToNull(row.provider),
     update_timestamp: emptyToNull(row.update_timestamp),
+    state: emptyToNull(row.state),
   })
 }
 
@@ -201,9 +203,8 @@ export function parseJedeschuleStatsJson(raw: unknown): JedeschuleStatRow[] {
 export function buildJedeschuleStatsFromDump(schools: JedeschuleSchool[]): JedeschuleStatRow[] {
   const agg = new Map<string, { count: number; maxTs: string }>()
   for (const s of schools) {
-    const dash = s.id.indexOf('-')
-    const state = dash > 0 ? s.id.slice(0, dash) : ''
-    if (state.length !== 2) continue
+    const state = stateCodeFromJedeschuleSchool(s)
+    if (!state) continue
     const ts = s.update_timestamp?.trim() ?? ''
     const cur = agg.get(state)
     if (!cur) {

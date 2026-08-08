@@ -19,12 +19,30 @@ export const STATE_ORDER = [
 
 export type StateCode = (typeof STATE_ORDER)[number]
 
-/** JedeSchule id prefix before the first hyphen, e.g. `HB-352` → `HB`. */
+/** Map a Land code string to {@link StateCode}, or `null` if missing/invalid. */
+export function parseStateColumn(raw: unknown): StateCode | null {
+  if (typeof raw !== 'string') return null
+  const state = raw.trim().toUpperCase()
+  if (state.length === 2 && STATE_ORDER.includes(state as StateCode)) return state as StateCode
+  return null
+}
+
+/** JedeSchule id prefix before the first hyphen, e.g. `HB-352` → `HB` (id structure only). */
 export function stateCodeFromSchoolId(id: string): StateCode | null {
   const dash = id.indexOf('-')
   const state = dash > 0 ? id.slice(0, dash) : ''
   if (state.length === 2 && STATE_ORDER.includes(state as StateCode)) return state as StateCode
   return null
+}
+
+/** Bundesland from the JedeSchule CSV `state` column. */
+export function stateCodeFromJedeschuleSchool(s: { state?: string | null }): StateCode | null {
+  return parseStateColumn(s.state)
+}
+
+/** Bundesland from official GeoJSON/match `properties.state`. */
+export function officialStateCode(properties?: Record<string, unknown> | null): StateCode | null {
+  return parseStateColumn(properties?.state)
 }
 
 /** Canonical German state names; keys are exactly `STATE_ORDER` / `StateCode`. */

@@ -1,0 +1,45 @@
+name: Rebuild MapRoulette Tasks
+
+on:
+  workflow_dispatch:
+  # After Pages publishes public/maproulette/school-tagfixes.json (nightly data refresh or code deploy).
+  workflow_run:
+    workflows: ['Deploy GitHub Pages']
+    types: [completed]
+
+permissions:
+  contents: read
+  actions: read
+
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: 'true'
+
+concurrency:
+  group: maproulette-rebuild
+  cancel-in-progress: false
+
+jobs:
+  rebuild:
+    if: |
+      github.event_name == 'workflow_dispatch' ||
+      github.event.workflow_run.conclusion == 'success'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+      - run: bun install --frozen-lockfile
+        env:
+          HUSKY: '0'
+      - name: Confirm hosted Tag Fix feed is reachable
+        run: |
+          set -euo pipefail
+          META_URL="https://schulabgleich.osm-verkehrswende.org/maproulette/school-tagfixes.meta.json"
+          echo "Probing ${META_URL}"
+          curl --fail -sS -o /tmp/mr-meta.json "${META_URL}"
+          bun -e 'const m = await Bun.file("/tmp/mr-meta.json").json(); console.log(`taskCount=${m.taskCount} generatedAt=${m.generatedAt}`)'
+      - name: Trigger MapRoulette challenge rebuild
+        env:
+          MAPROULETTE_API_KEY: ${{ secrets.MAPROULETTE_API_KEY }}
+        run: bun run maproulette:rebuild

@@ -124,6 +124,7 @@ export const de = {
     error: 'Zusammenfassung konnte nicht geladen werden.',
     empty: 'Noch keine Daten…',
     toState: 'Zum Bundesland',
+    maprouletteAvailable: 'MapRoulette',
     globalKpiAria: 'Deutschland — Kennzahlen (Summe aller Bundesländer)',
     historyHeading: 'Deutschland — Entwicklung über Pipeline-Läufe',
     historyLead:
@@ -191,6 +192,7 @@ export const de = {
   state: {
     /** Bundesland-Übersicht — ein Kopfzeilentext statt getrenntem Titel und Code. */
     overviewTitle: 'Schulabgleich in {name} ({stateKey})',
+    editMaproulette: 'In MapRoulette bearbeiten',
     back: 'Alle Bundesländer',
     loading: 'Lade Daten…',
     error: 'Fehler beim Laden der Bundesland-Daten.',
@@ -302,6 +304,7 @@ export const de = {
     compareExclusiveSectionsNavAria: 'Sprünge zu Attributen nur in einer Quelle',
     editId: 'In iD bearbeiten',
     editJosm: 'In JOSM laden',
+    editMaproulette: 'In MapRoulette bearbeiten',
     jedeschuleApi: 'Auf JedeSchule öffnen (JSON)',
     openOsmBrowse: 'Auf OSM öffnen',
     licenceCompatibleLinkLabel: 'Datenlizenz: OSM-kompatibel',
@@ -481,6 +484,7 @@ export const de = {
     osmLinkHref: 'https://www.openstreetmap.org/copyright',
     githubLabel: 'Quellcode auf GitHub',
     githubHref: 'https://github.com/osmberlin/osm-schul-abgleich',
+    maprouletteFeedLabel: 'MapRoulette JSON',
     /** OpenFreeMap first; OSM / JedeSchule only on geo line above. */
     openSourceThanks: [
       {
