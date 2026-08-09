@@ -96,10 +96,60 @@ describe('stateOverviewItemsSearch refStatus facet', () => {
       osmAmenities: [],
       schoolFormFamilies: [],
       schoolFormCombos: [],
+      schoolFormSignalScope: 'both',
       refStatuses: ['missing_possible_ref'],
     })
     const ids = collectFilteredIdsFromSearchResult(result)
     expect(ids).toEqual(new Set(['missing']))
+  })
+})
+
+describe('stateOverviewItemsSearch schoolFormSignalSource facet', () => {
+  it('filters by official vs osm signal scope from pipeline fields', () => {
+    const rows: StateMatchRow[] = [
+      {
+        ...matchedRow({ key: 'official', officialId: 'BE-03P11', ref: '03P11' }),
+        schoolFormFamily: 'grundschule',
+        schoolFormCombo: 'missing_osm',
+        schoolFormSignalSource: 'official',
+      },
+      {
+        ...matchedRow({ key: 'osm', officialId: 'BE-03P12', ref: '03P12' }),
+        schoolFormFamily: 'weiterfuehrend',
+        schoolFormCombo: 'missing_osm',
+        schoolFormSignalSource: 'osm',
+      },
+    ]
+    const engine = createStateMatchItemsJsEngine(rows)
+    const officialOnly = searchStateMatchesWithExplorer(engine, {
+      query: '',
+      nameScope: 'both',
+      matchModes: [],
+      iscedLevels: [],
+      geoBoundaryIssues: [],
+      schoolKinds: [],
+      osmAmenities: [],
+      schoolFormFamilies: [],
+      schoolFormCombos: [],
+      schoolFormSignalScope: 'official',
+      refStatuses: [],
+    })
+    expect(collectFilteredIdsFromSearchResult(officialOnly)).toEqual(new Set(['official']))
+
+    const osmOnly = searchStateMatchesWithExplorer(engine, {
+      query: '',
+      nameScope: 'both',
+      matchModes: [],
+      iscedLevels: [],
+      geoBoundaryIssues: [],
+      schoolKinds: [],
+      osmAmenities: [],
+      schoolFormFamilies: [],
+      schoolFormCombos: [],
+      schoolFormSignalScope: 'osm',
+      refStatuses: [],
+    })
+    expect(collectFilteredIdsFromSearchResult(osmOnly)).toEqual(new Set(['osm']))
   })
 })
 

@@ -23,6 +23,12 @@ describe('isOfficialGrundschule', () => {
         officialName: 'X',
         officialProperties: { school_type: 'Grundschule; Hauptschule' },
       }),
+    ).toBe(false)
+    expect(
+      isOfficialGrundschule({
+        officialName: 'X',
+        officialProperties: { school_type: 'Grundschule' },
+      }),
     ).toBe(true)
   })
 })

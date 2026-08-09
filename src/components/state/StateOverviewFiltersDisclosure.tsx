@@ -14,6 +14,7 @@ import {
   type StateFacetRefStatus,
   type StateFacetSchoolFormCombo,
   type StateFacetSchoolFormFamily,
+  type SchoolFormSignalScope,
 } from '../../lib/stateOverviewItemsSearch'
 import { stateRouteApi } from '../../lib/stateRouteApi'
 import { parseStateMapBboxSearchParam } from '../../lib/useStateMapBbox'
@@ -92,6 +93,8 @@ export function StateOverviewFiltersDisclosure({
   setSchoolFormFamilies,
   schoolFormCombos,
   setSchoolFormCombos,
+  schoolFormSignalScope,
+  setSchoolFormSignalScope,
   refStatuses,
   toggleRefStatus,
   resetExplorer,
@@ -117,6 +120,8 @@ export function StateOverviewFiltersDisclosure({
   setSchoolFormFamilies: (v: StateFacetSchoolFormFamily[]) => void
   schoolFormCombos: string[]
   setSchoolFormCombos: (v: StateFacetSchoolFormCombo[]) => void
+  schoolFormSignalScope: SchoolFormSignalScope
+  setSchoolFormSignalScope: (s: SchoolFormSignalScope) => void
   refStatuses: string[]
   toggleRefStatus: (v: StateFacetRefStatus, on: boolean) => void
   resetExplorer: () => void
@@ -158,6 +163,7 @@ export function StateOverviewFiltersDisclosure({
     osmAmenities.length > 0 ||
     schoolFormFamilies.length > 0 ||
     schoolFormCombos.length > 0 ||
+    schoolFormSignalScope !== 'both' ||
     refStatuses.length > 0
   const summaryCountLabel = bboxFilterActive
     ? de.state.explorer.summaryCountsInBbox
@@ -191,54 +197,97 @@ export function StateOverviewFiltersDisclosure({
       <div className="border-t border-zinc-700 px-4 py-4 text-sm text-zinc-200">
         <p className="mb-4 text-xs text-zinc-400">{de.state.explorer.openHint}</p>
 
-        <div className="mb-5">
-          <label className="mb-1.5 block text-xs font-medium text-zinc-300" htmlFor={`${baseId}-q`}>
-            {de.state.explorer.queryLabel}
-          </label>
-          <input
-            id={`${baseId}-q`}
-            type="search"
-            value={localQ}
-            onChange={(e) => setLocalQ(e.target.value)}
-            placeholder={de.state.explorer.queryPlaceholder}
-            className="block w-full rounded-md border border-zinc-600 bg-zinc-950 px-3 py-2 text-sm text-zinc-100 placeholder:text-zinc-500 focus:border-emerald-600 focus:ring-1 focus:ring-emerald-600 focus:outline-none"
-            autoComplete="off"
-          />
-        </div>
-
-        <fieldset className="mb-5">
-          <legend className="mb-2 text-xs font-medium text-zinc-300">
-            {de.state.explorer.nameScopeLabel}
-          </legend>
-          <div className="flex flex-col gap-2 sm:flex-row sm:flex-wrap">
-            {(
-              [
-                ['both', de.state.explorer.nameScopeBoth],
-                ['official', de.state.explorer.nameScopeOfficial],
-                ['osm', de.state.explorer.nameScopeOsm],
-              ] as const
-            ).map(([value, label]) => (
-              <label
-                key={value}
-                className="inline-flex cursor-pointer items-center gap-2 rounded-md border border-zinc-700 bg-zinc-950/80 px-3 py-2 text-xs has-[:checked]:border-emerald-700 has-[:checked]:bg-emerald-950/40"
-              >
-                <input
-                  type="radio"
-                  name={`${baseId}-scope`}
-                  checked={nameScope === value}
-                  onChange={() => setNameScope(value)}
-                  className="border-zinc-500 text-emerald-600 focus:ring-emerald-500"
-                />
-                {label}
-              </label>
-            ))}
+        <div className="mb-5 grid gap-3 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-end">
+          <div className="min-w-0">
+            <label
+              className="mb-1.5 block text-xs font-medium text-zinc-300"
+              htmlFor={`${baseId}-q`}
+            >
+              {de.state.explorer.queryLabel}
+            </label>
+            <input
+              id={`${baseId}-q`}
+              type="search"
+              value={localQ}
+              onChange={(e) => setLocalQ(e.target.value)}
+              placeholder={de.state.explorer.queryPlaceholder}
+              className="block h-10 w-full rounded-md border border-zinc-600 bg-zinc-950 px-3 text-sm text-zinc-100 placeholder:text-zinc-500 focus:border-emerald-600 focus:ring-1 focus:ring-emerald-600 focus:outline-none"
+              autoComplete="off"
+            />
           </div>
-        </fieldset>
+          <div>
+            <p className="mb-1.5 text-xs font-medium text-zinc-300" id={`${baseId}-scope-label`}>
+              {de.state.explorer.nameScopeLabel}
+            </p>
+            <div
+              className="inline-flex h-10 items-stretch rounded-md border border-zinc-700 bg-zinc-950 p-0.5"
+              role="radiogroup"
+              aria-labelledby={`${baseId}-scope-label`}
+            >
+              {(
+                [
+                  ['both', de.state.explorer.nameScopeBoth],
+                  ['official', de.state.explorer.nameScopeOfficial],
+                  ['osm', de.state.explorer.nameScopeOsm],
+                ] as const
+              ).map(([value, label]) => (
+                <label
+                  key={value}
+                  className={cn(
+                    'inline-flex cursor-pointer items-center rounded px-2.5 text-xs whitespace-nowrap text-zinc-400',
+                    'has-[:focus-visible]:ring-1 has-[:focus-visible]:ring-emerald-600',
+                    'has-[:checked]:bg-emerald-800/45 has-[:checked]:text-emerald-50',
+                  )}
+                >
+                  <input
+                    type="radio"
+                    name={`${baseId}-scope`}
+                    checked={nameScope === value}
+                    onChange={() => setNameScope(value)}
+                    className="sr-only"
+                  />
+                  {label}
+                </label>
+              ))}
+            </div>
+          </div>
+        </div>
 
         <fieldset className="mb-5">
           <legend className="mb-2 text-xs font-medium text-zinc-300">
             {de.state.explorer.schoolFormHeading}
           </legend>
+          <div
+            className="mb-2 inline-flex h-10 items-stretch rounded-md border border-zinc-700 bg-zinc-950 p-0.5"
+            role="radiogroup"
+            aria-label={de.state.explorer.schoolFormSignalScopeLabel}
+          >
+            {(
+              [
+                ['both', de.state.explorer.schoolFormSignalScopeBoth],
+                ['official', de.state.explorer.schoolFormSignalScopeOfficial],
+                ['osm', de.state.explorer.schoolFormSignalScopeOsm],
+              ] as const
+            ).map(([value, label]) => (
+              <label
+                key={value}
+                className={cn(
+                  'inline-flex cursor-pointer items-center rounded px-2.5 text-xs whitespace-nowrap text-zinc-400',
+                  'has-[:focus-visible]:ring-1 has-[:focus-visible]:ring-emerald-600',
+                  'has-[:checked]:bg-emerald-800/45 has-[:checked]:text-emerald-50',
+                )}
+              >
+                <input
+                  type="radio"
+                  name={`${baseId}-school-form-signal`}
+                  checked={schoolFormSignalScope === value}
+                  onChange={() => setSchoolFormSignalScope(value)}
+                  className="sr-only"
+                />
+                {label}
+              </label>
+            ))}
+          </div>
           <div className="space-y-2">
             {STATE_FACET_SCHOOL_FORM_FAMILY.map((family) => {
               const familySelected = schoolFormFamilies.includes(family)

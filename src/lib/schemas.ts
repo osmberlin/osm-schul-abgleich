@@ -18,6 +18,7 @@ const schoolFormComboSchema = z.enum([
   'matching_but_lacking_tags',
   'none',
 ])
+const schoolFormSignalSourceSchema = z.enum(['official', 'osm', 'none'])
 
 export const jedeschuleSchoolSchema = z.object({
   id: z.string(),
@@ -119,6 +120,7 @@ export const schoolsMatchRowSchema = z
     schoolFormRule: schoolFormRuleSchema.nullable().optional(),
     schoolFormFamily: schoolFormFamilySchema.nullable().optional(),
     schoolFormCombo: schoolFormComboSchema.optional(),
+    schoolFormSignalSource: schoolFormSignalSourceSchema.optional(),
   })
   .superRefine((row, ctx) => {
     if (!row.category && !row.matchCategory) {

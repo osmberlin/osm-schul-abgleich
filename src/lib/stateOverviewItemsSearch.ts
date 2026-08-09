@@ -47,6 +47,12 @@ export const STATE_FACET_SCHOOL_FORM_COMBO = [
 ] as const
 export type StateFacetSchoolFormCombo = (typeof STATE_FACET_SCHOOL_FORM_COMBO)[number]
 
+export const STATE_FACET_SCHOOL_FORM_SIGNAL_SOURCE = ['official', 'osm', 'none'] as const
+export type StateFacetSchoolFormSignalSource =
+  (typeof STATE_FACET_SCHOOL_FORM_SIGNAL_SOURCE)[number]
+
+export type SchoolFormSignalScope = 'both' | 'official' | 'osm'
+
 function toNonEmptyString(v: unknown): string | null {
   if (typeof v !== 'string') return null
   const t = v.trim()
@@ -98,13 +104,20 @@ export function matchRowToItemsJsDoc(row: StateMatchRow) {
   const iscedLevel = toNonEmptyString(row.osmTags?.['isced:level']) != null ? 'yes' : 'no'
   const hasOfficial = toNonEmptyString(row.officialId) != null ? 'yes' : 'no'
   const hasOsm = toNonEmptyString(row.osmId) != null ? 'yes' : 'no'
-  // School-form facets are meaningful only for already matched schools.
-  const schoolFormRule =
-    row.category === 'matched' ? (toNonEmptyString(row.schoolFormRule) ?? 'none') : 'none'
-  const schoolFormFamily =
-    row.category === 'matched' ? (toNonEmptyString(row.schoolFormFamily) ?? 'none') : 'none'
-  const schoolFormCombo =
-    row.category === 'matched' ? (toNonEmptyString(row.schoolFormCombo) ?? 'none') : 'none'
+  // School-form facets: matched + osm_only (values from pipeline `classifySchoolFormCombo`).
+  const schoolFormCategories = row.category === 'matched' || row.category === 'osm_only'
+  const schoolFormRule = schoolFormCategories
+    ? (toNonEmptyString(row.schoolFormRule) ?? 'none')
+    : 'none'
+  const schoolFormFamily = schoolFormCategories
+    ? (toNonEmptyString(row.schoolFormFamily) ?? 'none')
+    : 'none'
+  const schoolFormCombo = schoolFormCategories
+    ? (toNonEmptyString(row.schoolFormCombo) ?? 'none')
+    : 'none'
+  const schoolFormSignalSource = schoolFormCategories
+    ? (toNonEmptyString(row.schoolFormSignalSource) ?? 'none')
+    : 'none'
   const refCandidate = officialRefCandidateFromSchoolId(row.officialId)
   const hasOsmRef = toNonEmptyString(row.osmTags?.ref) != null
   const refStatus =
@@ -125,6 +138,7 @@ export function matchRowToItemsJsDoc(row: StateMatchRow) {
     schoolFormRule,
     schoolFormFamily,
     schoolFormCombo,
+    schoolFormSignalSource,
     refStatus,
   }
 }
@@ -170,6 +184,7 @@ export function createStateMatchItemsJsEngine(rows: StateMatchRow[]) {
       schoolFormRule: { title: 'Schulform-Regel', size: 6 },
       schoolFormFamily: { title: 'Schulform-Familie', size: 4 },
       schoolFormCombo: { title: 'Schulform-Status', size: 6 },
+      schoolFormSignalSource: { title: 'Schulform-Signalquelle', size: 4 },
       refStatus: {
         title: 'Ref-Status',
         size: 3,
@@ -189,6 +204,7 @@ export type ExplorerFilterState = {
   osmAmenities: string[]
   schoolFormFamilies: string[]
   schoolFormCombos: string[]
+  schoolFormSignalScope: SchoolFormSignalScope
   refStatuses: string[]
 }
 
@@ -204,6 +220,8 @@ export function searchStateMatchesWithExplorer(
   if (state.osmAmenities.length > 0) filters.osmAmenity = state.osmAmenities
   if (state.schoolFormFamilies.length > 0) filters.schoolFormFamily = state.schoolFormFamilies
   if (state.schoolFormCombos.length > 0) filters.schoolFormCombo = state.schoolFormCombos
+  if (state.schoolFormSignalScope === 'official') filters.schoolFormSignalSource = ['official']
+  if (state.schoolFormSignalScope === 'osm') filters.schoolFormSignalSource = ['osm']
   if (state.refStatuses.length > 0) filters.refStatus = state.refStatuses
 
   return engine.search({

@@ -354,6 +354,7 @@ function enrichRowsWithSchoolFormClassification(rows: MatchRowOut[]): MatchRowOu
       schoolFormRule: form.schoolFormRule,
       schoolFormFamily: form.schoolFormFamily,
       schoolFormCombo: form.schoolFormCombo,
+      schoolFormSignalSource: form.schoolFormSignalSource,
     }
   })
 }

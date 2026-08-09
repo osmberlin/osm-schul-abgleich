@@ -135,6 +135,24 @@ describe('comparePropertySections grundschule group', () => {
     expect(res.onlyO).toEqual([['school_type', 'Grundschule']])
   })
 
+  it('creates grundschule group from official name when school_type is missing', () => {
+    const res = comparePropertySections(
+      { name: 'Staatliche Grundschule Nord' },
+      { name: 'Staatliche Grundschule Nord', school: 'primary', 'isced:level': '1' },
+    )
+    expect(res.compareGroups).toHaveLength(1)
+    const g = res.compareGroups[0]
+    expect(g.kind).toBe('grundschule')
+    if (g.kind !== 'grundschule') throw new Error('expected grundschule')
+    expect(g.officialKey).toBe('name')
+    expect(g.officialValue).toBe('Staatliche Grundschule Nord')
+    expect(g.isEquivalentMatch).toBe(true)
+    expect(g.consumedKeys).toEqual(['isced:level', 'school'])
+    expect(res.bothEqual).toEqual([
+      ['name', 'Staatliche Grundschule Nord', 'Staatliche Grundschule Nord'],
+    ])
+  })
+
   it('places address group before grundschule when both apply', () => {
     const res = comparePropertySections(
       { address: 'Hauptstr. 1', school_type: 'Grundschule', name: 'X' },
@@ -242,6 +260,21 @@ describe('comparePropertySections secondary school group', () => {
     expect(res.onlyO).toEqual([['school_type', 'Realschule']])
   })
 
+  it('creates secondary group from official name when school_type is missing', () => {
+    const res = comparePropertySections(
+      { name: 'Wilhelmi-Gymnasium' },
+      { name: 'Wilhelmi-Gymnasium', school: 'secondary', 'isced:level': '2;3' },
+    )
+    expect(res.compareGroups).toHaveLength(1)
+    const g = res.compareGroups[0]
+    expect(g.kind).toBe('secondarySchool')
+    if (g.kind !== 'secondarySchool') throw new Error('expected secondarySchool')
+    expect(g.variant).toBe('gymnasium')
+    expect(g.officialKey).toBe('name')
+    expect(g.consumedKeys).toEqual(['isced:level', 'school'])
+    expect(g.isEquivalentMatch).toBe(true)
+  })
+
   it('uses gesamtschule priority over gymnasium when both terms occur', () => {
     const res = comparePropertySections(
       { school_type: 'Gesamtschule mit gymnasialer Oberstufe' },
@@ -340,7 +373,7 @@ describe('comparePropertySections fachschule group', () => {
     expect(res.onlyO).toEqual([['school_type', 'Berufsfachschule']])
   })
 
-  it('places address before grundschule before secondary school before fachschule when all apply', () => {
+  it('places address before secondary before fachschule when a compound school_type resolves to one form rule', () => {
     const res = comparePropertySections(
       {
         address: 'Hauptstr. 1',
@@ -360,13 +393,13 @@ describe('comparePropertySections fachschule group', () => {
         'operator:type': 'public',
       },
     )
-    expect(res.compareGroups).toHaveLength(6)
+    // Compound school_type resolves to a single Schulform rule (Gymnasium), not both Grundschule + secondary.
+    expect(res.compareGroups).toHaveLength(5)
     expect(res.compareGroups[0].kind).toBe('address')
-    expect(res.compareGroups[1].kind).toBe('grundschule')
-    expect(res.compareGroups[2].kind).toBe('secondarySchool')
-    expect(res.compareGroups[3].kind).toBe('fachschule')
-    expect(res.compareGroups[4].kind).toBe('providerOperator')
-    expect(res.compareGroups[5].kind).toBe('legalStatusOperatorType')
+    expect(res.compareGroups[1].kind).toBe('secondarySchool')
+    expect(res.compareGroups[2].kind).toBe('fachschule')
+    expect(res.compareGroups[3].kind).toBe('providerOperator')
+    expect(res.compareGroups[4].kind).toBe('legalStatusOperatorType')
   })
 
   it('places address before fachschule when grundschule does not apply', () => {

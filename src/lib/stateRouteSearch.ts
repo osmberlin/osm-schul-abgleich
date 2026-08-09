@@ -14,6 +14,7 @@ import {
   STATE_FACET_SCHOOL_FORM_FAMILY,
   type StateFacetSchoolFormCombo,
   type StateFacetSchoolFormFamily,
+  type SchoolFormSignalScope,
 } from './stateOverviewItemsSearch'
 import { parseStateMapBboxSearchParam, serializeStateMapBboxSearchParam } from './useStateMapBbox'
 import { z } from 'zod'
@@ -22,6 +23,11 @@ type StateNameScope = 'both' | 'official' | 'osm'
 type YesNo = 'yes' | 'no'
 
 const STATE_NAME_SCOPES: readonly StateNameScope[] = ['both', 'official', 'osm']
+const STATE_SCHOOL_FORM_SIGNAL_SCOPES: readonly SchoolFormSignalScope[] = [
+  'both',
+  'official',
+  'osm',
+]
 const YES_NO_VALUES: readonly YesNo[] = ['yes', 'no']
 const maskSchema = z.preprocess(
   (v) => (Array.isArray(v) ? v[0] : v),
@@ -45,6 +51,8 @@ type StateRouteSearch = {
   lsfam?: StateFacetSchoolFormFamily[]
   /** Facet: school-form status (`missing_osm`, `only_osm`, ...). */
   lscombo?: StateFacetSchoolFormCombo[]
+  /** Facet: school-form signal source scope (`official` / `osm`; omit = both). */
+  lssrc?: Exclude<SchoolFormSignalScope, 'both'>
   /** Facet: ref completeness status (usable-official-ref cases). */
   lref?: StateFacetRefStatus[]
   mask?: boolean
@@ -127,6 +135,9 @@ export function validateStateRouteSearch(search: Record<string, unknown>): State
 
   const lscombo = normalizeEnumArray(stringList(search.lscombo), STATE_FACET_SCHOOL_FORM_COMBO)
   if (lscombo.length > 0) out.lscombo = lscombo
+
+  const lssrc = parseEnumValue(search.lssrc, STATE_SCHOOL_FORM_SIGNAL_SCOPES)
+  if (lssrc && lssrc !== 'both') out.lssrc = lssrc
 
   const lref = normalizeEnumArray(stringList(search.lref), STATE_FACET_REF_STATUS)
   if (lref.length > 0) out.lref = lref

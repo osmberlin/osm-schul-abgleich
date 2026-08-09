@@ -8,18 +8,16 @@ import {
   type OsmTagSuggestionsResult,
 } from './osmTagSuggestions'
 import {
-  osmHeuristicNameBlob,
-  osmHeuristicUrlBlob,
   isCompoundOsmSchoolFormText,
+  osmHeuristicNameBlob,
   partialPrimaryFormTagCompletions,
-  resolveSchoolFormRuleFromOsmText,
-  resolveSchoolFormRuleFromSchoolDe,
+  resolveSchoolFormRuleFromOsmHeuristic,
   suggestTagsForSchoolFormRule,
-  type OsmTextFormSource,
+  type OsmHeuristicFormSource,
   type SchoolFormRule,
 } from './schoolFormRules'
 
-export type OsmHeuristicSignalSource = OsmTextFormSource | 'school:de' | 'partial'
+export type OsmHeuristicSignalSource = OsmHeuristicFormSource | 'partial'
 
 export type OsmHeuristicTagSuggestionsResult = OsmTagSuggestionsResult & {
   signalSource: OsmHeuristicSignalSource | null
@@ -81,27 +79,16 @@ export function collectOsmHeuristicTagSuggestions(input: {
 
   if (isCompoundOsmSchoolFormText(nameBlob)) return empty
 
-  const textRes = resolveSchoolFormRuleFromOsmText({
-    nameBlob,
-    urlBlob: osmHeuristicUrlBlob(tags),
-  })
+  const heuristic = resolveSchoolFormRuleFromOsmHeuristic(tags)
 
   let rule: SchoolFormRule | null = null
   let signalSource: OsmHeuristicSignalSource | null = null
   let matchedToken: string | null = null
 
-  if (textRes) {
-    rule = textRes.rule
-    signalSource = textRes.source
-    matchedToken = textRes.matchedToken
-  } else {
-    const schoolDe = tags?.['school:de']
-    const fromDe = resolveSchoolFormRuleFromSchoolDe(schoolDe)
-    if (fromDe && schoolDe) {
-      rule = fromDe
-      signalSource = 'school:de'
-      matchedToken = schoolDe.trim()
-    }
+  if (heuristic) {
+    rule = heuristic.rule
+    signalSource = heuristic.source
+    matchedToken = heuristic.matchedToken
   }
 
   const groups: OsmSuggestGroup[] = []

@@ -16,6 +16,7 @@ import type {
   SchoolFormCombo,
   SchoolFormFamily,
   SchoolFormRule,
+  SchoolFormSignalSource,
 } from '../../src/lib/schoolFormRules'
 import type { StateCode } from '../../src/lib/stateConfig'
 import { officialStateCode } from '../../src/lib/stateConfig'
@@ -151,6 +152,7 @@ export type MatchRowOut = {
   schoolFormRule?: SchoolFormRule | null
   schoolFormFamily?: SchoolFormFamily | null
   schoolFormCombo?: SchoolFormCombo
+  schoolFormSignalSource?: SchoolFormSignalSource
   ambiguousOfficialIds?: string[]
   ambiguousOfficialSnapshots?: AmbiguousOfficialSnapshot[]
   /** Normalized string used for OSM↔official name equality (see pipeline). */

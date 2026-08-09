@@ -1,17 +1,16 @@
-import { schoolTypeStringIndicatesGrundschule } from './schoolFormRules'
+import {
+  resolveSchoolFormRuleFromOfficial,
+  schoolTypeStringIndicatesGrundschule,
+} from './schoolFormRules'
 
 export { schoolTypeStringIndicatesGrundschule }
 
-/** True if the Jedeschule `school_type` string indicates Grundschule (substring match). */
-/** True if official Jedeschule data indicates a Grundschule (type or name). */
+/** True if official Jedeschule data indicates a Grundschule (same rules as Schulform resolve). */
 export function isOfficialGrundschule(input: {
   officialName: string | null
   officialProperties: Record<string, unknown> | null | undefined
 }): boolean {
-  const name = input.officialName?.trim().toLowerCase() ?? ''
-  if (name.includes('grundschule')) return true
-  const st = input.officialProperties?.school_type
-  return schoolTypeStringIndicatesGrundschule(typeof st === 'string' ? st : null)
+  return resolveSchoolFormRuleFromOfficial(input) === 'grundschule'
 }
 
 export function tagValueEqualsProposed(current: string | undefined, proposed: string): boolean {

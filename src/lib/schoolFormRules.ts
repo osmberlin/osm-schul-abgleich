@@ -18,6 +18,9 @@ export type SchoolFormCombo =
   | 'matching_but_lacking_tags'
   | 'none'
 
+/** Where the effective Schulform rule came from for Explorer / pipeline. */
+export type SchoolFormSignalSource = 'official' | 'osm' | 'none'
+
 export type OSMTagSuggestSpec = { key: string; value: string }
 
 const TAG_SCHOOL = 'school'
@@ -218,6 +221,48 @@ export function resolveSchoolFormRuleFromSchoolDe(
   return SCHOOL_DE_TO_RULE[trimmed] ?? null
 }
 
+export type OsmHeuristicFormSource = OsmTextFormSource | 'school:de'
+
+export type OsmHeuristicFormResolution = {
+  rule: SchoolFormRule
+  source: OsmHeuristicFormSource
+  matchedToken: string
+}
+
+/**
+ * Shared OSM-only Schulform sniff (same order as MapRoulette / collectOsmHeuristicTagSuggestions):
+ * name → URL → single-value `school:de`. Compound multi-form names suppress all heuristics.
+ */
+export function resolveSchoolFormRuleFromOsmHeuristic(
+  tags: Record<string, string> | null | undefined,
+): OsmHeuristicFormResolution | null {
+  const nameBlob = osmHeuristicNameBlob(tags)
+  if (isCompoundOsmSchoolFormText(nameBlob)) return null
+
+  const textRes = resolveSchoolFormRuleFromOsmText({
+    nameBlob,
+    urlBlob: osmHeuristicUrlBlob(tags),
+  })
+  if (textRes) {
+    return {
+      rule: textRes.rule,
+      source: textRes.source,
+      matchedToken: textRes.matchedToken,
+    }
+  }
+
+  const schoolDe = tags?.['school:de']
+  const fromDe = resolveSchoolFormRuleFromSchoolDe(schoolDe)
+  if (fromDe && typeof schoolDe === 'string' && schoolDe.trim()) {
+    return {
+      rule: fromDe,
+      source: 'school:de',
+      matchedToken: schoolDe.trim(),
+    }
+  }
+  return null
+}
+
 /** Recommended Tag Fix specs for a SchoolFormRule (Gesamtschule keeps isced alternatives for UI). */
 export function suggestTagsForSchoolFormRule(rule: SchoolFormRule): readonly OSMTagSuggestSpec[] {
   if (rule === 'grundschule') return PRIMARY_SUGGEST_TAGS
@@ -333,6 +378,42 @@ export function evaluateOsmRuleMatch(
   return { isEquivalentMatch, hasFullRecommendedTags, reason }
 }
 
+function comboFromOsmRuleMatch(
+  rule: SchoolFormRule,
+  tags: Record<string, string> | null | undefined,
+  signalSource: Exclude<SchoolFormSignalSource, 'none'>,
+): {
+  schoolFormRule: SchoolFormRule
+  schoolFormFamily: SchoolFormFamily
+  schoolFormCombo: SchoolFormCombo
+  schoolFormComboReason: 'none' | 'school' | 'isced' | 'both'
+  schoolFormSignalSource: Exclude<SchoolFormSignalSource, 'none'>
+} {
+  const evalRes = evaluateOsmRuleMatch(rule, tags)
+  if (!evalRes.isEquivalentMatch) {
+    return {
+      schoolFormRule: rule,
+      schoolFormFamily: schoolFormFamilyFromRule(rule)!,
+      schoolFormCombo: 'missing_osm',
+      schoolFormComboReason: evalRes.reason,
+      schoolFormSignalSource: signalSource,
+    }
+  }
+  return {
+    schoolFormRule: rule,
+    schoolFormFamily: schoolFormFamilyFromRule(rule)!,
+    schoolFormCombo: evalRes.hasFullRecommendedTags ? 'matching_tags' : 'matching_but_lacking_tags',
+    schoolFormComboReason: evalRes.reason,
+    schoolFormSignalSource: signalSource,
+  }
+}
+
+/**
+ * Effective Schulform for pipeline / Explorer:
+ * 1. Official (`school_type` then name)
+ * 2. Else OSM heuristic (name → URL → `school:de`)
+ * 3. Else OSM form tags already present (`only_osm`)
+ */
 export function classifySchoolFormCombo(input: {
   officialName: string | null | undefined
   officialProperties: Record<string, unknown> | null | undefined
@@ -342,41 +423,34 @@ export function classifySchoolFormCombo(input: {
   schoolFormFamily: SchoolFormFamily | null
   schoolFormCombo: SchoolFormCombo
   schoolFormComboReason: 'none' | 'school' | 'isced' | 'both'
+  schoolFormSignalSource: SchoolFormSignalSource
 } {
   const officialRule = resolveSchoolFormRuleFromOfficial(input)
-  const osmFamily = detectSchoolFormFamilyFromOsm(input.osmTags)
-  const osmRule = inferSchoolFormRuleFromOsm(input.osmTags)
-
-  if (officialRule == null) {
-    if (osmFamily == null) {
-      return {
-        schoolFormRule: null,
-        schoolFormFamily: null,
-        schoolFormCombo: 'none',
-        schoolFormComboReason: 'none',
-      }
-    }
-    return {
-      schoolFormRule: osmRule,
-      schoolFormFamily: osmFamily,
-      schoolFormCombo: 'only_osm',
-      schoolFormComboReason: 'none',
-    }
+  if (officialRule != null) {
+    return comboFromOsmRuleMatch(officialRule, input.osmTags, 'official')
   }
 
-  const evalRes = evaluateOsmRuleMatch(officialRule, input.osmTags)
-  if (!evalRes.isEquivalentMatch) {
+  const osmHeuristic = resolveSchoolFormRuleFromOsmHeuristic(input.osmTags)
+  if (osmHeuristic != null) {
+    return comboFromOsmRuleMatch(osmHeuristic.rule, input.osmTags, 'osm')
+  }
+
+  const osmFamily = detectSchoolFormFamilyFromOsm(input.osmTags)
+  const osmRule = inferSchoolFormRuleFromOsm(input.osmTags)
+  if (osmFamily == null) {
     return {
-      schoolFormRule: officialRule,
-      schoolFormFamily: schoolFormFamilyFromRule(officialRule),
-      schoolFormCombo: 'missing_osm',
-      schoolFormComboReason: evalRes.reason,
+      schoolFormRule: null,
+      schoolFormFamily: null,
+      schoolFormCombo: 'none',
+      schoolFormComboReason: 'none',
+      schoolFormSignalSource: 'none',
     }
   }
   return {
-    schoolFormRule: officialRule,
-    schoolFormFamily: schoolFormFamilyFromRule(officialRule),
-    schoolFormCombo: evalRes.hasFullRecommendedTags ? 'matching_tags' : 'matching_but_lacking_tags',
-    schoolFormComboReason: evalRes.reason,
+    schoolFormRule: osmRule,
+    schoolFormFamily: osmFamily,
+    schoolFormCombo: 'only_osm',
+    schoolFormComboReason: 'none',
+    schoolFormSignalSource: 'osm',
   }
 }

@@ -11,9 +11,8 @@ import { schoolTypeStringIndicatesFachschule } from './officialFachschule'
 import { tagValueEqualsProposed } from './officialGrundschule'
 import {
   evaluateOsmRuleMatch,
-  schoolTypeStringIndicatesGrundschule,
+  resolveSchoolFormRuleFromOfficial,
   type SecondarySchoolKind,
-  resolveSecondarySchoolKindFromSchoolType,
 } from './schoolFormRules'
 
 type CompareRowBoth = [string, string, string]
@@ -38,7 +37,7 @@ export type AddressCompareGroup = {
 
 export type GrundschuleCompareGroup = {
   kind: 'grundschule'
-  officialKey: 'school_type'
+  officialKey: 'school_type' | 'name'
   officialValue: string | null
   osmKeys: readonly ['isced:level', 'school']
   osmValues: Record<GrundschuleCompareOsmKey, string | null>
@@ -49,7 +48,7 @@ export type GrundschuleCompareGroup = {
 export type SecondarySchoolCompareGroup = {
   kind: 'secondarySchool'
   variant: SecondarySchoolKind
-  officialKey: 'school_type'
+  officialKey: 'school_type' | 'name'
   officialValue: string | null
   osmKeys: readonly ['isced:level', 'school']
   osmValues: Record<SecondarySchoolCompareOsmKey, string | null>
@@ -164,8 +163,13 @@ function buildGrundschuleCompareGroup(
   offMap: Map<string, string>,
   osmMap: Map<string, string>,
 ): GrundschuleCompareGroup | null {
-  const officialValue = offMap.get('school_type') ?? null
-  if (officialValue == null || !schoolTypeStringIndicatesGrundschule(officialValue)) return null
+  const schoolType = offMap.get('school_type') ?? null
+  const officialName = offMap.get('name') ?? null
+  const rule = resolveSchoolFormRuleFromOfficial({
+    officialName,
+    officialProperties: schoolType != null ? { school_type: schoolType } : {},
+  })
+  if (rule !== 'grundschule') return null
 
   const isced = osmMap.get('isced:level') ?? null
   const school = osmMap.get('school') ?? null
@@ -175,14 +179,26 @@ function buildGrundschuleCompareGroup(
     ...(school ? { school } : {}),
   })
 
+  const fromSchoolType =
+    schoolType != null &&
+    resolveSchoolFormRuleFromOfficial({
+      officialName: null,
+      officialProperties: { school_type: schoolType },
+    }) === 'grundschule'
+  const officialKey = fromSchoolType ? 'school_type' : 'name'
+  const officialValue = fromSchoolType ? schoolType : officialName
+  const consumedKeys = fromSchoolType
+    ? ['school_type', 'isced:level', 'school']
+    : ['isced:level', 'school']
+
   return {
     kind: 'grundschule',
-    officialKey: 'school_type',
+    officialKey,
     officialValue,
     osmKeys: ['isced:level', 'school'],
     osmValues: { 'isced:level': isced, school },
     isEquivalentMatch,
-    consumedKeys: ['school_type', 'isced:level', 'school'],
+    consumedKeys,
   }
 }
 
@@ -218,9 +234,14 @@ function buildSecondarySchoolCompareGroup(
   offMap: Map<string, string>,
   osmMap: Map<string, string>,
 ): SecondarySchoolCompareGroup | null {
-  const officialValue = offMap.get('school_type') ?? null
-  const variant = resolveSecondarySchoolKindFromSchoolType(officialValue)
-  if (officialValue == null || variant == null) return null
+  const schoolType = offMap.get('school_type') ?? null
+  const officialName = offMap.get('name') ?? null
+  const rule = resolveSchoolFormRuleFromOfficial({
+    officialName,
+    officialProperties: schoolType != null ? { school_type: schoolType } : {},
+  })
+  if (rule == null || rule === 'grundschule') return null
+  const variant = rule
 
   const isced = osmMap.get('isced:level') ?? null
   const school = osmMap.get('school') ?? null
@@ -230,15 +251,30 @@ function buildSecondarySchoolCompareGroup(
     ...(school ? { school } : {}),
   })
 
+  const fromSchoolType =
+    schoolType != null &&
+    (() => {
+      const fromTypeOnly = resolveSchoolFormRuleFromOfficial({
+        officialName: null,
+        officialProperties: { school_type: schoolType },
+      })
+      return fromTypeOnly === variant
+    })()
+  const officialKey = fromSchoolType ? 'school_type' : 'name'
+  const officialValue = fromSchoolType ? schoolType : officialName
+  const consumedKeys = fromSchoolType
+    ? ['school_type', 'isced:level', 'school']
+    : ['isced:level', 'school']
+
   return {
     kind: 'secondarySchool',
     variant,
-    officialKey: 'school_type',
+    officialKey,
     officialValue,
     osmKeys: ['isced:level', 'school'],
     osmValues: { 'isced:level': isced, school },
     isEquivalentMatch,
-    consumedKeys: ['school_type', 'isced:level', 'school'],
+    consumedKeys,
   }
 }
 

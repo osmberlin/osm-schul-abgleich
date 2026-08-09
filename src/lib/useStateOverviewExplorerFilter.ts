@@ -4,6 +4,7 @@ import {
   STATE_FACET_REF_STATUS,
   STATE_FACET_SCHOOL_FORM_COMBO,
   STATE_FACET_SCHOOL_FORM_FAMILY,
+  type SchoolFormSignalScope,
 } from './stateOverviewItemsSearch'
 import { stateRouteApi } from './stateRouteApi'
 import { useNavigate } from '@tanstack/react-router'
@@ -23,6 +24,7 @@ export function useStateOverviewExplorerFilter() {
   const osmAmenities = search.loa ?? []
   const schoolFormFamilies = search.lsfam ?? []
   const schoolFormCombos = search.lscombo ?? []
+  const schoolFormSignalScope: SchoolFormSignalScope = search.lssrc ?? 'both'
   const refStatuses = search.lref ?? []
 
   function setExploreQ(nextValue: string) {
@@ -45,6 +47,18 @@ export function useStateOverviewExplorerFilter() {
       search: (prev) => ({
         ...prev,
         lscope: nextValue === 'both' ? undefined : nextValue,
+      }),
+    })
+  }
+
+  function setSchoolFormSignalScope(nextValue: SchoolFormSignalScope) {
+    void navigate({
+      unsafeRelative: 'path',
+      replace: true,
+      resetScroll: false,
+      search: (prev) => ({
+        ...prev,
+        lssrc: nextValue === 'both' ? undefined : nextValue,
       }),
     })
   }
@@ -214,6 +228,7 @@ export function useStateOverviewExplorerFilter() {
         loa: undefined,
         lsfam: undefined,
         lscombo: undefined,
+        lssrc: undefined,
         lref: undefined,
       }),
     })
@@ -238,6 +253,8 @@ export function useStateOverviewExplorerFilter() {
     setSchoolFormFamilies,
     schoolFormCombos,
     setSchoolFormCombos,
+    schoolFormSignalScope,
+    setSchoolFormSignalScope,
     refStatuses,
     toggleRefStatus,
     resetExplorer,

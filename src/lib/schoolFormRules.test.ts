@@ -6,6 +6,7 @@ import {
   osmHeuristicUrlBlob,
   partialPrimaryFormTagCompletions,
   resolveSchoolFormRuleFromOfficial,
+  resolveSchoolFormRuleFromOsmHeuristic,
   resolveSchoolFormRuleFromOsmText,
   resolveSchoolFormRuleFromSchoolDe,
   suggestTagsForSchoolFormRule,
@@ -66,16 +67,22 @@ describe('classifySchoolFormCombo', () => {
         officialName: 'Grundschule Nord',
         officialProperties: { school_type: 'Grundschule' },
         osmTags: { amenity: 'school' },
-      }).schoolFormCombo,
-    ).toBe('missing_osm')
+      }),
+    ).toMatchObject({
+      schoolFormCombo: 'missing_osm',
+      schoolFormSignalSource: 'official',
+    })
 
     expect(
       classifySchoolFormCombo({
         officialName: 'Gymnasium Nord',
         officialProperties: { school_type: 'Gymnasium' },
         osmTags: { school: 'secondary', 'isced:level': '2;3' },
-      }).schoolFormCombo,
-    ).toBe('matching_tags')
+      }),
+    ).toMatchObject({
+      schoolFormCombo: 'matching_tags',
+      schoolFormSignalSource: 'official',
+    })
 
     const onlyOsm = classifySchoolFormCombo({
       officialName: 'Schule am Park',
@@ -84,6 +91,57 @@ describe('classifySchoolFormCombo', () => {
     })
     expect(onlyOsm.schoolFormCombo).toBe('only_osm')
     expect(onlyOsm.schoolFormFamily).toBe('grundschule')
+    expect(onlyOsm.schoolFormSignalSource).toBe('osm')
+  })
+
+  it('uses OSM name/URL/school:de heuristics when official has no rule', () => {
+    const fromName = classifySchoolFormCombo({
+      officialName: 'Schule am Park',
+      officialProperties: {},
+      osmTags: { name: 'Peter-Pan-Grundschule', amenity: 'school' },
+    })
+    expect(fromName).toMatchObject({
+      schoolFormRule: 'grundschule',
+      schoolFormCombo: 'missing_osm',
+      schoolFormSignalSource: 'osm',
+    })
+
+    const fromSchoolDe = classifySchoolFormCombo({
+      officialName: null,
+      officialProperties: null,
+      osmTags: { 'school:de': 'Gymnasium', amenity: 'school' },
+    })
+    expect(fromSchoolDe).toMatchObject({
+      schoolFormRule: 'gymnasium',
+      schoolFormCombo: 'missing_osm',
+      schoolFormSignalSource: 'osm',
+    })
+  })
+})
+
+describe('resolveSchoolFormRuleFromOsmHeuristic', () => {
+  it('follows name → url → school:de order', () => {
+    expect(
+      resolveSchoolFormRuleFromOsmHeuristic({
+        name: 'Peter-Pan-Grundschule',
+        website: 'https://gymnasium.example.de',
+        'school:de': 'Gymnasium',
+      }),
+    ).toMatchObject({ rule: 'grundschule', source: 'name' })
+
+    expect(
+      resolveSchoolFormRuleFromOsmHeuristic({
+        name: 'Schule X',
+        website: 'https://gymnasium.example.de',
+      }),
+    ).toMatchObject({ rule: 'gymnasium', source: 'url' })
+
+    expect(
+      resolveSchoolFormRuleFromOsmHeuristic({
+        name: 'Schule X',
+        'school:de': 'Realschule',
+      }),
+    ).toMatchObject({ rule: 'hauptReal', source: 'school:de' })
   })
 })
 
