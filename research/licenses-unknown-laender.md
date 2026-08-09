@@ -55,9 +55,9 @@ Hinweis: CC-BY allein ist für OSM typischerweise **nicht** `yes_licence` ohne A
 - **Publisher:** Hessisches Kultusministerium / Lehrkräfteakademie — _Hessische Schul-Datenbank_
 - **Primary:** https://schul-db.bildung.hessen.de/schul_db.html — keine CC/DL-DE-Lizenz; Bildungsserver: Verbreitung für Schule/Weiterbildung mit Quellenangabe erwünscht, **kommerzielle Verbreitung ohne Genehmigung untersagt** ([Impressum](https://mauswiesel.bildung.hessen.de/impress.html))
 - **Open Data:** z. B. Kreis-Datasets auf opendata.hessen.de (DL-DE-BY-2.0) — kein landesweites Verzeichnis der Live-DB
-- **OSM Wiki:** [DE:Hessen/Schools](https://wiki.openstreetmap.org/wiki/DE:Hessen/Schools) — AFL stellte OSM 2012 eine Schulliste bereit; [DE:Permissions](https://wiki.openstreetmap.org/wiki/DE:Permissions) Status „wartend“, Eintrag zur AFL-Liste
-- **Vorschlag:** Primary `officialLicense: unknown`, `osmCompatible: unknown` (Live-Scraping). Historische Wiki-Liste: `yes_waiver` mit Ref `DE:Hessen/Schools` — gilt **nicht** automatisch für aktuelle Schul-DB / automatisierte Tag-Fixes
-- **Nächste Schritte:** AFL/HKM fragen, ob die Freigabe für aktuelle Daten und Abgleiche gilt
+- **OSM Wiki:** [DE:Hessen/Schools](https://wiki.openstreetmap.org/wiki/DE:Hessen/Schools) — AFL/Schuldatenbank stellte OSM 2012 eine Schulliste per E-Mail bereit (Kontakt Hans Rauch; Mapper Xoff). [DE:Permissions](https://wiki.openstreetmap.org/wiki/DE:Permissions) Eintrag 2012-01-14 Status **„wartend“** (kein formales Addendum/ODbL-Waiver-Dokument). AFL ging 2013 in Landesschulamt/Lehrkräfteakademie auf.
+- **Vorschlag:** Primary `officialLicense: unknown`, `osmCompatible: unknown` (Live-Scraping). Die 2012er Listenspende gilt **nicht automatisch** für die Live-Schul-DB (Snapshot ≠ stehende Lizenz; Behörde gewechselt; Site ohne Open-Data-Lizenz; Permissions nie als „positiv“ geschlossen).
+- **Nächste Schritte / Anschreiben:** Fortgeltung für aktuelle Schul-DB bestätigen lassen (+ idealerweise CC0/Zero oder BY+Addendum) — Entwurf: [`waiver-emails/HE-hessen.md`](waiver-emails/HE-hessen.md)
 
 ### MV — Mecklenburg-Vorpommern
 
@@ -65,9 +65,9 @@ Hinweis: CC-BY allein ist für OSM typischerweise **nicht** `yes_licence` ohne A
 - **Primary (Katalog, teils kostenpflichtig):** https://www.laiv-mv.de/Statistik/Ver%C3%B6ffentlichungen/Verzeichnisse/
 - **Besserer Download:** „offene Excel-Datei“ auf [regierung-mv.de …/Statistik](https://www.regierung-mv.de/Landesregierung/bm/Ministerium/Statistik/) — **ohne** CC/DL-DE-Text
 - **GeoPortal:** Schulstandorte mit © Statistisches Amt, keine Open License
-- **OSM Wiki:** LAIV Geobasisdaten CC-BY 4.0 + OSM-Waiver in Permissions — gilt für **Geobasisdaten**, nicht für das Schulverzeichnis; ältere LAIV-Anfrage „wartend“
-- **Vorschlag:** `officialLicense: unknown`, `osmCompatible: unknown`
-- **Nächste Schritte:** Explizite Nutzungsbedingungen für das Gratis-XLSX anfragen (DL-DE/CC)
+- **OSM / LAIV Geobasis:** OpenData-Geobasisdaten (AfGVK) unter **CC BY 4.0** inkl. OSM-Addendum („Erlaubnis, CC-BY-Daten…“) ausdrücklich nur für den Datensatz _„Die frei zugänglichen Geobasisdaten – die sogenannten OpenData-Geobasisdaten“_ — siehe [Nutzungsbedingungen Downloadportal](https://laiv.geodaten-mv.de/afgvk/Sonstiges/Nutzungsbedingungen) / [LAIV FAQ](https://www.laiv-mv.de/Geoinformation/FAQ/). Das ist Kataster/Vermessung, **nicht** Schulstandorte (Fachdaten Statistik/Bildung; oft © Statistisches Amt). Gleiches Landesamt (LAIV) ≠ gleiche Lizenz pro Produkt.
+- **Vorschlag:** `officialLicense: unknown`, `osmCompatible: unknown` für Schul-WFS/XLSX
+- **Nächste Schritte / Anschreiben:** Analog zum Geobasis-Waiver für Schulstandorte bestätigen lassen — Entwurf: [`waiver-emails/MV-mecklenburg-vorpommern.md`](waiver-emails/MV-mecklenburg-vorpommern.md)
 
 ### NI — Niedersachsen
 
@@ -284,3 +284,7 @@ Sind öffentlich zugängliche amtliche Schulverzeichnisse / Schul-Geodaten der L
 2. Bei CC BY / DL-DE BY ohne Addendum: Behörden um OSM-Waiver bitten (Vorlage OSM-DE Addendum / [Getting permission](https://wiki.openstreetmap.org/wiki/DE:Import/Getting_permission)).
 3. HE: klären, ob AFL-Freigabe 2012 für aktuelle Schul-DB gilt.
 4. MapRoulette-Gate unverändert nur `yes_licence` / `yes_waiver`.
+
+### Entwürfe Anschreiben (FOSSGIS)
+
+Kontakte und fertige E-Mail-Entwürfe (Empfänger, Betreff, Text) pro Land: [`waiver-emails/`](waiver-emails/README.md) (Stand 2026-08-09). Im Research-Doc selbst war zuvor praktisch keine Kontakt-E-Mail hinterlegt (außer unpassendem BW-IT `sc@schule.bwl.de`).
