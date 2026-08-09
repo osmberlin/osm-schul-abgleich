@@ -104,7 +104,7 @@ entries:
       - In den Aufgaben erscheint unter Hilfsmittel ein Link zur Schul-Website, wenn amtliche oder OSM-Daten eine URL haben.
       - Die Lizenz-Tabelle listet recherchierte Nutzungsbedingungen für weitere Länder (u. a. BW, HB, RP, SL, ST, TH) mit Verweis auf die Research-Notizen.
   - refs:
-      - pending-maproulette-task-md
+      - '6142c3f'
     descriptionMd: |
       MapRoulette-Aufgaben sind übersichtlicher formuliert:
       - Tag-Fix aus amtlichen Daten: kompakter Text (Name und Land, kurzer Hinweis, Links zur Schul-Website und Detailseite, Tags in Codeblöcken); bei `ref` ein eigener Abschnitt mit kurzer Begründung, warum die Referenz hilft.

@@ -4,6 +4,13 @@ Automatisch aus `changelog.registry.yaml` erzeugt.
 
 ## 2026-08
 
+### `6142c3f`
+
+MapRoulette-Aufgaben sind übersichtlicher formuliert:
+
+- Tag-Fix aus amtlichen Daten: kompakter Text (Name und Land, kurzer Hinweis, Links zur Schul-Website und Detailseite, Tags in Codeblöcken); bei `ref` ein eigener Abschnitt mit kurzer Begründung, warum die Referenz hilft.
+- Neu: Challenge für fehlende Schulen in BE, BB und SH — amtliche Schulen ohne OSM-Zuordnung (`official_only`) als Create-Aufgaben mit vorgeschlagenem Tag-Paket; der Aufgabentext folgt dem gleichen kompakten Aufbau.
+
 ### `77a980d`
 
 In der Suche & Filter-Ansicht sitzt die Namenssuche jetzt neben einer kurzen Auswahl Amtlich+OSM / Nur amtlich / Nur OSM.
