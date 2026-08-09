@@ -1,4 +1,6 @@
 import { de } from '../i18n/de'
+import { buildMaprouletteBrowseUrl, buildMaprouletteCreatesBrowseUrl } from '../lib/editorLinks'
+import { schoolTagFixesChallengeId } from '../lib/maprouletteIds.const'
 import { maprouletteSchoolCreatesJsonUrl, maprouletteTagFixesJsonUrl } from '../lib/paths'
 import { HeartIcon } from '@heroicons/react/20/solid'
 import { Link } from '@tanstack/react-router'
@@ -20,6 +22,8 @@ const endFooterLinkClass =
 export function AppFooter() {
   const f = de.footer
   const jedeschule = de.home.links.jedeschule
+  const tagFixesBrowseUrl = buildMaprouletteBrowseUrl(schoolTagFixesChallengeId)
+  const createsBrowseUrl = buildMaprouletteCreatesBrowseUrl()
 
   return (
     <footer className="group/footer border-t border-zinc-800 bg-zinc-950/40 py-8 text-xs text-zinc-400">
@@ -89,28 +93,70 @@ export function AppFooter() {
           >
             ·
           </span>
-          <a
-            href={maprouletteTagFixesJsonUrl()}
-            className={endFooterLinkClass}
-            target="_blank"
-            rel="noreferrer"
-          >
-            {f.maprouletteFeedLabel}
-          </a>
+          {tagFixesBrowseUrl ? (
+            <>
+              <a
+                href={tagFixesBrowseUrl}
+                className={endFooterLinkClass}
+                target="_blank"
+                rel="noreferrer"
+              >
+                {f.maprouletteFeedLabel}
+              </a>{' '}
+              <a
+                href={maprouletteTagFixesJsonUrl()}
+                className={endFooterLinkClass}
+                target="_blank"
+                rel="noreferrer"
+              >
+                {f.maprouletteJsonLabel}
+              </a>
+            </>
+          ) : (
+            <a
+              href={maprouletteTagFixesJsonUrl()}
+              className={endFooterLinkClass}
+              target="_blank"
+              rel="noreferrer"
+            >
+              {f.maprouletteFeedLabel} {f.maprouletteJsonLabel}
+            </a>
+          )}
           <span
             aria-hidden
             className="mx-1.5 text-zinc-500 transition-colors duration-150 group-hover/footer:text-emerald-300/70"
           >
             ·
           </span>
-          <a
-            href={maprouletteSchoolCreatesJsonUrl()}
-            className={endFooterLinkClass}
-            target="_blank"
-            rel="noreferrer"
-          >
-            {f.maprouletteCreatesFeedLabel}
-          </a>
+          {createsBrowseUrl ? (
+            <>
+              <a
+                href={createsBrowseUrl}
+                className={endFooterLinkClass}
+                target="_blank"
+                rel="noreferrer"
+              >
+                {f.maprouletteCreatesFeedLabel}
+              </a>{' '}
+              <a
+                href={maprouletteSchoolCreatesJsonUrl()}
+                className={endFooterLinkClass}
+                target="_blank"
+                rel="noreferrer"
+              >
+                {f.maprouletteJsonLabel}
+              </a>
+            </>
+          ) : (
+            <a
+              href={maprouletteSchoolCreatesJsonUrl()}
+              className={endFooterLinkClass}
+              target="_blank"
+              rel="noreferrer"
+            >
+              {f.maprouletteCreatesFeedLabel} {f.maprouletteJsonLabel}
+            </a>
+          )}
           <span
             aria-hidden
             className="mx-1.5 text-zinc-500 transition-colors duration-150 group-hover/footer:text-emerald-300/70"

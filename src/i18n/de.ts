@@ -512,8 +512,9 @@ export const de = {
     osmLinkHref: 'https://www.openstreetmap.org/copyright',
     githubLabel: 'Quellcode auf GitHub',
     githubHref: 'https://github.com/osmberlin/osm-schul-abgleich',
-    maprouletteFeedLabel: 'MapRoulette JSON',
-    maprouletteCreatesFeedLabel: 'MapRoulette Creates JSON',
+    maprouletteFeedLabel: 'MapRoulette fehlende Tags',
+    maprouletteCreatesFeedLabel: 'MapRoulette fehlende Schulen',
+    maprouletteJsonLabel: '(JSON)',
     /** OpenFreeMap first; OSM / JedeSchule only on geo line above. */
     openSourceThanks: [
       {
