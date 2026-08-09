@@ -1,29 +1,22 @@
 {
-  "generatedAt": "2026-08-08T11:39:59.083Z",
+  "generatedAt": "2026-08-09T03:58:32.507Z",
   "months": [
     {
       "month": "2026-08",
       "entries": [
         {
           "refs": [
-            "d7da64f"
+            "6220d1d",
+            "d7da64f",
+            "951d759"
           ],
-          "descriptionMd": "In MapRoulette-Aufgaben erscheint unter Hilfsmittel ein Link zur Website der Schule, wenn amtliche oder OSM-Daten eine URL haben.",
-          "committedAtIso": "2026-08-08T13:39:24+02:00",
-          "committedAtShort": "2026-08-08",
-          "refsDisplay": [
-            "d7da64f"
-          ]
-        },
-        {
-          "refs": [
-            "6220d1d"
-          ],
-          "descriptionMd": "MapRoulette Tag-Fix-Challenge für OSM-lizenzkompatible Länder (BE, BB, SH): Vorschläge zu Schulform, `ref` und Betreiber.\n- Auf Übersicht und Schuldetail gibt es einen MapRoulette-Link; die Startseite kennzeichnet Länder mit MapRoulette.\n- Nach dem Pages-Deploy wird die Challenge aus dem veröffentlichten GeoJSON-Feed neu aufgebaut.\n- Die Lizenz-Tabelle listet recherchierte Nutzungsbedingungen für weitere Länder (u. a. BW, HB, RP, SL, ST, TH) mit Verweis auf die Research-Notizen.",
+          "descriptionMd": "MapRoulette Tag-Fix für Schulen: Vorschläge werden als GeoJSON-Feed erzeugt und nach dem Pages-Deploy neu aufgebaut.\n- Für OSM-lizenzkompatible Länder (BE, BB, SH) gibt es Aufgaben aus amtlichen Daten zu Schulform, `ref` und Betreiber; Übersicht und Schuldetail verlinken MapRoulette, die Startseite kennzeichnet diese Länder.\n- Bundesweit kommen zusätzliche Aufgaben nur aus vorhandenen OSM-Daten (Name, Website-URL, `school:de` oder unvollständige `school`/`isced:level`-Tags) — ohne amtliche Lizenz und ohne `ref`/Betreiber-Vorschläge; kombinierte Campus-Namen (z. B. Grund- und Hauptschule) werden ausgelassen.\n- In den Aufgaben erscheint unter Hilfsmittel ein Link zur Schul-Website, wenn amtliche oder OSM-Daten eine URL haben.\n- Die Lizenz-Tabelle listet recherchierte Nutzungsbedingungen für weitere Länder (u. a. BW, HB, RP, SL, ST, TH) mit Verweis auf die Research-Notizen.",
           "committedAtIso": "2026-08-08T13:17:01+02:00",
           "committedAtShort": "2026-08-08",
           "refsDisplay": [
-            "6220d1d"
+            "6220d1d",
+            "d7da64f",
+            "951d759"
           ]
         }
       ]
@@ -31,28 +24,6 @@
     {
       "month": "2026-05",
       "entries": [
-        {
-          "refs": [
-            "ab7b259"
-          ],
-          "descriptionMd": "Packages: Add min release age\nCo-authored-by: Cursor <cursoragent@cursor.com>",
-          "committedAtIso": "2026-05-20T12:00:08+02:00",
-          "committedAtShort": "2026-05-20",
-          "refsDisplay": [
-            "ab7b259"
-          ]
-        },
-        {
-          "refs": [
-            "c5f77dd"
-          ],
-          "descriptionMd": "Update packages and changelog helper scripts",
-          "committedAtIso": "2026-05-12T09:48:14+02:00",
-          "committedAtShort": "2026-05-12",
-          "refsDisplay": [
-            "c5f77dd"
-          ]
-        },
         {
           "refs": [
             "63d654e"
