@@ -4,6 +4,11 @@ Automatisch aus `changelog.registry.yaml` erzeugt.
 
 ## 2026-08
 
+### `77a980d`
+
+In der Suche & Filter-Ansicht sitzt die Namenssuche jetzt neben einer kurzen Auswahl Amtlich+OSM / Nur amtlich / Nur OSM.
+Bei den Schulform-Filtern kann man zusätzlich eingrenzen, ob das Schulform-Signal aus amtlichen Daten oder aus OSM kommt.
+
 ### `6220d1d`, `d7da64f`, `951d759`
 
 MapRoulette Tag-Fix für Schulen: Vorschläge werden als GeoJSON-Feed erzeugt und nach dem Pages-Deploy neu aufgebaut.

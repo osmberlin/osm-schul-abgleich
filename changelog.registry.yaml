@@ -103,3 +103,8 @@ entries:
       - Bundesweit kommen zusätzliche Aufgaben nur aus vorhandenen OSM-Daten (Name, Website-URL, `school:de` oder unvollständige `school`/`isced:level`-Tags) — ohne amtliche Lizenz und ohne `ref`/Betreiber-Vorschläge; kombinierte Campus-Namen (z. B. Grund- und Hauptschule) werden ausgelassen.
       - In den Aufgaben erscheint unter Hilfsmittel ein Link zur Schul-Website, wenn amtliche oder OSM-Daten eine URL haben.
       - Die Lizenz-Tabelle listet recherchierte Nutzungsbedingungen für weitere Länder (u. a. BW, HB, RP, SL, ST, TH) mit Verweis auf die Research-Notizen.
+  - refs:
+      - '77a980d'
+    descriptionMd: |
+      In der Suche & Filter-Ansicht sitzt die Namenssuche jetzt neben einer kurzen Auswahl Amtlich+OSM / Nur amtlich / Nur OSM.
+      Bei den Schulform-Filtern kann man zusätzlich eingrenzen, ob das Schulform-Signal aus amtlichen Daten oder aus OSM kommt.
