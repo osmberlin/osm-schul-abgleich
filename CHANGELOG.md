@@ -7,6 +7,7 @@ Automatisch aus `changelog.registry.yaml` erzeugt.
 ### `6142c3f`
 
 MapRoulette-Aufgaben sind übersichtlicher formuliert:
+
 - Tag-Fix aus amtlichen Daten: kompakter Text (Name und Land, kurzer Hinweis, Links zur Schul-Website und Detailseite, Tags in Codeblöcken); bei `ref` ein eigener Abschnitt mit kurzer Begründung, warum die Referenz hilft.
 - Neu: Challenge für fehlende Schulen in BE, BB und SH — amtliche Schulen ohne OSM-Zuordnung (`official_only`) als Create-Aufgaben mit vorgeschlagenem Tag-Paket; der Aufgabentext folgt dem gleichen kompakten Aufbau.
 
@@ -18,6 +19,7 @@ Bei den Schulform-Filtern kann man zusätzlich eingrenzen, ob das Schulform-Sign
 ### `6220d1d`, `d7da64f`, `951d759`
 
 MapRoulette Tag-Fix für Schulen: Vorschläge werden als GeoJSON-Feed erzeugt und nach dem Pages-Deploy neu aufgebaut.
+
 - Für OSM-lizenzkompatible Länder (BE, BB, SH) gibt es Aufgaben aus amtlichen Daten zu Schulform, `ref` und Betreiber; Übersicht und Schuldetail verlinken MapRoulette, die Startseite kennzeichnet diese Länder.
 - Bundesweit kommen zusätzliche Aufgaben nur aus vorhandenen OSM-Daten (Name, Website-URL, `school:de` oder unvollständige `school`/`isced:level`-Tags) — ohne amtliche Lizenz und ohne `ref`/Betreiber-Vorschläge; kombinierte Campus-Namen (z. B. Grund- und Hauptschule) werden ausgelassen.
 - In den Aufgaben erscheint unter Hilfsmittel ein Link zur Schul-Website, wenn amtliche oder OSM-Daten eine URL haben.
