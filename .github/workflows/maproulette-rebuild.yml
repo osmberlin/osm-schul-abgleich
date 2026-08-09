@@ -47,6 +47,14 @@ jobs:
           else
             echo "::warning::OSM-heuristic Tag Fix meta not reachable yet (ok until first pipeline deploy after enablement)"
           fi
+
+          CREATES_META_URL="https://schulabgleich.osm-verkehrswende.org/maproulette/school-creates.meta.json"
+          echo "Probing ${CREATES_META_URL}"
+          if curl --fail -sS -o /tmp/mr-creates-meta.json "${CREATES_META_URL}"; then
+            bun -e 'const m = await Bun.file("/tmp/mr-creates-meta.json").json(); console.log(`taskCount=${m.taskCount} generatedAt=${m.generatedAt}`)'
+          else
+            echo "::warning::School-creates MapRoulette meta not reachable yet (ok until first pipeline deploy after enablement)"
+          fi
       - name: Trigger MapRoulette challenge rebuild(s)
         env:
           MAPROULETTE_API_KEY: ${{ secrets.MAPROULETTE_API_KEY }}

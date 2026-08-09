@@ -1,6 +1,8 @@
 import {
   buildIdUrl,
   buildJosmLoadObject,
+  buildMaprouletteBrowseUrl,
+  buildMaprouletteCreatesBrowseUrl,
   buildMaprouletteIdEditorUrl,
   buildMaprouletteIdEditorUrlFromBbox,
   buildOpenStreetMapOrgPinUrl,
@@ -49,6 +51,22 @@ describe('buildMaprouletteIdEditorUrl', () => {
     const url = buildMaprouletteIdEditorUrl({ lat: 52.29434, lon: 13.63293, zoom: 18.5 })
     expect(url).toContain('map=18.50/52.29434/13.63293')
     expect(url).toContain(`maproulette=${schoolTagFixesChallengeId}`)
+  })
+})
+
+describe('buildMaprouletteBrowseUrl', () => {
+  it('builds browse URL for a challenge id', () => {
+    expect(buildMaprouletteBrowseUrl(56330)).toBe('https://maproulette.org/browse/challenges/56330')
+  })
+
+  it('returns null when challenge id is unset', () => {
+    expect(buildMaprouletteBrowseUrl(null)).toBeNull()
+  })
+
+  it('builds creates browse URL from configured challenge id', () => {
+    expect(buildMaprouletteCreatesBrowseUrl()).toBe(
+      'https://maproulette.org/browse/challenges/56332',
+    )
   })
 })
 

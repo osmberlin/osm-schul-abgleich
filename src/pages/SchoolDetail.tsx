@@ -2,6 +2,7 @@ import { SchoolDetailActionLinks } from '../components/school/SchoolDetailAction
 import {
   SchoolDetailAmbiguousAlert,
   SchoolDetailJedeschuleDuplicateGroupNote,
+  SchoolDetailMaprouletteCreateAlert,
   SchoolDetailOfficialNoCoordLead,
   SchoolDetailOutsideBoundaryAlert,
 } from '../components/school/SchoolDetailAlerts'
@@ -151,6 +152,14 @@ export function SchoolDetail() {
           />
 
           <SchoolDetailLicenceWarnings />
+
+          <SchoolDetailMaprouletteCreateAlert
+            stateKey={stateKey}
+            category={matchRow.category}
+            officialId={matchRow.officialId}
+            officialName={matchRow.officialName}
+            officialProperties={matchRow.officialProperties ?? null}
+          />
 
           <SchoolDetailOutsideBoundaryAlert
             outsideBoundary={errorOutsideBoundary}

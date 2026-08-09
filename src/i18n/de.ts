@@ -328,6 +328,11 @@ export const de = {
     editId: 'In iD bearbeiten',
     editJosm: 'In JOSM laden',
     editMaproulette: 'In MapRoulette bearbeiten',
+    editMaprouletteCreate: 'In MapRoulette anlegen',
+    maprouletteCreateAlertTitle: 'MapRoulette-Aufgabe',
+    maprouletteCreateAlertBody:
+      'Diese amtliche Schule fehlt in OSM und ist als Create-Aufgabe in MapRoulette vorgesehen (starke Tags ableitbar). Prüfe Position und Tags, bevor du sie anlegst.',
+    maprouletteCreateAlertLinkLabel: 'Zur MapRoulette-Challenge',
     jedeschuleApi: 'Auf JedeSchule öffnen (JSON)',
     openOsmBrowse: 'Auf OSM öffnen',
     licenceCompatibleLinkLabel: 'Datenlizenz: OSM-kompatibel',
@@ -508,6 +513,7 @@ export const de = {
     githubLabel: 'Quellcode auf GitHub',
     githubHref: 'https://github.com/osmberlin/osm-schul-abgleich',
     maprouletteFeedLabel: 'MapRoulette JSON',
+    maprouletteCreatesFeedLabel: 'MapRoulette Creates JSON',
     /** OpenFreeMap first; OSM / JedeSchule only on geo line above. */
     openSourceThanks: [
       {

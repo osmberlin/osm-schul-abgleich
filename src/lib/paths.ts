@@ -38,3 +38,6 @@ export const maprouletteTagFixesJsonUrl = () => datasetsUrl('/maproulette/school
 /** Nationwide OSM-heuristic Tag Fix feed (no official licence gate). */
 export const maprouletteOsmHeuristicTagFixesJsonUrl = () =>
   datasetsUrl('/maproulette/school-tagfixes-osm-heuristic.json')
+
+/** Licence-gated create-school feed for unmatched official schools. */
+export const maprouletteSchoolCreatesJsonUrl = () => datasetsUrl('/maproulette/school-creates.json')

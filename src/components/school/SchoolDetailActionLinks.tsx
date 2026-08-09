@@ -2,11 +2,12 @@ import { de } from '../../i18n/de'
 import {
   buildIdUrl,
   buildJosmLoadObject,
+  buildMaprouletteCreatesBrowseUrl,
   buildMaprouletteIdEditorUrlFromBbox,
   buildOsmBrowseUrl,
 } from '../../lib/editorLinks'
 import { jedeschuleSchoolJsonUrl } from '../../lib/jedeschuleUrls'
-import { stateHasMaproulette } from '../../lib/maprouletteAvailability'
+import { schoolInMaprouletteCreates, stateHasMaproulette } from '../../lib/maprouletteAvailability'
 import { computeSchoolDetailMapActionBounds } from '../../lib/schoolDetailMapActionBounds'
 import { resolveSchoolMapOsmCentroid } from '../../lib/schoolDetailMapOsmCentroid'
 import type { StateSchoolsBundle, StateSchoolsMatchRow } from '../../lib/stateDatasetQueries'
@@ -36,9 +37,18 @@ export function SchoolDetailActionLinks({
   const bounds = computeSchoolDetailMapActionBounds(data, matchRow, mapOsmCentroid, osmAreasByKey)
   const idUrl = buildIdUrl(matchRow.osmType, matchRow.osmId, bounds)
   const josmUrl = buildJosmLoadObject(matchRow.osmType, matchRow.osmId, bounds)
-  const maprouletteUrl = stateHasMaproulette(stateKey)
-    ? buildMaprouletteIdEditorUrlFromBbox(bounds)
-    : null
+  const inCreatesChallenge = schoolInMaprouletteCreates({
+    stateKey,
+    category: matchRow.category,
+    officialId: matchRow.officialId,
+    officialName: matchRow.officialName,
+    officialProperties: matchRow.officialProperties ?? null,
+  })
+  const maprouletteUrl = inCreatesChallenge
+    ? buildMaprouletteCreatesBrowseUrl()
+    : matchRow.category !== 'official_only' && stateHasMaproulette(stateKey)
+      ? buildMaprouletteIdEditorUrlFromBbox(bounds)
+      : null
   const jedeschuleItemUrl =
     matchRow.officialId &&
     !(matchRow.ambiguousOfficialIds && matchRow.ambiguousOfficialIds.length > 0)
@@ -60,7 +70,7 @@ export function SchoolDetailActionLinks({
       )}
       {maprouletteUrl && (
         <a href={maprouletteUrl} target="_blank" rel="noreferrer" className={EDIT_LINK_CLASS_NAME}>
-          {de.detail.editMaproulette}
+          {inCreatesChallenge ? de.detail.editMaprouletteCreate : de.detail.editMaproulette}
         </a>
       )}
       {(jedeschuleItemUrl || osmBrowseUrl || osmLicenceCompatible) && (

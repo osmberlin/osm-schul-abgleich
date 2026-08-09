@@ -1,5 +1,5 @@
 import { de } from '../i18n/de'
-import { maprouletteTagFixesJsonUrl } from '../lib/paths'
+import { maprouletteSchoolCreatesJsonUrl, maprouletteTagFixesJsonUrl } from '../lib/paths'
 import { HeartIcon } from '@heroicons/react/20/solid'
 import { Link } from '@tanstack/react-router'
 
@@ -96,6 +96,20 @@ export function AppFooter() {
             rel="noreferrer"
           >
             {f.maprouletteFeedLabel}
+          </a>
+          <span
+            aria-hidden
+            className="mx-1.5 text-zinc-500 transition-colors duration-150 group-hover/footer:text-emerald-300/70"
+          >
+            ·
+          </span>
+          <a
+            href={maprouletteSchoolCreatesJsonUrl()}
+            className={endFooterLinkClass}
+            target="_blank"
+            rel="noreferrer"
+          >
+            {f.maprouletteCreatesFeedLabel}
           </a>
           <span
             aria-hidden

@@ -1,4 +1,4 @@
-import { schoolTagFixesChallengeId } from './maprouletteIds.const'
+import { schoolCreatesChallengeId, schoolTagFixesChallengeId } from './maprouletteIds.const'
 
 const JOSM = 'http://127.0.0.1:8111'
 const CHANGESET_HASHTAG = '#schulabgleich'
@@ -34,6 +34,17 @@ export function buildMaprouletteIdEditorUrlFromBbox(
 ): string | null {
   if (!bbox || bbox.length !== 4) return null
   return buildMaprouletteIdEditorUrl(mapViewFromBbox(bbox))
+}
+
+/** MapRoulette challenge browse page (normal / create challenges). */
+export function buildMaprouletteBrowseUrl(challengeId: number | null | undefined): string | null {
+  if (challengeId == null) return null
+  return `https://maproulette.org/browse/challenges/${challengeId}`
+}
+
+/** Browse URL for the create-school challenge (licence-OK official_only). */
+export function buildMaprouletteCreatesBrowseUrl(): string | null {
+  return buildMaprouletteBrowseUrl(schoolCreatesChallengeId)
 }
 
 export function buildIdUrl(

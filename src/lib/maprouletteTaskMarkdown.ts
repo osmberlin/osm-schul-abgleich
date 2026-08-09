@@ -1,22 +1,32 @@
 import { GITHUB_PAGES_SITE_ROOT } from './githubRepo'
+import type { OfficialCreateTagsResult } from './officialCreateTags'
 import type { OsmHeuristicTagSuggestionsResult } from './osmHeuristicTagSuggestions'
 import {
   groupsWithPendingTags,
   type OsmSuggestGroup,
+  type OsmSuggestGroupKind,
   type OsmTagSuggestionsResult,
 } from './osmTagSuggestions'
 import type { StateCode } from './stateConfig'
 import { STATE_LABEL_DE } from './stateConfig'
 
-const UPLOAD_LEAD_TAIL =
-  / Du kannst passende (?:OSM-Tags|Betreiber-Tags) taggen und im Hauptmenü hochladen\./g
-
-function adaptLeadForMapRoulette(lead: string): string {
-  return lead.replace(
-    UPLOAD_LEAD_TAIL,
-    ' Prüfe die Vorschläge und übernimm sie in MapRoulette, wenn sie passen.',
-  )
+/** MR-only H3 titles for official Tag Fix groups (in-app UI keeps de.osm.*SectionTitle). */
+const OFFICIAL_MR_GROUP_TITLE: Record<OsmSuggestGroupKind, string> = {
+  grundschule: 'Als "Grundschule" taggen',
+  gymnasium: 'Als "Gymnasium" taggen',
+  gesamtschule: 'Als "Gesamtschule" taggen',
+  hauptReal: 'Als "Hauptschule/Realschule" taggen',
+  oeffentlicheTraegerschaft: 'Als "in öffentlicher Trägerschaft" taggen',
+  ref: 'Diese offizielle Referenz-ID taggen',
 }
+
+/** Optional lead under an H3 (only `ref` for now). */
+const OFFICIAL_MR_GROUP_LEAD: Partial<Record<OsmSuggestGroupKind, string>> = {
+  ref: 'Eine eindeutige `ref` macht den Datenabgleich bedeutend einfacher.',
+}
+
+const OFFICIAL_MR_CTA =
+  'Auf Basis der amtlichen Daten haben wir diese Vorschläge abgeleitet. Prüfe sie und übernehme sie dann, wenn sie plausibel sind.'
 
 function schoolDetailUrl(stateKey: StateCode, schoolKey: string): string {
   const enc = encodeURIComponent(schoolKey)
@@ -72,10 +82,22 @@ function appendHilfsmittel(
   }
 }
 
+function appendTagsCodeFence(
+  lines: string[],
+  tags: readonly { key: string; value: string }[],
+): void {
+  lines.push('```')
+  for (const tag of tags) {
+    lines.push(`${tag.key}=${tag.value}`)
+  }
+  lines.push('```', '')
+}
+
 export function buildMaprouletteTaskMarkdown(input: {
   stateKey: StateCode
   schoolKey: string
   schoolName: string | null | undefined
+  /** Kept for call-site compatibility; OSM id lives in challenge Mustache `{{id}}`. */
   osmTypeId: string
   suggestions: OsmTagSuggestionsResult
   officialProperties?: Record<string, unknown> | null
@@ -87,18 +109,30 @@ export function buildMaprouletteTaskMarkdown(input: {
   )
   const name = input.schoolName?.trim() || 'Schule'
   const land = STATE_LABEL_DE[input.stateKey]
-  const lines: string[] = [`## ${name}`, '', `${land} · OSM \`${input.osmTypeId}\``, '']
+  const lines: string[] = [`## ${name}, ${land}`, '', OFFICIAL_MR_CTA, '']
+
+  const websiteHref = resolveSchoolWebsiteHref({
+    officialProperties: input.officialProperties,
+    osmTags: input.osmTags,
+  })
+  if (websiteHref) {
+    lines.push(`* [Zur Website der Schule.](${websiteHref})`)
+  }
+  lines.push(
+    `* [Zur Detailseite im Schulabgleich.](${schoolDetailUrl(input.stateKey, input.schoolKey)})`,
+    '',
+  )
 
   for (const group of pendingGroups) {
-    lines.push(`### ${group.title}`, '', adaptLeadForMapRoulette(group.lead), '')
-    for (const tag of group.tags) {
-      lines.push(`* \`${tag.key}=${tag.value}\``)
+    lines.push(`### ${OFFICIAL_MR_GROUP_TITLE[group.kind]}`, '')
+    const lead = OFFICIAL_MR_GROUP_LEAD[group.kind]
+    if (lead) {
+      lines.push(lead, '')
     }
-    lines.push('')
+    appendTagsCodeFence(lines, group.tags)
   }
 
-  appendHilfsmittel(lines, input)
-  return lines.join('\n')
+  return lines.join('\n').trimEnd()
 }
 
 /**
@@ -142,6 +176,52 @@ export function buildMaprouletteOsmHeuristicTaskMarkdown(input: {
     includeDetailLink: input.includeDetailLink,
   })
   return lines.join('\n')
+}
+
+const CREATE_MR_CTA =
+  'Diese Schule ist in den amtlichen Daten vorhanden und hat eine Position, fehlt aber noch in OSM. Prüfe vor Ort oder anhand von Luftbildern, ob sie dort existiert, und lege sie dann an (meist als Punkt). Übernehme die Tags, wenn sie plausibel sind; Geometrie und Position bitte selbst prüfen.'
+
+/**
+ * Task markdown for creating a missing school (no OSM object yet).
+ * Layout aligned with official Tag Fix: H2 name+Land, CTA, links, code fence.
+ */
+export function buildMaprouletteCreateSchoolTaskMarkdown(input: {
+  stateKey: StateCode
+  schoolKey: string
+  create: OfficialCreateTagsResult
+  officialProperties?: Record<string, unknown> | null
+}): string {
+  const land = STATE_LABEL_DE[input.stateKey]
+  const lines: string[] = [`## ${input.create.name}, ${land}`, '', CREATE_MR_CTA, '']
+
+  const websiteHref = resolveSchoolWebsiteHref({
+    officialProperties: input.officialProperties,
+    osmTags: null,
+  })
+  if (websiteHref) {
+    lines.push(`* [Zur Website der Schule.](${websiteHref})`)
+  }
+  lines.push(
+    `* [Zur Detailseite im Schulabgleich.](${schoolDetailUrl(input.stateKey, input.schoolKey)})`,
+    '',
+  )
+
+  lines.push('### Vorgeschlagene Tags', '')
+  appendTagsCodeFence(
+    lines,
+    Object.entries(input.create.tags).map(([key, value]) => ({ key, value })),
+  )
+
+  if (input.create.addressGuidance) {
+    lines.push(
+      '### Adresse (Hinweis)',
+      '',
+      `Amtliche Adresse konnte nicht sicher in \`addr:street\`/\`addr:housenumber\` zerlegt werden: **${input.create.addressGuidance}**`,
+      '',
+    )
+  }
+
+  return lines.join('\n').trimEnd()
 }
 
 /** Challenge-level Mustache instruction (MapRoulette Tag Fix skill). */

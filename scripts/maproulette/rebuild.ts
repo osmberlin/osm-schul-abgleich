@@ -4,6 +4,7 @@
  * Requires MAPROULETTE_API_KEY. Skips challenges whose id is still null.
  */
 import {
+  schoolCreatesChallengeId,
   schoolTagFixesChallengeId,
   schoolTagFixesOsmHeuristicChallengeId,
 } from '../../src/lib/maprouletteIds.const'
@@ -35,6 +36,7 @@ async function main() {
   const jobs: { id: number | null; label: string }[] = [
     { id: schoolTagFixesChallengeId, label: 'official' },
     { id: schoolTagFixesOsmHeuristicChallengeId, label: 'osm-heuristic' },
+    { id: schoolCreatesChallengeId, label: 'creates' },
   ]
 
   let any = false

@@ -1,8 +1,12 @@
 import { de } from '../../i18n/de'
-import { buildOpenStreetMapOrgPinUrl } from '../../lib/editorLinks'
+import {
+  buildMaprouletteCreatesBrowseUrl,
+  buildOpenStreetMapOrgPinUrl,
+} from '../../lib/editorLinks'
 import { formatDeInteger } from '../../lib/formatNumber'
 import { InlineMarkdown } from '../../lib/InlineMarkdown'
 import { JEDESCHULE_DUPLICATE_GROUP_SIZE_KEY } from '../../lib/jedeschuleDuplicateGroup'
+import { schoolInMaprouletteCreates } from '../../lib/maprouletteAvailability'
 import type { StateMatchCategory } from '../../lib/stateMatchCategories'
 import { ExclamationTriangleIcon, InformationCircleIcon } from '@heroicons/react/20/solid'
 import type { ReactNode } from 'react'
@@ -71,6 +75,54 @@ export function SchoolDetailOutsideBoundaryAlert({
             {de.detail.officialCoordsOutsideBoundaryOsmPinLinkLabel}
           </a>
         </p>
+      </div>
+    </SchoolDetailAlertCard>
+  )
+}
+
+export function SchoolDetailMaprouletteCreateAlert({
+  stateKey,
+  category,
+  officialId,
+  officialName,
+  officialProperties,
+}: {
+  stateKey: string
+  category: string | null | undefined
+  officialId: string | null | undefined
+  officialName: string | null | undefined
+  officialProperties: Record<string, unknown> | null | undefined
+}) {
+  if (
+    !schoolInMaprouletteCreates({
+      stateKey,
+      category,
+      officialId,
+      officialName,
+      officialProperties,
+    })
+  ) {
+    return null
+  }
+
+  const browseUrl = buildMaprouletteCreatesBrowseUrl()
+
+  return (
+    <SchoolDetailAlertCard
+      toneClassName="bg-sky-500/10 outline-sky-500/25"
+      titleId="school-detail-maproulette-create-alert-title"
+      title={de.detail.maprouletteCreateAlertTitle}
+      icon={<InformationCircleIcon aria-hidden className="size-5 text-sky-400" />}
+    >
+      <div className="mt-2 text-sm text-sky-100/85">
+        <p className="leading-relaxed">{de.detail.maprouletteCreateAlertBody}</p>
+        {browseUrl && (
+          <p className="mt-2 leading-relaxed">
+            <a href={browseUrl} target="_blank" rel="noreferrer" className="text-sky-200 underline">
+              {de.detail.maprouletteCreateAlertLinkLabel}
+            </a>
+          </p>
+        )}
       </div>
     </SchoolDetailAlertCard>
   )

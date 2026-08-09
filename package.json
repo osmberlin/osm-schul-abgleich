@@ -23,6 +23,7 @@
     "pipeline": "bun run pipeline:download && bun run pipeline:rebuild",
     "maproulette:rebuild": "bun run scripts/maproulette/rebuild.ts",
     "maproulette:write-osm-heuristic": "bun run scripts/maproulette/write-osm-heuristic-feed.ts",
+    "maproulette:write-school-creates": "bun run scripts/maproulette/write-school-creates-feed.ts",
     "stats:user-facing": "bun run scripts/report-user-facing-dataset-sizes.ts",
     "report:data-impact": "bun run scripts/report-data-impact.ts",
     "analysis:jedeschule": "bun run analysis/scripts/jedeschule-official-analysis.ts && bun run format",
