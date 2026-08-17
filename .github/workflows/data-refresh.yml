@@ -106,7 +106,7 @@ jobs:
           git push
 
       - name: Upload reusable dataset artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: ${{ env.DATASET_ARTIFACT_NAME }}
           path: public/datasets
