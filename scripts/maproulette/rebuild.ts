@@ -2,12 +2,19 @@
 /**
  * Trigger MapRoulette rebuild from remoteGeoJson for configured challenges.
  * Requires MAPROULETTE_API_KEY. Skips challenges whose id is still null.
+ *
+ * Transient MapRoulette/Cloudflare errors (502/503/504) are retried. Failure here
+ * does not mean the published GeoJSON feeds are broken — only that MR did not
+ * accept the rebuild request after retries.
  */
 import {
   schoolCreatesChallengeId,
   schoolTagFixesChallengeId,
   schoolTagFixesOsmHeuristicChallengeId,
 } from '../../src/lib/maprouletteIds.const'
+
+const MAX_ATTEMPTS = 3
+const RETRYABLE_STATUSES = new Set([502, 503, 504])
 
 function requireApiKey(): string {
   const key = process.env.MAPROULETTE_API_KEY?.trim()
@@ -18,17 +25,75 @@ function requireApiKey(): string {
   return key
 }
 
+function sleep(ms: number): Promise<void> {
+  return new Promise((resolve) => setTimeout(resolve, ms))
+}
+
+function isRetryableStatus(status: number): boolean {
+  return RETRYABLE_STATUSES.has(status)
+}
+
 async function rebuildChallenge(id: number, label: string, apiKey: string): Promise<void> {
   const apiUrl = `https://maproulette.org/api/v2/challenge/${id}/rebuild?removeUnmatched=true&skipSnapshot=true`
-  const response = await fetch(apiUrl, {
-    method: 'PUT',
-    headers: { apiKey, accept: '*/*' },
-  })
-  if (!response.ok) {
-    console.error(`Rebuild failed for ${label}`, response.status, await response.text())
-    process.exit(1)
+
+  for (let attempt = 1; attempt <= MAX_ATTEMPTS; attempt++) {
+    try {
+      const response = await fetch(apiUrl, {
+        method: 'PUT',
+        headers: { apiKey, accept: '*/*' },
+      })
+
+      if (response.ok) {
+        console.info(`Rebuild triggered for ${label} challenge`, id)
+        return
+      }
+
+      const body = await response.text()
+      const retryable = isRetryableStatus(response.status)
+      const willRetry = retryable && attempt < MAX_ATTEMPTS
+
+      console.error(
+        `MapRoulette rebuild API failed for ${label} challenge ${id} ` +
+          `(HTTP ${response.status}, attempt ${attempt}/${MAX_ATTEMPTS})` +
+          (willRetry ? ' — retrying…' : ''),
+      )
+      console.error(body.slice(0, 500))
+
+      if (willRetry) {
+        await sleep(2_000 * attempt)
+        continue
+      }
+
+      console.error(
+        [
+          `Not critical for the published site: hosted MapRoulette GeoJSON/meta feeds were already probed and are fine.`,
+          `Only maproulette.org failed to accept the rebuild for "${label}" (challenge ${id}).`,
+          `Re-run this workflow later, or trigger a rebuild manually in MapRoulette.`,
+        ].join('\n'),
+      )
+      process.exit(1)
+    } catch (error) {
+      const willRetry = attempt < MAX_ATTEMPTS
+      console.error(
+        `MapRoulette rebuild request error for ${label} challenge ${id} ` +
+          `(attempt ${attempt}/${MAX_ATTEMPTS})` +
+          (willRetry ? ' — retrying…' : ''),
+        error,
+      )
+      if (willRetry) {
+        await sleep(2_000 * attempt)
+        continue
+      }
+      console.error(
+        [
+          `Not critical for the published site: hosted MapRoulette GeoJSON/meta feeds were already probed and are fine.`,
+          `Only the MapRoulette API call failed for "${label}" (challenge ${id}).`,
+          `Re-run this workflow later, or trigger a rebuild manually in MapRoulette.`,
+        ].join('\n'),
+      )
+      process.exit(1)
+    }
   }
-  console.info(`Rebuild triggered for ${label} challenge`, id)
 }
 
 async function main() {
