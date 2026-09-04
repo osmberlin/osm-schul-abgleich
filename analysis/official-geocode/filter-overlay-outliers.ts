@@ -54,11 +54,20 @@ type DiscardedRecord = {
 
 type FilterCounts = { used: number; discarded: number }
 
-function hasFiniteGeo(s: JedeschuleSchool): boolean {
+function cloneJsonObject(raw: unknown) {
+  if (typeof raw !== 'object' || raw == null || Array.isArray(raw)) return null
+  const out: Record<string, unknown> = {}
+  for (const [k, v] of Object.entries(raw)) {
+    out[k] = v
+  }
+  return out
+}
+
+function hasFiniteGeo(s: JedeschuleSchool) {
   return Number.isFinite(s.latitude) && Number.isFinite(s.longitude)
 }
 
-function stateOfSchool(s: JedeschuleSchool): StateCode | null {
+function stateOfSchool(s: JedeschuleSchool) {
   return officialStateCode({ state: s.state })
 }
 
@@ -73,11 +82,11 @@ const osmExtractMetaTimesSchema = pipelineSourceMetaSchema.pick({
   generatedAt: true,
 })
 
-function parsePointsJson(raw: unknown): PointsMap {
+function parsePointsJson(raw: unknown) {
   return new Map(parseOfficialPointsMap(raw, 'points.json'))
 }
 
-function parseDiscardedLonLat(raw: unknown): PointsMap {
+function parseDiscardedLonLat(raw: unknown) {
   const m: PointsMap = new Map()
   const arr = z.array(z.unknown()).safeParse(raw)
   if (!arr.success) return m
@@ -89,18 +98,14 @@ function parseDiscardedLonLat(raw: unknown): PointsMap {
   return m
 }
 
-function osmFcForState(fc: FeatureCollection, code: StateCode): FeatureCollection {
+function osmFcForState(fc: FeatureCollection, code: StateCode) {
   return {
-    type: 'FeatureCollection',
-    features: fc.features.filter((f) => {
-      const p = f.properties
-      if (typeof p !== 'object' || p == null || Array.isArray(p)) return false
-      return (p as Record<string, unknown>)._pipelineState === code
-    }),
+    type: 'FeatureCollection' as const,
+    features: fc.features.filter((f) => f.properties?._pipelineState === code),
   }
 }
 
-function osmStateByKeyForLand(osmFc: FeatureCollection, code: StateCode): Map<string, StateCode> {
+function osmStateByKeyForLand(osmFc: FeatureCollection, code: StateCode) {
   const m = new Map<string, StateCode>()
   const schools = buildOsmSchoolsFromGeoJson(osmFc)
   for (const o of schools) {
@@ -109,7 +114,7 @@ function osmStateByKeyForLand(osmFc: FeatureCollection, code: StateCode): Map<st
   return m
 }
 
-function indexMatched(rows: MatchRowOut[]): Map<string, MatchRowOut> {
+function indexMatched(rows: MatchRowOut[]) {
   const m = new Map<string, MatchRowOut>()
   for (const r of rows) {
     if (r.category === 'matched' && r.officialId) m.set(r.officialId, r)
@@ -117,7 +122,7 @@ function indexMatched(rows: MatchRowOut[]): Map<string, MatchRowOut> {
   return m
 }
 
-function metresNominatimToOsm(overlay: LonLat, row: MatchRowOut): number | null {
+function metresNominatimToOsm(overlay: LonLat, row: MatchRowOut) {
   if (typeof row.osmCentroidLon !== 'number' || typeof row.osmCentroidLat !== 'number') return null
   if (!Number.isFinite(row.osmCentroidLon) || !Number.isFinite(row.osmCentroidLat)) return null
   const km = distance(point(overlay), point([row.osmCentroidLon, row.osmCentroidLat]), {
@@ -126,12 +131,12 @@ function metresNominatimToOsm(overlay: LonLat, row: MatchRowOut): number | null 
   return km * 1000
 }
 
-function osmPartnerKey(row: MatchRowOut): string | null {
+function osmPartnerKey(row: MatchRowOut) {
   if (row.osmType == null || row.osmId == null) return null
   return `${row.osmType}/${row.osmId}`
 }
 
-function stringifySortedPoints(points: Record<string, LonLat>): string {
+function stringifySortedPoints(points: Record<string, LonLat>) {
   const sorted: Record<string, LonLat> = {}
   for (const id of Object.keys(points).sort()) {
     sorted[id] = points[id]!
@@ -139,11 +144,11 @@ function stringifySortedPoints(points: Record<string, LonLat>): string {
   return `${JSON.stringify(sorted, null, 2)}\n`
 }
 
-function emptyFilterCounts(): FilterCounts {
+function emptyFilterCounts() {
   return { used: 0, discarded: 0 }
 }
 
-async function loadOsmExtractGeneratedAt(): Promise<string | null> {
+async function loadOsmExtractGeneratedAt() {
   const candidates = [
     nationalPath(ROOT, NATIONAL.schoolsOsmMeta.replace(/\.json$/, '.dev.json')),
     nationalPath(ROOT, NATIONAL.schoolsOsmMeta),
@@ -159,7 +164,7 @@ async function loadOsmExtractGeneratedAt(): Promise<string | null> {
   return null
 }
 
-async function loadCandidates(): Promise<PointsMap> {
+async function loadCandidates() {
   if (existsSync(CACHE_PATH)) {
     const cache = loadCache(CACHE_PATH)
     const m: PointsMap = new Map()
@@ -189,7 +194,7 @@ async function loadCandidates(): Promise<PointsMap> {
   return merged
 }
 
-async function main(): Promise<void> {
+async function main() {
   const osmPath = nationalPath(ROOT, NATIONAL.pipelineOsmGeojson)
   const osmFile = Bun.file(osmPath)
   if (!(await osmFile.exists())) {
@@ -280,10 +285,8 @@ async function main(): Promise<void> {
   let meta: Record<string, unknown> = {}
   const metaFile = Bun.file(META_PATH)
   if (await metaFile.exists()) {
-    const raw: unknown = await metaFile.json()
-    if (typeof raw === 'object' && raw != null && !Array.isArray(raw)) {
-      meta = { ...(raw as Record<string, unknown>) }
-    }
+    const cloned = cloneJsonObject(await metaFile.json())
+    if (cloned) meta = cloned
   }
 
   meta.pointsJsonBytes = pointsBytes

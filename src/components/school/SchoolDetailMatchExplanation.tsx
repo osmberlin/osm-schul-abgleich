@@ -15,7 +15,7 @@ export type DistanceMatchExplanationKey =
 export function distanceMatchExplanationKey(
   matchMode: StateSchoolsMatchRow['matchMode'],
   officialProperties: Record<string, unknown> | null | undefined,
-): DistanceMatchExplanationKey | null {
+) {
   const nominatim = isNominatimCoordSource(officialProperties)
   if (matchMode === 'distance') {
     return nominatim ? 'matchExplanationDistanceNominatim' : 'matchExplanationDistance'
@@ -33,7 +33,7 @@ export function distanceMatchExplanationKey(
   return null
 }
 
-function withDistancePlaceholder(template: string, row: StateSchoolsMatchRow): string {
+function withDistancePlaceholder(template: string, row: StateSchoolsMatchRow) {
   const distancePart = row.distanceMeters != null ? `${formatDeInteger(row.distanceMeters)} m` : '—'
   return template.replace('{distance}', distancePart)
 }

@@ -55,31 +55,31 @@ type SampleRow = {
   geoMode: string
 }
 
-function mdCell(s: string | number): string {
+function mdCell(s: string | number) {
   return String(s).replace(/\|/g, '\\|').replace(/\n/g, ' ')
 }
 
-function mdTable(headers: string[], rows: string[][]): string {
+function mdTable(headers: string[], rows: string[][]) {
   const h = `| ${headers.map(mdCell).join(' | ')} |`
   const sep = `| ${headers.map(() => '---').join(' | ')} |`
   const body = rows.map((r) => `| ${r.map(mdCell).join(' | ')} |`).join('\n')
   return [h, sep, body].join('\n')
 }
 
-function pct(part: number, total: number): string {
+function pct(part: number, total: number) {
   if (total <= 0) return '0.0%'
   return `${((part / total) * 100).toFixed(1)}%`
 }
 
-function hasFiniteGeo(s: JedeschuleSchool): boolean {
+function hasFiniteGeo(s: JedeschuleSchool) {
   return Number.isFinite(s.latitude) && Number.isFinite(s.longitude)
 }
 
-function stateOfSchool(s: JedeschuleSchool): StateCode | null {
+function stateOfSchool(s: JedeschuleSchool) {
   return officialStateCode({ state: s.state })
 }
 
-function emptyBuckets(): BucketCounts {
+function emptyBuckets() {
   return {
     samePartner: 0,
     differentPartner: 0,
@@ -90,37 +90,30 @@ function emptyBuckets(): BucketCounts {
   }
 }
 
-function osmPartnerKey(row: MatchRowOut | undefined): string | null {
+function osmPartnerKey(row: MatchRowOut | undefined) {
   if (row == null || row.osmType == null || row.osmId == null) return null
   return `${row.osmType}/${row.osmId}`
 }
 
-function featureOfficialId(f: Feature): string {
+function featureOfficialId(f: Feature) {
   if (typeof f.id === 'string' && f.id !== '') return f.id
-  const p = f.properties
-  if (typeof p === 'object' && p != null && !Array.isArray(p)) {
-    const id = (p as Record<string, unknown>).id
-    if (typeof id === 'string' && id !== '') return id
-  }
+  const id = f.properties?.id
+  if (typeof id === 'string' && id !== '') return id
   return ''
 }
 
-function parsePointsJson(raw: unknown): PointsMap {
+function parsePointsJson(raw: unknown) {
   return new Map(parseOfficialPointsMap(raw, 'points.json'))
 }
 
-function osmFcForState(fc: FeatureCollection, code: StateCode): FeatureCollection {
+function osmFcForState(fc: FeatureCollection, code: StateCode) {
   return {
-    type: 'FeatureCollection',
-    features: fc.features.filter((f) => {
-      const p = f.properties
-      if (typeof p !== 'object' || p == null || Array.isArray(p)) return false
-      return (p as Record<string, unknown>)._pipelineState === code
-    }),
+    type: 'FeatureCollection' as const,
+    features: fc.features.filter((f) => f.properties?._pipelineState === code),
   }
 }
 
-function osmStateByKeyForLand(osmFc: FeatureCollection, code: StateCode): Map<string, StateCode> {
+function osmStateByKeyForLand(osmFc: FeatureCollection, code: StateCode) {
   const m = new Map<string, StateCode>()
   const schools = buildOsmSchoolsFromGeoJson(osmFc)
   for (const o of schools) {
@@ -129,9 +122,9 @@ function osmStateByKeyForLand(osmFc: FeatureCollection, code: StateCode): Map<st
   return m
 }
 
-function applyOverlay(fc: FeatureCollection, points: PointsMap): FeatureCollection {
+function applyOverlay(fc: FeatureCollection, points: PointsMap) {
   return {
-    type: 'FeatureCollection',
+    type: 'FeatureCollection' as const,
     features: fc.features.map((f) => {
       if (f.geometry != null) return f
       const id = featureOfficialId(f)
@@ -145,7 +138,7 @@ function applyOverlay(fc: FeatureCollection, points: PointsMap): FeatureCollecti
   }
 }
 
-function indexMatched(rows: MatchRowOut[]): Map<string, MatchRowOut> {
+function indexMatched(rows: MatchRowOut[]) {
   const m = new Map<string, MatchRowOut>()
   for (const r of rows) {
     if (r.category === 'matched' && r.officialId) m.set(r.officialId, r)
@@ -153,10 +146,7 @@ function indexMatched(rows: MatchRowOut[]): Map<string, MatchRowOut> {
   return m
 }
 
-function metresNominatimToOsm(
-  overlay: LonLat | undefined,
-  row: MatchRowOut | undefined,
-): number | null {
+function metresNominatimToOsm(overlay: LonLat | undefined, row: MatchRowOut | undefined) {
   if (!overlay || row == null) return null
   if (typeof row.osmCentroidLon !== 'number' || typeof row.osmCentroidLat !== 'number') return null
   if (!Number.isFinite(row.osmCentroidLon) || !Number.isFinite(row.osmCentroidLat)) return null
@@ -166,7 +156,7 @@ function metresNominatimToOsm(
   return km * 1000
 }
 
-function percentile(sorted: number[], p: number): number | null {
+function percentile(sorted: number[], p: number) {
   if (sorted.length === 0) return null
   const idx = (p / 100) * (sorted.length - 1)
   const lo = Math.floor(idx)
@@ -178,12 +168,12 @@ function percentile(sorted: number[], p: number): number | null {
   return a * (hi - idx) + b * (idx - lo)
 }
 
-function fmtMetres(n: number | null): string {
+function fmtMetres(n: number | null) {
   if (n == null || !Number.isFinite(n)) return '—'
   return String(Math.round(n))
 }
 
-function sampleToCells(s: SampleRow): string[] {
+function sampleToCells(s: SampleRow) {
   return [
     s.state,
     s.officialId,
@@ -196,7 +186,7 @@ function sampleToCells(s: SampleRow): string[] {
   ]
 }
 
-async function main(): Promise<void> {
+async function main() {
   const pointsFile = Bun.file(POINTS_PATH)
   if (!(await pointsFile.exists())) {
     console.error(

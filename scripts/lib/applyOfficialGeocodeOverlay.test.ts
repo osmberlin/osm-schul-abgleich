@@ -14,7 +14,7 @@ afterEach(async () => {
   await Promise.all(dirs.splice(0).map((d) => rm(d, { recursive: true, force: true })))
 })
 
-async function tempProjectRoot(): Promise<string> {
+async function tempProjectRoot() {
   const dir = await mkdtemp(path.join(os.tmpdir(), 'official-geocode-overlay-'))
   dirs.push(dir)
   return dir

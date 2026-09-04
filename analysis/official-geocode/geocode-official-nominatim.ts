@@ -51,7 +51,7 @@ type NominatimHit = {
 
 type SearchOutcome = { kind: 'hits'; hits: NominatimHit[] } | { kind: 'http_error'; error: string }
 
-function parseLimitArg(argv: string[]): number | undefined {
+function parseLimitArg(argv: string[]) {
   const idx = argv.indexOf('--limit')
   if (idx === -1) return undefined
   const raw = argv[idx + 1]
@@ -62,27 +62,27 @@ function parseLimitArg(argv: string[]): number | undefined {
   return Number.parseInt(raw, 10)
 }
 
-function parseRetryNotFound(argv: string[]): boolean {
+function parseRetryNotFound(argv: string[]) {
   return argv.includes('--retry-not-found')
 }
 
-function hasFiniteGeo(s: JedeschuleSchool): boolean {
+function hasFiniteGeo(s: JedeschuleSchool) {
   return Number.isFinite(s.latitude) && Number.isFinite(s.longitude)
 }
 
-function stateOf(s: JedeschuleSchool): StateCode | null {
+function stateOf(s: JedeschuleSchool) {
   return officialStateCode({ state: s.state })
 }
 
-function emptyCounts(): StateCounts {
+function emptyCounts() {
   return { queued: 0, ok: 0, not_found: 0, rejected: 0, http_error: 0 }
 }
 
-function sleep(ms: number): Promise<void> {
+function sleep(ms: number) {
   return new Promise((resolve) => setTimeout(resolve, ms))
 }
 
-function nominatimHeaders(): Record<string, string> {
+function nominatimHeaders() {
   return {
     'User-Agent': process.env.NOMINATIM_USER_AGENT?.trim() || DEFAULT_USER_AGENT,
     Referer: REFERER,
@@ -90,7 +90,7 @@ function nominatimHeaders(): Record<string, string> {
   }
 }
 
-function commonSearchParams(): URLSearchParams {
+function commonSearchParams() {
   const p = new URLSearchParams()
   p.set('format', 'jsonv2')
   p.set('addressdetails', '1')
@@ -99,7 +99,7 @@ function commonSearchParams(): URLSearchParams {
   return p
 }
 
-function structuredParams(school: JedeschuleSchool): URLSearchParams {
+function structuredParams(school: JedeschuleSchool) {
   const p = commonSearchParams()
   p.set('street', school.address ?? '')
   p.set('city', school.city ?? '')
@@ -108,7 +108,7 @@ function structuredParams(school: JedeschuleSchool): URLSearchParams {
   return p
 }
 
-function unstructuredQuery(school: JedeschuleSchool): string {
+function unstructuredQuery(school: JedeschuleSchool) {
   const address = school.address ?? ''
   const zip = school.zip ?? ''
   const city = school.city ?? ''
@@ -126,7 +126,7 @@ const nominatimHitJsonSchema = z.object({
   address: z.object({ postcode: z.string().optional() }).optional(),
 })
 
-function coordToString(v: string | number | undefined): string | null {
+function coordToString(v: string | number | undefined) {
   if (typeof v === 'string') return v
   if (typeof v === 'number') return String(v)
   return null
@@ -151,7 +151,7 @@ function parseNominatimHits(json: unknown): NominatimHit[] | null {
   return out
 }
 
-function isRetryableHttpStatus(status: number): boolean {
+function isRetryableHttpStatus(status: number) {
   return status === 429 || status >= 500
 }
 
@@ -277,11 +277,7 @@ function outcomeToRecord(
   return lastRejected ?? { ...base, status: 'not_found' }
 }
 
-async function persist(
-  filePath: string,
-  latest: Map<string, CacheRecord>,
-  rec: CacheRecord,
-): Promise<void> {
+async function persist(filePath: string, latest: Map<string, CacheRecord>, rec: CacheRecord) {
   await appendCacheRecord(filePath, rec)
   latest.set(rec.id, rec)
 }
@@ -291,24 +287,35 @@ function logProgress(
   total: number,
   queue: JedeschuleSchool[],
   latest: Map<string, CacheRecord>,
-): void {
+) {
   let ok = 0
   let notFound = 0
   let rejected = 0
   let httpError = 0
   for (const s of queue) {
     const st = latest.get(s.id)?.status
-    if (st === 'ok') ok++
-    else if (st === 'not_found') notFound++
-    else if (st === 'rejected') rejected++
-    else if (st === 'http_error') httpError++
+    if (st == null) continue
+    switch (st) {
+      case 'ok':
+        ok++
+        break
+      case 'not_found':
+        notFound++
+        break
+      case 'rejected':
+        rejected++
+        break
+      case 'http_error':
+        httpError++
+        break
+    }
   }
   console.info(
     `${done}/${total} ok=${ok} not_found=${notFound} rejected=${rejected} http_error=${httpError}`,
   )
 }
 
-function buildPoints(latest: Map<string, CacheRecord>): Record<string, [number, number]> {
+function buildPoints(latest: Map<string, CacheRecord>) {
   const points: Record<string, [number, number]> = {}
   for (const rec of latest.values()) {
     if (rec.status !== 'ok') continue
@@ -319,7 +326,7 @@ function buildPoints(latest: Map<string, CacheRecord>): Record<string, [number, 
   return points
 }
 
-function stringifySortedPoints(points: Record<string, [number, number]>): string {
+function stringifySortedPoints(points: Record<string, [number, number]>) {
   const sorted: Record<string, [number, number]> = {}
   for (const id of Object.keys(points).sort()) {
     sorted[id] = points[id]!
@@ -341,15 +348,26 @@ function buildPerStateCounts(
     const counts = perState[code]
     counts.queued++
     const st = latest.get(s.id)?.status
-    if (st === 'ok') counts.ok++
-    else if (st === 'not_found') counts.not_found++
-    else if (st === 'rejected') counts.rejected++
-    else if (st === 'http_error') counts.http_error++
+    if (st == null) continue
+    switch (st) {
+      case 'ok':
+        counts.ok++
+        break
+      case 'not_found':
+        counts.not_found++
+        break
+      case 'rejected':
+        counts.rejected++
+        break
+      case 'http_error':
+        counts.http_error++
+        break
+    }
   }
   return perState
 }
 
-async function main(): Promise<void> {
+async function main() {
   const limit = parseLimitArg(process.argv)
   const retryNotFound = parseRetryNotFound(process.argv)
   const csvPath = jedeschuleDumpAbsolutePath(ROOT)

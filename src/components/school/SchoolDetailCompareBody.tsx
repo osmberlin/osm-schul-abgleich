@@ -28,11 +28,11 @@ const technicalSourceKeys = new Set([
   'coord_source',
 ])
 
-function isTechnicalAttributeKey(key: string): boolean {
+function isTechnicalAttributeKey(key: string) {
   return technicalSourceKeys.has(key.trim().toLowerCase())
 }
 
-function technicalValue(value: unknown): string | null {
+function technicalValue(value: unknown) {
   if (value == null) return null
   if (typeof value === 'number') return Number.isFinite(value) ? String(value) : null
   const text = String(value).trim()
@@ -52,7 +52,7 @@ function technicalEntries(source: TechnicalAttributes | null | undefined): Array
   return entries.filter((entry): entry is [string, string] => entry[1] != null)
 }
 
-function websiteHref(raw: string): string | null {
+function websiteHref(raw: string) {
   const t = raw.trim()
   if (!t) return null
   if (/^https?:\/\//i.test(t)) return t

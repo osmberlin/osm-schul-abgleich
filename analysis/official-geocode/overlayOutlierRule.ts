@@ -9,7 +9,7 @@ export function shouldDiscardOverlayPoint(opts: {
   category: string | undefined
   matchMode: string | undefined
   distanceMeters: number | null
-}): boolean {
+}) {
   if (opts.category !== 'matched') return false
   if (opts.matchMode == null || !BASELINE_FALLBACK_MATCH_MODES.has(opts.matchMode)) return false
   if (opts.distanceMeters == null || !Number.isFinite(opts.distanceMeters)) return false

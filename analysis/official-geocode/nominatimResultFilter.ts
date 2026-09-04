@@ -15,11 +15,11 @@ const REJECTED_PLACE_TYPES = new Set([
   'postcode',
 ])
 
-export function hasHouseNumber(address: string): boolean {
+export function hasHouseNumber(address: string) {
   return /\d/.test(address)
 }
 
-export function isRejectedNominatimClassType(cls: string, type: string): boolean {
+export function isRejectedNominatimClassType(cls: string, type: string) {
   const c = cls.trim().toLowerCase()
   const t = type.trim().toLowerCase()
   if (c === 'boundary') return true
@@ -28,14 +28,14 @@ export function isRejectedNominatimClassType(cls: string, type: string): boolean
   return false
 }
 
-function normalizePostcode(value: string): string {
+function normalizePostcode(value: string) {
   return value.trim().replace(/\s+/g, '')
 }
 
 export function postcodeMatches(
   queriedZip: string | null | undefined,
   resultPostcode: string | null | undefined,
-): boolean {
+) {
   if (queriedZip == null || queriedZip.trim() === '') return true
   const q = normalizePostcode(queriedZip)
   if (q === '') return true

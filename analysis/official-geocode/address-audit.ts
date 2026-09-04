@@ -27,55 +27,55 @@ type StateRow = {
   incomplete: number
 }
 
-function mdCell(s: string | number): string {
+function mdCell(s: string | number) {
   return String(s).replace(/\|/g, '\\|').replace(/\n/g, ' ')
 }
 
-function mdTable(headers: string[], rows: string[][]): string {
+function mdTable(headers: string[], rows: string[][]) {
   const h = `| ${headers.map(mdCell).join(' | ')} |`
   const sep = `| ${headers.map(() => '---').join(' | ')} |`
   const body = rows.map((r) => `| ${r.map(mdCell).join(' | ')} |`).join('\n')
   return [h, sep, body].join('\n')
 }
 
-function pct(part: number, total: number): string {
+function pct(part: number, total: number) {
   if (total <= 0) return '0.0%'
   return `${((part / total) * 100).toFixed(1)}%`
 }
 
-function hasFiniteGeo(s: JedeschuleSchool): boolean {
+function hasFiniteGeo(s: JedeschuleSchool) {
   return Number.isFinite(s.latitude) && Number.isFinite(s.longitude)
 }
 
-function stateOf(s: JedeschuleSchool): StateCode | null {
+function stateOf(s: JedeschuleSchool) {
   return officialStateCode({ state: s.state })
 }
 
-function emptyRow(): StateRow {
+function emptyRow() {
   return { total: 0, noGeo: 0, completeAddr: 0, streetWithoutDigit: 0, incomplete: 0 }
 }
 
-function hasCompleteAddr(s: JedeschuleSchool): boolean {
+function hasCompleteAddr(s: JedeschuleSchool) {
   return Boolean(s.address?.trim() && s.zip?.trim() && s.city?.trim())
 }
 
-function isIncomplete(s: JedeschuleSchool): boolean {
+function isIncomplete(s: JedeschuleSchool) {
   return !hasCompleteAddr(s)
 }
 
-function nameCityKey(s: JedeschuleSchool): string {
+function nameCityKey(s: JedeschuleSchool) {
   return `${normalizeSchoolNameForMatch(s.name)}|${(s.city ?? '').trim().toLowerCase()}`
 }
 
-function isStArc(id: string): boolean {
+function isStArc(id: string) {
   return id.startsWith('ST-ARC')
 }
 
-function isStNumericOne(id: string): boolean {
+function isStNumericOne(id: string) {
   return /^ST-1\d*$/.test(id)
 }
 
-async function main(): Promise<void> {
+async function main() {
   const csvPath = jedeschuleDumpAbsolutePath(ROOT)
   const csvFile = Bun.file(csvPath)
   if (!(await csvFile.exists())) {

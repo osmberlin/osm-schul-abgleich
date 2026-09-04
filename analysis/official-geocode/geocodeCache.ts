@@ -19,13 +19,13 @@ const cacheRecordSchema = z.object({
 
 export type CacheRecord = z.infer<typeof cacheRecordSchema>
 
-function parseCacheRecord(raw: unknown): CacheRecord | null {
+function parseCacheRecord(raw: unknown) {
   const parsed = cacheRecordSchema.safeParse(raw)
   return parsed.success ? parsed.data : null
 }
 
 /** Last record per `id` wins. Missing file → empty map. Invalid lines skipped. */
-export function loadCache(filePath: string): Map<string, CacheRecord> {
+export function loadCache(filePath: string) {
   const m = new Map<string, CacheRecord>()
   if (!existsSync(filePath)) return m
   const text = readFileSync(filePath, 'utf8')
@@ -44,15 +44,12 @@ export function loadCache(filePath: string): Map<string, CacheRecord> {
   return m
 }
 
-export async function appendCacheRecord(filePath: string, record: CacheRecord): Promise<void> {
+export async function appendCacheRecord(filePath: string, record: CacheRecord) {
   await mkdir(path.dirname(filePath), { recursive: true })
   await appendFile(filePath, `${JSON.stringify(record)}\n`, 'utf8')
 }
 
-export function shouldSkipSchool(
-  rec: CacheRecord | undefined,
-  opts?: { retryNotFound?: boolean },
-): boolean {
+export function shouldSkipSchool(rec: CacheRecord | undefined, opts?: { retryNotFound?: boolean }) {
   if (rec == null) return false
   if (rec.status === 'ok') return true
   if (rec.status === 'rejected' && rec.attempt === 'unstructured') return true
