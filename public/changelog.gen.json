@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-09-04T20:47:22.977Z",
+  "generatedAt": "2026-09-04T20:53:16.750Z",
   "months": [
     {
       "month": "2026-09",
@@ -17,13 +17,15 @@
         },
         {
           "refs": [
-            "857c5df"
+            "857c5df",
+            "654e5c6"
           ],
-          "descriptionMd": "Neue Seite [`/download`](/download): pro Bundesland eine CSV mit dem Abgleich (amtlich, OSM, gematcht), verlinkt im Footer und auf der Land-Übersicht.\nDie Datei ist zum Prüfen und Verstehen gedacht — OSM (ODbL) gemischt mit amtlichen Quellen ergibt keine klare Weiterverwendungslizenz.",
+          "descriptionMd": "Neue Seite [`/download`](/download): eine CSV für Deutschland mit dem Abgleich (amtlich, OSM, gematcht), verlinkt im Footer und auf der Land-Übersicht.\nJede Zeile hat Bundesland, amtliche Lizenz und Quellen-URL; OSM-Anteile sind als ODbL gekennzeichnet.\nDie Datei ist zum Prüfen und Verstehen gedacht — OSM (ODbL) gemischt mit amtlichen Quellen ergibt keine klare Weiterverwendungslizenz.",
           "committedAtIso": "2026-09-04T16:49:39+02:00",
           "committedAtShort": "2026-09-04",
           "refsDisplay": [
-            "857c5df"
+            "857c5df",
+            "654e5c6"
           ]
         },
         {
