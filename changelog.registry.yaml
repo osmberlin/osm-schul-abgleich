@@ -129,3 +129,9 @@ entries:
   - refs:
       - 'ca0573a'
     hide: true
+  - refs:
+      - '362beb84017578044c9ba3bbae235b5a471106d0'
+    descriptionMd: |
+      Schulen ohne amtliche Koordinaten (vor allem in Niedersachsen) können jetzt per Distanz zugeordnet werden.
+      Die Adresse wurde einmalig mit Nominatim geocodiert; auf der Detailseite steht, wenn der Punkt eine Straßenadresse ist und nicht ein vermessener Schulstandort.
+      Nominatim-Treffer, die mehr als 2 km von einem bestehenden Namens-, Website- oder Adress-Match liegen, werden nicht verwendet.

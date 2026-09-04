@@ -2,6 +2,14 @@
 
 Automatisch aus `changelog.registry.yaml` erzeugt.
 
+## 2026-09
+
+### `362beb8`
+
+Schulen ohne amtliche Koordinaten (vor allem in Niedersachsen) können jetzt per Distanz zugeordnet werden.
+Die Adresse wurde einmalig mit Nominatim geocodiert; auf der Detailseite steht, wenn der Punkt eine Straßenadresse ist und nicht ein vermessener Schulstandort.
+Nominatim-Treffer, die mehr als 2 km von einem bestehenden Namens-, Website- oder Adress-Match liegen, werden nicht verwendet.
+
 ## 2026-08
 
 ### `6142c3f`
