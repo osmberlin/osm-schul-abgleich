@@ -26,10 +26,13 @@ import { point } from '@turf/helpers'
 import type { FeatureCollection } from 'geojson'
 import { existsSync } from 'node:fs'
 import path from 'node:path'
+import process from 'node:process'
+import { fileURLToPath } from 'node:url'
 import { z } from 'zod'
 
-const ROOT = path.join(import.meta.dirname, '../..')
-const CACHE_PATH = path.join(import.meta.dirname, 'cache.ndjson')
+const SCRIPT_DIR = path.dirname(fileURLToPath(import.meta.url))
+const ROOT = path.join(SCRIPT_DIR, '../..')
+const CACHE_PATH = path.join(SCRIPT_DIR, 'cache.ndjson')
 const OUT_DIR = path.join(ROOT, 'data', 'official-geocode')
 const POINTS_PATH = path.join(OUT_DIR, 'points.json')
 const DISCARDED_PATH = path.join(OUT_DIR, 'discarded.json')
@@ -54,14 +57,25 @@ type DiscardedRecord = {
 
 type FilterCounts = { used: number; discarded: number }
 
-function cloneJsonObject(raw: unknown) {
-  if (typeof raw !== 'object' || raw == null || Array.isArray(raw)) return null
-  const out: Record<string, unknown> = {}
-  for (const [k, v] of Object.entries(raw)) {
-    out[k] = v
-  }
-  return out
-}
+/** Shape written by `geocode-official-nominatim.ts`. `overlayFilter` is replaced after parse. */
+const officialGeocodeMetaSchema = z.object({
+  generatedAt: z.string(),
+  attribution: z.string(),
+  policyUrl: z.string(),
+  nominatimUrl: z.string(),
+  perState: z.record(
+    z.string(),
+    z.object({
+      queued: z.number(),
+      ok: z.number(),
+      not_found: z.number(),
+      rejected: z.number(),
+      http_error: z.number(),
+    }),
+  ),
+  pointsJsonBytes: z.number(),
+  csvSourcePath: z.string(),
+})
 
 function hasFiniteGeo(s: JedeschuleSchool) {
   return Number.isFinite(s.latitude) && Number.isFinite(s.longitude)
@@ -282,22 +296,22 @@ async function main() {
     process.exit(1)
   }
 
-  let meta: Record<string, unknown> = {}
   const metaFile = Bun.file(META_PATH)
-  if (await metaFile.exists()) {
-    const cloned = cloneJsonObject(await metaFile.json())
-    if (cloned) meta = cloned
-  }
-
-  meta.pointsJsonBytes = pointsBytes
-  meta.overlayFilter = {
-    distanceMeters: OVERLAY_OUTLIER_DISTANCE_M,
-    rule: `Discard Nominatim overlay when baseline category is matched, matchMode is name|name_prefix|website|address, and distance to that OSM centroid is > ${OVERLAY_OUTLIER_DISTANCE_M} m. Keep otherwise. Does not auto-discard Sachsen-Anhalt ST-ARC / ST-1xxxxx name+city overlaps.`,
-    used: Object.keys(used).length,
-    discarded: discarded.length,
-    perState,
-    filteredAt: new Date().toISOString(),
-    osmExtractGeneratedAt,
+  const parsedMeta = (await metaFile.exists())
+    ? officialGeocodeMetaSchema.safeParse(await metaFile.json())
+    : null
+  const meta = {
+    ...(parsedMeta?.success ? structuredClone(parsedMeta.data) : {}),
+    pointsJsonBytes: pointsBytes,
+    overlayFilter: {
+      distanceMeters: OVERLAY_OUTLIER_DISTANCE_M,
+      rule: `Discard Nominatim overlay when baseline category is matched, matchMode is name|name_prefix|website|address, and distance to that OSM centroid is > ${OVERLAY_OUTLIER_DISTANCE_M} m. Keep otherwise. Does not auto-discard Sachsen-Anhalt ST-ARC / ST-1xxxxx name+city overlaps.`,
+      used: Object.keys(used).length,
+      discarded: discarded.length,
+      perState,
+      filteredAt: new Date().toISOString(),
+      osmExtractGeneratedAt,
+    },
   }
 
   await Bun.write(POINTS_PATH, pointsJson)
