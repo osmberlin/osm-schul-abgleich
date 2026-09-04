@@ -8,6 +8,8 @@ Implementierung: [`scripts/lib/match.ts`](../scripts/lib/match.ts), Funktion `ma
 
 Die Logik ist **bundesland-lokal**: z. B. `officialsNearOsm` berücksichtigt nur Amts-Schulen desselben Landes wie das OSM-Objekt (`MATCH_RADIUS_KM`).
 
+Einige Officials haben Nominatim-Punkte (`coord_source: nominatim`) statt fehlender Land-Koordinaten. Sie laufen dann durch die 150 m Distanz- und `ref`-Pässe statt nur Name/Website/Adresse. Das Overlay setzt die Pipeline **vor** dem Matching; `matchSchools` selbst ist unverändert.
+
 ## Ablauf (Mermaid)
 
 Reihenfolge entspricht dem Code in `matchSchools` (nach `ref`-Pass und OSM-Restliste).

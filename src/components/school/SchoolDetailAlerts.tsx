@@ -4,9 +4,11 @@ import {
   buildOpenStreetMapOrgPinUrl,
 } from '../../lib/editorLinks'
 import { formatDeInteger } from '../../lib/formatNumber'
+import { githubBlobUrl } from '../../lib/githubRepo'
 import { InlineMarkdown } from '../../lib/InlineMarkdown'
 import { JEDESCHULE_DUPLICATE_GROUP_SIZE_KEY } from '../../lib/jedeschuleDuplicateGroup'
 import { schoolInMaprouletteCreates } from '../../lib/maprouletteAvailability'
+import { isNominatimCoordSource } from '../../lib/officialCoordSource'
 import type { StateMatchCategory } from '../../lib/stateMatchCategories'
 import { ExclamationTriangleIcon, InformationCircleIcon } from '@heroicons/react/20/solid'
 import type { ReactNode } from 'react'
@@ -73,6 +75,39 @@ export function SchoolDetailOutsideBoundaryAlert({
             className="text-amber-200 underline"
           >
             {de.detail.officialCoordsOutsideBoundaryOsmPinLinkLabel}
+          </a>
+        </p>
+      </div>
+    </SchoolDetailAlertCard>
+  )
+}
+
+export function SchoolDetailNominatimCoordAlert({
+  officialProperties,
+}: {
+  officialProperties: Record<string, unknown> | null | undefined
+}) {
+  if (!isNominatimCoordSource(officialProperties)) return null
+
+  return (
+    <SchoolDetailAlertCard
+      toneClassName="bg-sky-500/10 outline-sky-500/25"
+      titleId="school-detail-nominatim-coord-alert-title"
+      title={de.detail.nominatimCoordAlertTitle}
+      icon={<InformationCircleIcon aria-hidden className="size-5 text-sky-400" />}
+    >
+      <div className="mt-2 text-sm text-sky-100/85">
+        <p className="leading-relaxed">
+          <InlineMarkdown>{de.detail.nominatimCoordAlertBody}</InlineMarkdown>
+        </p>
+        <p className="mt-2 leading-relaxed">
+          <a
+            href={githubBlobUrl('data/official-geocode/README.md')}
+            target="_blank"
+            rel="noreferrer"
+            className="text-sky-200 underline"
+          >
+            {de.detail.nominatimCoordAlertLinkLabel}
           </a>
         </p>
       </div>

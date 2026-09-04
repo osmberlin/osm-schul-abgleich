@@ -3,6 +3,7 @@ import {
   SchoolDetailAmbiguousAlert,
   SchoolDetailJedeschuleDuplicateGroupNote,
   SchoolDetailMaprouletteCreateAlert,
+  SchoolDetailNominatimCoordAlert,
   SchoolDetailOfficialNoCoordLead,
   SchoolDetailOutsideBoundaryAlert,
 } from '../components/school/SchoolDetailAlerts'
@@ -166,6 +167,8 @@ export function SchoolDetail() {
             stateLabelDe={stateLabelDe}
           />
 
+          <SchoolDetailNominatimCoordAlert officialProperties={matchRow.officialProperties} />
+
           <SchoolDetailOfficialNoCoordLead category={matchRow.category} />
 
           <SchoolDetailJedeschuleDuplicateGroupNote
@@ -233,6 +236,7 @@ export function SchoolDetail() {
                       'updated_timestamp',
                       'update_timestamp',
                     ]),
+                    coordSource: firstRecordValue(officialProps, ['coord_source']),
                   }}
                   osmTechnical={{
                     lat: matchRow.osmCentroidLat,

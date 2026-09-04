@@ -1,0 +1,196 @@
+{
+  "generatedAt": "2026-08-30T06:23:29.712Z",
+  "attribution": "© OpenStreetMap contributors",
+  "policyUrl": "https://operations.osmfoundation.org/policies/nominatim/",
+  "nominatimUrl": "https://nominatim.openstreetmap.org/search",
+  "perState": {
+    "BW": {
+      "queued": 491,
+      "ok": 476,
+      "not_found": 9,
+      "rejected": 6,
+      "http_error": 0
+    },
+    "BY": {
+      "queued": 0,
+      "ok": 0,
+      "not_found": 0,
+      "rejected": 0,
+      "http_error": 0
+    },
+    "BE": {
+      "queued": 0,
+      "ok": 0,
+      "not_found": 0,
+      "rejected": 0,
+      "http_error": 0
+    },
+    "BB": {
+      "queued": 0,
+      "ok": 0,
+      "not_found": 0,
+      "rejected": 0,
+      "http_error": 0
+    },
+    "HB": {
+      "queued": 0,
+      "ok": 0,
+      "not_found": 0,
+      "rejected": 0,
+      "http_error": 0
+    },
+    "HH": {
+      "queued": 0,
+      "ok": 0,
+      "not_found": 0,
+      "rejected": 0,
+      "http_error": 0
+    },
+    "HE": {
+      "queued": 204,
+      "ok": 197,
+      "not_found": 7,
+      "rejected": 0,
+      "http_error": 0
+    },
+    "MV": {
+      "queued": 2,
+      "ok": 2,
+      "not_found": 0,
+      "rejected": 0,
+      "http_error": 0
+    },
+    "NI": {
+      "queued": 3112,
+      "ok": 3060,
+      "not_found": 32,
+      "rejected": 20,
+      "http_error": 0
+    },
+    "NW": {
+      "queued": 0,
+      "ok": 0,
+      "not_found": 0,
+      "rejected": 0,
+      "http_error": 0
+    },
+    "RP": {
+      "queued": 0,
+      "ok": 0,
+      "not_found": 0,
+      "rejected": 0,
+      "http_error": 0
+    },
+    "SL": {
+      "queued": 0,
+      "ok": 0,
+      "not_found": 0,
+      "rejected": 0,
+      "http_error": 0
+    },
+    "SN": {
+      "queued": 4,
+      "ok": 4,
+      "not_found": 0,
+      "rejected": 0,
+      "http_error": 0
+    },
+    "ST": {
+      "queued": 924,
+      "ok": 632,
+      "not_found": 283,
+      "rejected": 9,
+      "http_error": 0
+    },
+    "SH": {
+      "queued": 64,
+      "ok": 61,
+      "not_found": 3,
+      "rejected": 0,
+      "http_error": 0
+    },
+    "TH": {
+      "queued": 99,
+      "ok": 97,
+      "not_found": 2,
+      "rejected": 0,
+      "http_error": 0
+    }
+  },
+  "pointsJsonBytes": 205458,
+  "csvSourcePath": "public/datasets/jedeschule-latest.csv",
+  "overlayFilter": {
+    "distanceMeters": 2000,
+    "rule": "Discard Nominatim overlay when baseline category is matched, matchMode is name|name_prefix|website|address, and distance to that OSM centroid is > 2000 m. Keep otherwise. Does not auto-discard Sachsen-Anhalt ST-ARC / ST-1xxxxx name+city overlaps.",
+    "used": 4489,
+    "discarded": 40,
+    "perState": {
+      "BW": {
+        "used": 475,
+        "discarded": 1
+      },
+      "BY": {
+        "used": 0,
+        "discarded": 0
+      },
+      "BE": {
+        "used": 0,
+        "discarded": 0
+      },
+      "BB": {
+        "used": 0,
+        "discarded": 0
+      },
+      "HB": {
+        "used": 0,
+        "discarded": 0
+      },
+      "HH": {
+        "used": 0,
+        "discarded": 0
+      },
+      "HE": {
+        "used": 196,
+        "discarded": 1
+      },
+      "MV": {
+        "used": 2,
+        "discarded": 0
+      },
+      "NI": {
+        "used": 3029,
+        "discarded": 31
+      },
+      "NW": {
+        "used": 0,
+        "discarded": 0
+      },
+      "RP": {
+        "used": 0,
+        "discarded": 0
+      },
+      "SL": {
+        "used": 0,
+        "discarded": 0
+      },
+      "SN": {
+        "used": 4,
+        "discarded": 0
+      },
+      "ST": {
+        "used": 625,
+        "discarded": 7
+      },
+      "SH": {
+        "used": 61,
+        "discarded": 0
+      },
+      "TH": {
+        "used": 97,
+        "discarded": 0
+      }
+    },
+    "filteredAt": "2026-09-04T09:26:12.909Z",
+    "osmExtractGeneratedAt": "2026-08-30T04:16:35Z"
+  }
+}

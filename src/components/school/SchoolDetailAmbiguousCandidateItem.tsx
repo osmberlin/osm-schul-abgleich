@@ -165,6 +165,7 @@ export function SchoolDetailAmbiguousCandidateItem({
               'updated_timestamp',
               'update_timestamp',
             ]),
+            coordSource: firstRecordValue(officialProps, ['coord_source']),
           }}
           osmTechnical={{
             lat: osmCentroidLat,

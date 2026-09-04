@@ -9,6 +9,10 @@ import {
   STATE_MAP_CENTER,
   STATE_ORDER,
 } from '../../src/lib/stateConfig'
+import {
+  applyOfficialGeocodeOverlay,
+  loadOfficialGeocodeOverlay,
+} from './applyOfficialGeocodeOverlay'
 import { initBundeslandBoundaries, stateCodeForPoint } from './bundeslandBoundaries'
 import { dedupeOfficialInputs } from './dedupeOfficialInputs'
 import {
@@ -698,9 +702,12 @@ export async function runStateFirstPipeline(
     })
   }
 
+  const overlay = await loadOfficialGeocodeOverlay(projectRoot)
+
   for (const code of codesToProcess) {
     const officialFcState = officialGeojsonForState(schools, code)
-    const gated = gateOfficialFeatureCollection(officialFcState)
+    const overlaid = applyOfficialGeocodeOverlay(officialFcState, overlay)
+    const gated = gateOfficialFeatureCollection(overlaid)
     const officials = officialsFromNationalOfficialFc(gated)
     const deduped = dedupeOfficialInputs(officials)
     dedupeRemovedTotal += deduped.stats.removedCount

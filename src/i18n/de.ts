@@ -333,6 +333,10 @@ export const de = {
     maprouletteCreateAlertBody:
       'Diese amtliche Schule fehlt in OSM und ist als Create-Aufgabe in MapRoulette vorgesehen (starke Tags ableitbar). Prüfe Position und Tags, bevor du sie anlegst.',
     maprouletteCreateAlertLinkLabel: 'Zur MapRoulette-Challenge',
+    nominatimCoordAlertTitle: 'Koordinaten aus Adress-Geocoding',
+    nominatimCoordAlertBody:
+      'Diese Koordinaten stammen **nicht** aus dem Schulstandort-Datensatz des Landes. Sie kommen aus einer einmaligen Nominatim-Geocodierung der JedeSchule-Adresse (OSM-Adressdaten). Die Stecknadel ist die **Straßenadresse** und kann neben dem Campus liegen.',
+    nominatimCoordAlertLinkLabel: 'Mehr zum Nominatim-Overlay',
     jedeschuleApi: 'Auf JedeSchule öffnen (JSON)',
     openOsmBrowse: 'Auf OSM öffnen',
     licenceCompatibleLinkLabel: 'Datenlizenz: OSM-kompatibel',
@@ -378,10 +382,16 @@ export const de = {
     /** `{distance}` z. B. `36 m` */
     matchExplanationDistance:
       'Zuordnung über Distanz ({distance}) – ein einzelner amtlicher Schuldatensatz lag im Vergleichsradius.',
+    matchExplanationDistanceNominatim:
+      'Zuordnung über Distanz ({distance}) – der geocodierte Adresspunkt lag im Vergleichsradius von 150 m.',
     matchExplanationDistanceAndName:
       'Zuordnung über Distanz und Namensgleichheit (normalisierter Vergleichsstring, siehe Pipeline):',
+    matchExplanationDistanceAndNameNominatim:
+      'Zuordnung über Distanz zum geocodierten Adresspunkt und Namensgleichheit (normalisierter Vergleichsstring, siehe Pipeline):',
     matchExplanationDistanceAndNamePrefix:
       'Zuordnung über Distanz und Namenspräfix (amtlicher Name setzt den OSM-Namen fort; normalisierter Vergleichsstring, siehe Pipeline):',
+    matchExplanationDistanceAndNamePrefixNominatim:
+      'Zuordnung über Distanz zum geocodierten Adresspunkt und Namenspräfix (amtlicher Name setzt den OSM-Namen fort; normalisierter Vergleichsstring, siehe Pipeline):',
     matchExplanationName:
       'Zuordnung nur über Namensgleichheit (nach Distanzabgleich ohne eindeutigen Treffer im Bundesland, normalisierter Vergleichsstring):',
     matchExplanationNamePrefix:

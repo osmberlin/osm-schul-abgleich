@@ -10,6 +10,7 @@ type TechnicalAttributes = {
   geometryType?: unknown
   id?: unknown
   updatedTimestamp?: unknown
+  coordSource?: unknown
 }
 
 const technicalSourceKeys = new Set([
@@ -24,6 +25,7 @@ const technicalSourceKeys = new Set([
   'geometrytype',
   'updated_timestamp',
   'update_timestamp',
+  'coord_source',
 ])
 
 function isTechnicalAttributeKey(key: string): boolean {
@@ -42,6 +44,7 @@ function technicalEntries(source: TechnicalAttributes | null | undefined): Array
   const entries: Array<[string, string | null]> = [
     ['lat (rounded)', technicalValue(source.lat)],
     ['long (rounded)', technicalValue(source.long)],
+    ['coord_source', technicalValue(source.coordSource)],
     ['geometry_type', technicalValue(source.geometryType)],
     ['id', technicalValue(source.id)],
     ['updated_timestamp', technicalValue(source.updatedTimestamp)],
