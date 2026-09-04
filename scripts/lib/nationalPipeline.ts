@@ -2,12 +2,8 @@ import { berlinCalendarDateKey } from '../../src/lib/berlinCalendarDateKey'
 import { promoteClosedLineStringsToPolygons } from '../../src/lib/osmClosedRingsToPolygons'
 import { centroidFromOsmGeometry } from '../../src/lib/osmGeometryCentroid'
 import { parseRunHistoryFileText, stringifyRunHistoryJsonl } from '../../src/lib/runHistoryJsonl'
-import { schoolsMatchRowSchema, stateOfficialPointsFileSchema } from '../../src/lib/schemas'
 import { classifySchoolFormCombo } from '../../src/lib/schoolFormRules'
-import {
-  SCHOOLS_MATCH_CSV_FILE_NAME,
-  stringifySchoolsMatchCsv,
-} from '../../src/lib/schoolsMatchCsv'
+import { SCHOOLS_MATCH_CSV_FILE_NAME } from '../../src/lib/schoolsMatchCsv'
 import {
   type StateCode,
   officialStateCode,
@@ -51,13 +47,13 @@ import {
 } from './pipelineCommon'
 import { jedeschuleUpstreamDatasetChanged } from './pipelineFreshness'
 import type { PipelineSourceMeta } from './pipelineMeta'
+import { writeGermanySchoolsMatchCsv } from './writeGermanySchoolsMatchCsv'
 import { feature, featureCollection, point } from '@turf/helpers'
 import simplify from '@turf/simplify'
 import type { Feature, FeatureCollection, Geometry } from 'geojson'
 import { createHash } from 'node:crypto'
 import { mkdir, rm } from 'node:fs/promises'
 import path from 'node:path'
-import { z } from 'zod'
 
 function envScopedJsonFileName(fileName: string): string {
   if (process.env.GITHUB_ACTIONS === 'true') return fileName
@@ -705,6 +701,9 @@ export async function runStateFirstPipeline(
     await rm(path.join(datasetsDir(projectRoot), code, 'schools_matches_overview.json'), {
       force: true,
     })
+    await rm(path.join(datasetsDir(projectRoot), code, SCHOOLS_MATCH_CSV_FILE_NAME), {
+      force: true,
+    })
   }
 
   const overlay = await loadOfficialGeocodeOverlay(projectRoot)
@@ -810,14 +809,6 @@ export async function runStateFirstPipeline(
       path.join(datasetsDir(projectRoot), code, 'schools_matches_detail.json'),
       rowsStateDetailByKey,
     )
-    const csvRows = z.array(schoolsMatchRowSchema).parse(rowsStateDetailUser)
-    await Bun.write(
-      path.join(datasetsDir(projectRoot), code, SCHOOLS_MATCH_CSV_FILE_NAME),
-      stringifySchoolsMatchCsv(csvRows, {
-        bundesland: code,
-        officialPointsById: stateOfficialPointsFileSchema.parse(officialPointsById),
-      }),
-    )
 
     const osmSource: 'live' | 'cached' | 'missing' =
       osmMeta?.ok && osmStateFc.features.length > 0
@@ -866,6 +857,8 @@ export async function runStateFirstPipeline(
   console.info(
     `[pipeline:match] jedeschule dedupe (summiert über ${codesToProcess.length} Länder): −${dedupeRemovedTotal} with-coord Duplikate entfernt`,
   )
+
+  await writeGermanySchoolsMatchCsv(projectRoot)
 
   let merged: SummaryFileOut
   if (codesToProcess.length === STATE_ORDER.length) {

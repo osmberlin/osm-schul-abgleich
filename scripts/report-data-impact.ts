@@ -39,11 +39,6 @@ const PER_LAND_FILE_ROUTE_PURPOSE: Record<
     route: '`/bundesland/{code}/schule/…`',
     purpose: 'Detail-only full match rows keyed by `key` for compare/explanation fields.',
   },
-  'schools_matches.csv': {
-    route: '`/download`',
-    purpose:
-      'Per-Land CSV of all match categories (official, OSM, matched) for download; generated at pipeline time.',
-  },
   'schools_osm.meta.json': {
     route: '`/bundesland/{code}`',
     purpose:

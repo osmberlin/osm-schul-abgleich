@@ -28,16 +28,16 @@ export const USER_FACING_FILES = [
   'schools_osm_areas.json',
   'schools_matches_map.json',
   'schools_matches_detail.json',
-  'schools_matches.csv',
   'schools_osm.meta.json',
 ] as const
 
-/** Committed / deployed JSON at `public/datasets/` root (plus `status/runs.jsonl`). */
+/** Deployed files at `public/datasets/` root (plus `status/runs.jsonl`). */
 export const ROOT_DATASET_SNAPSHOT_FILES = [
   'summary.json',
   'schools_official_de.meta.json',
   'schools_osm_de.meta.json',
   'jedeschule_stats.json',
+  'schools_matches.csv',
 ] as const
 
 export const ROOT_DATASET_SNAPSHOT_EXTRA = ['status/runs.jsonl'] as const

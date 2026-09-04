@@ -2,7 +2,8 @@ import { CategoryLegendSwatch } from '../components/CategoryLegendSwatch'
 import { de } from '../i18n/de'
 import { buildMaprouletteIdEditorUrlFromBbox } from '../lib/editorLinks'
 import { stateHasMaproulette } from '../lib/maprouletteAvailability'
-import { stateMatchesCsvUrl } from '../lib/paths'
+import { germanyMatchesCsvUrl } from '../lib/paths'
+import { SCHOOLS_MATCH_CSV_DOWNLOAD_FILE_NAME } from '../lib/schoolsMatchCsv'
 import { type StateCode, STATE_BOUNDS, STATE_LABEL_DE } from '../lib/stateConfig'
 import { stateListSearchQueryOptions } from '../lib/stateDatasetQueries'
 import type { StateMatchCategory } from '../lib/stateMatchCategories'
@@ -83,12 +84,12 @@ export function StateLayout() {
           {de.state.overviewTitle.replace('{name}', label).replace('{stateKey}', stateKey)}
         </h1>
         <div className="flex shrink-0 flex-wrap items-center gap-2 sm:justify-end">
-          <Link to="/download" hash={stateKey} className={CSV_DOWNLOAD_LINK_CLASS_NAME}>
+          <Link to="/download" className={CSV_DOWNLOAD_LINK_CLASS_NAME}>
             {de.navDownload}
           </Link>
           <a
-            href={stateMatchesCsvUrl(stateKey)}
-            download={`schulabgleich_${stateKey}_schools_matches.csv`}
+            href={germanyMatchesCsvUrl()}
+            download={SCHOOLS_MATCH_CSV_DOWNLOAD_FILE_NAME}
             className={CSV_DOWNLOAD_LINK_CLASS_NAME}
           >
             {de.download.overviewLink}

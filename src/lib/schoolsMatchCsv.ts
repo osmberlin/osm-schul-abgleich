@@ -1,3 +1,4 @@
+import { BUNDESLAND_OFFICIAL_SOURCES } from './bundeslandOfficialSources'
 import { buildOsmBrowseUrl } from './editorLinks'
 import { GITHUB_PAGES_SITE_ROOT } from './githubRepo'
 import {
@@ -5,10 +6,19 @@ import {
   stateOfficialPointsFileSchema,
   type SchoolsMatchRow,
 } from './schemas'
+import { parseStateColumn, STATE_LABEL_DE } from './stateConfig'
 import { z } from 'zod'
 
-/** Stable per-Land CSV filename under `public/datasets/{code}/`. */
+/** Stable Germany-wide CSV filename under `public/datasets/`. */
 export const SCHOOLS_MATCH_CSV_FILE_NAME = 'schools_matches.csv' as const
+
+/** Suggested `download` attribute for the Germany-wide CSV. */
+export const SCHOOLS_MATCH_CSV_DOWNLOAD_FILE_NAME = 'schulabgleich_DE_schools_matches.csv' as const
+
+/** OSM database licence short name (rows with an OSM object). */
+export const OSM_CSV_LICENSE = 'ODbL 1.0' as const
+
+export const OSM_CSV_COPYRIGHT_URL = 'https://www.openstreetmap.org/copyright' as const
 
 /** OSM tags flattened to their own CSV columns (compare-UI first-class keys). */
 export const SCHOOLS_MATCH_CSV_OSM_FLAT_TAGS = [
@@ -62,6 +72,41 @@ export const SCHOOLS_MATCH_CSV_COLUMNS = [
   {
     header: 'bundesland',
     descriptionDe: 'ISO-3166-2-Code des Bundeslands ohne DE- (z. B. BE, NW).',
+  },
+  {
+    header: 'bundesland_name',
+    descriptionDe: 'Deutscher Name des Bundeslands (z. B. Berlin, Nordrhein-Westfalen).',
+  },
+  {
+    header: 'official_license',
+    descriptionDe:
+      'Kurzname der amtlichen Lizenz laut unserer Recherche (z. B. CC BY 4.0, DL-DE Zero 2.0, unknown).',
+  },
+  {
+    header: 'official_osm_compatible',
+    descriptionDe:
+      'Ob die amtliche Quelle für OSM nutzbar ist: unknown, no, yes_licence oder yes_waiver.',
+  },
+  {
+    header: 'official_source_url',
+    descriptionDe: 'URL der amtlichen Datenquelle (Portal/API), wie in der Lizenz-Tabelle.',
+  },
+  {
+    header: 'official_source_ref_url',
+    descriptionDe:
+      'Optionale zweite amtliche URL (z. B. WFS/CSV-Abruf oder Metadaten), wenn sie von official_source_url abweicht.',
+  },
+  {
+    header: 'official_license_note',
+    descriptionDe: 'Kurzer Recherche-Hinweis zur amtlichen Lizenz (kann leer sein).',
+  },
+  {
+    header: 'osm_license',
+    descriptionDe: 'Lizenz der OSM-Anteile (ODbL 1.0). Leer, wenn die Zeile kein OSM-Objekt hat.',
+  },
+  {
+    header: 'osm_copyright_url',
+    descriptionDe: 'openstreetmap.org/copyright. Leer, wenn die Zeile kein OSM-Objekt hat.',
   },
   {
     header: 'category',
@@ -189,6 +234,11 @@ const csvWriteOptionsSchema = z.object({
 
 export type SchoolsMatchCsvWriteOptions = z.infer<typeof csvWriteOptionsSchema>
 
+export type SchoolsMatchCsvBatch = {
+  rows: SchoolsMatchRow[]
+  options: SchoolsMatchCsvWriteOptions
+}
+
 function csvCell(value: string | number | boolean | null | undefined): string {
   if (value == null) return ''
   if (value === true) return 'true'
@@ -206,6 +256,36 @@ function officialLonLat(
     if (fromIndex) return { lon: csvCell(fromIndex[0]), lat: csvCell(fromIndex[1]) }
   }
   return { lon: csvCell(official.longitude), lat: csvCell(official.latitude) }
+}
+
+function officialProvenanceCells(bundesland: string): {
+  bundesland_name: string
+  official_license: string
+  official_osm_compatible: string
+  official_source_url: string
+  official_source_ref_url: string
+  official_license_note: string
+} {
+  const code = parseStateColumn(bundesland)
+  if (!code) {
+    return {
+      bundesland_name: '',
+      official_license: '',
+      official_osm_compatible: '',
+      official_source_url: '',
+      official_source_ref_url: '',
+      official_license_note: '',
+    }
+  }
+  const row = BUNDESLAND_OFFICIAL_SOURCES[code]
+  return {
+    bundesland_name: STATE_LABEL_DE[code],
+    official_license: row.officialLicense,
+    official_osm_compatible: row.osmCompatible,
+    official_source_url: row.officialSourceUrl,
+    official_source_ref_url: row.officialSourceRefUrl ?? '',
+    official_license_note: row.likelyNote,
+  }
 }
 
 function osmOtherTagsJson(tags: Record<string, string> | null | undefined): string {
@@ -237,8 +317,18 @@ export function mapSchoolsMatchRowToCsvRecord(
     parsedOptions.officialPointsById,
   )
 
+  const provenance = officialProvenanceCells(parsedOptions.bundesland)
+
   const record = {
     bundesland: parsedOptions.bundesland,
+    bundesland_name: provenance.bundesland_name,
+    official_license: provenance.official_license,
+    official_osm_compatible: provenance.official_osm_compatible,
+    official_source_url: provenance.official_source_url,
+    official_source_ref_url: provenance.official_source_ref_url,
+    official_license_note: provenance.official_license_note,
+    osm_license: hasOsm ? OSM_CSV_LICENSE : '',
+    osm_copyright_url: hasOsm ? OSM_CSV_COPYRIGHT_URL : '',
     category: row.category,
     match_mode: csvCell(row.matchMode),
     distance_meters: csvCell(row.distanceMeters),
@@ -311,7 +401,14 @@ export function stringifySchoolsMatchCsv(
   rows: SchoolsMatchRow[],
   options: SchoolsMatchCsvWriteOptions,
 ): string {
-  const records = rows.map((row) => mapSchoolsMatchRowToCsvRecord(row, options))
+  return stringifySchoolsMatchCsvBatches([{ rows, options }])
+}
+
+/** Concatenate several Länder into one CSV (single header row). */
+export function stringifySchoolsMatchCsvBatches(batches: readonly SchoolsMatchCsvBatch[]): string {
+  const records = batches.flatMap(({ rows, options }) =>
+    rows.map((row) => mapSchoolsMatchRowToCsvRecord(row, options)),
+  )
   const lines = [
     CSV_HEADERS.join(','),
     ...records.map((record) => CSV_HEADERS.map((header) => csvEscape(record[header])).join(',')),

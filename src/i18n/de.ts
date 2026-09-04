@@ -189,7 +189,7 @@ export const de = {
   },
   download: {
     heading: 'Daten-Download',
-    lead: 'Pro Bundesland gibt es eine CSV-Datei mit dem Abgleich von amtlichen Schuldaten (JedeSchule) und OpenStreetMap. Eine Zeile ist ein Abgleichs-Datensatz: nur amtlich, nur OSM, eindeutig gematcht, uneindeutig oder amtlich ohne Koordinaten. Wo ein Match gelingt, sind Standorte gegeneinander geprüft; OSM ergänzt Geometrie und Tags, die im Register fehlen.',
+    lead: 'Eine CSV für Deutschland mit dem Abgleich von amtlichen Schuldaten (JedeSchule) und OpenStreetMap. Eine Zeile ist ein Abgleichs-Datensatz: nur amtlich, nur OSM, eindeutig gematcht, uneindeutig oder amtlich ohne Koordinaten. Bundesland, amtliche Lizenz und Quellen-URLs stehen in eigenen Spalten; OSM-Anteile sind als ODbL gekennzeichnet.',
     jedeschuleHeading: 'Originaldaten bei JedeSchule',
     jedeschuleLead:
       'Die unbehandelten öffentlichen Registerdaten kommen von JedeSchule. Unser Download ist ein abgeleiteter Snapshot aus dem Abgleich – kein Ersatz für das Original.',
@@ -225,13 +225,12 @@ export const de = {
     },
     formatHeading: 'Dateiformat',
     formatLead:
-      'UTF-8 mit BOM, Komma als Trennzeichen (wie die JedeSchule-CSV), RFC-4180-Quoting. Der Dateiname bleibt gleich; den Datenstand zeigt die Tabelle unten.',
-    filesHeading: 'Download je Bundesland',
-    filesLead: 'Eine Datei pro Land, alle Kategorien in einer Tabelle.',
+      'UTF-8 mit BOM, Komma als Trennzeichen (wie die JedeSchule-CSV), RFC-4180-Quoting. Den Datenstand zeigt der Download oben.',
+    filesHeading: 'Download',
+    filesLead:
+      'Eine Datei für ganz Deutschland. Nach Bundesland filtern über bundesland bzw. bundesland_name; Lizenz und Quelle stehen in den official_*-Spalten.',
     filesSnapshot: 'Datenstand',
-    colState: 'Bundesland',
-    colRows: 'Zeilen',
-    colDownload: 'Datei',
+    filesRows: 'Zeilen',
     csvLink: 'CSV herunterladen',
     loading: 'Lade Übersicht…',
     error: 'Übersicht konnte nicht geladen werden.',

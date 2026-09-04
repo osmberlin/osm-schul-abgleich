@@ -29,6 +29,7 @@ status/runs.dev.jsonl
 **/schools_osm_areas.json
 **/schools_matches_map.json
 **/schools_matches_detail.json
+# Germany-wide download CSV (and leftover per-Land copies from earlier pipeline versions).
 **/schools_matches.csv
 **/schools_osm.meta.json
 

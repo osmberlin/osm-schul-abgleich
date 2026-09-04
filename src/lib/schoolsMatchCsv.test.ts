@@ -5,6 +5,7 @@ import {
   mapSchoolsMatchRowToCsvRecord,
   SCHOOLS_MATCH_CSV_COLUMNS,
   stringifySchoolsMatchCsv,
+  stringifySchoolsMatchCsvBatches,
 } from './schoolsMatchCsv'
 import { parse } from 'csv-parse/sync'
 import { describe, expect, it } from 'vitest'
@@ -87,6 +88,13 @@ describe('mapSchoolsMatchRowToCsvRecord', () => {
       officialPointsById: { 'BE-03P11': [13.41, 52.52] },
     })
     expect(rec.bundesland).toBe('BE')
+    expect(rec.bundesland_name).toBe('Berlin')
+    expect(rec.official_license).toBe('DL-DE Zero 2.0')
+    expect(rec.official_osm_compatible).toBe('yes_waiver')
+    expect(rec.official_source_url).toBe('https://daten.berlin.de/datensaetze/schulen-wfs-ebc64e18')
+    expect(rec.official_source_ref_url).toBe('')
+    expect(rec.osm_license).toBe('ODbL 1.0')
+    expect(rec.osm_copyright_url).toBe('https://www.openstreetmap.org/copyright')
     expect(rec.category).toBe('matched')
     expect(rec.match_mode).toBe('distance_and_name')
     expect(rec.distance_meters).toBe('32')
@@ -126,6 +134,9 @@ describe('mapSchoolsMatchRowToCsvRecord', () => {
     })
     const rec = mapSchoolsMatchRowToCsvRecord(row, { bundesland: 'BE' })
     expect(rec.category).toBe('official_only')
+    expect(rec.official_license).toBe('DL-DE Zero 2.0')
+    expect(rec.osm_license).toBe('')
+    expect(rec.osm_copyright_url).toBe('')
     expect(rec.match_mode).toBe('')
     expect(rec.official_city).toBe('Berlin')
     expect(rec.official_lat).toBe('52.5')
@@ -153,6 +164,9 @@ describe('mapSchoolsMatchRowToCsvRecord', () => {
     })
     const rec = mapSchoolsMatchRowToCsvRecord(row, { bundesland: 'BE' })
     expect(rec.category).toBe('osm_only')
+    expect(rec.bundesland_name).toBe('Berlin')
+    expect(rec.official_license).toBe('DL-DE Zero 2.0')
+    expect(rec.osm_license).toBe('ODbL 1.0')
     expect(rec.official_id).toBe('')
     expect(rec.official_name).toBe('')
     expect(rec.official_lat).toBe('')
@@ -201,5 +215,38 @@ describe('mapSchoolsMatchRowToCsvRecord', () => {
     expect(rec.official_name).toBe('')
     expect(rec.ambiguous_official_ids).toBe('BE-1;BE-2')
     expect(rec.osm_id).toBe('1')
+  })
+})
+
+describe('stringifySchoolsMatchCsvBatches', () => {
+  it('writes one header and rows from several Länder', () => {
+    const csv = stringifySchoolsMatchCsvBatches([
+      {
+        rows: [parseRow({ key: 'match-BE-1', officialId: 'BE-1' })],
+        options: { bundesland: 'BE' },
+      },
+      {
+        rows: [
+          parseRow({
+            key: 'official-NW-1',
+            category: 'official_only',
+            officialId: 'NW-1',
+            osmId: null,
+            osmType: null,
+          }),
+        ],
+        options: { bundesland: 'NW' },
+      },
+    ])
+    const records = z
+      .array(z.record(z.string(), z.string()))
+      .parse(parse(csv.slice(1), { columns: true, relax_quotes: true }))
+    expect(records).toHaveLength(2)
+    expect(records[0]!.bundesland).toBe('BE')
+    expect(records[0]!.bundesland_name).toBe('Berlin')
+    expect(records[1]!.bundesland).toBe('NW')
+    expect(records[1]!.bundesland_name).toBe('Nordrhein-Westfalen')
+    expect(records[1]!.official_license).toBe('DL-DE BY 2.0')
+    expect(records[1]!.official_osm_compatible).toBe('no')
   })
 })
