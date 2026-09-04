@@ -36,7 +36,7 @@ export function buildMaprouletteIdEditorUrl(view: MapView): string | null {
   return `${MAPROULETTE_ID_EDITOR_ORIGIN}/#${maprouletteIdEditorHash(schoolTagFixesChallengeId, view)}`
 }
 
-/** Campaign-level iD editor (no map pin) — footer / challenge entry. */
+/** No map pin. */
 export function buildMaprouletteIdEditorCampaignUrl(
   challengeId: number | null | undefined,
 ): string | null {

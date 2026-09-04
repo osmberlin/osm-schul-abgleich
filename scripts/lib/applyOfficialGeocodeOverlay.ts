@@ -4,7 +4,6 @@ import { readFile } from 'node:fs/promises'
 import path from 'node:path'
 import { z } from 'zod'
 
-/** `data/official-geocode/points.json` and per-state `schools_official_points.json`: id → `[lon, lat]`. */
 export const officialPointsMapSchema = z.record(
   z.string(),
   z.tuple([z.number().finite(), z.number().finite()]),

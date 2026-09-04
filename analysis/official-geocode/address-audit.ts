@@ -117,8 +117,8 @@ async function main() {
   const shStreetShare = sh.noGeo > 0 ? sh.streetWithoutDigit / sh.noGeo : 0
   const shNote =
     sh.noGeo > 0 && shStreetShare >= 0.3
-      ? `Schleswig-Holstein: ${sh.streetWithoutDigit} of ${sh.noGeo} no-geo rows (${pct(sh.streetWithoutDigit, sh.noGeo)}) have a street without a digit (house number). Structured Nominatim \`street=\` queries are likely weak there unless house numbers are filled in.`
-      : 'Schleswig-Holstein: street lines in the no-geo set usually include a digit, so house-number coverage is not the main blocker.'
+      ? `Schleswig-Holstein: ${sh.streetWithoutDigit} of ${sh.noGeo} no-geo rows (${pct(sh.streetWithoutDigit, sh.noGeo)}) have a street without a house number. Structured Nominatim \`street=\` is a poor query for those rows.`
+      : 'Schleswig-Holstein: most no-geo street lines include a digit (house number).'
 
   const ready: string[] = []
   const notReady: string[] = []
@@ -154,7 +154,7 @@ async function main() {
 
   const gen = new Date().toISOString()
   const md = [
-    '# Official address audit (Nominatim readiness)',
+    '# Official address audit (address completeness for geocoding)',
     '',
     '**Script:** [`analysis/official-geocode/address-audit.ts`](./address-audit.ts)',
     '',
@@ -212,9 +212,9 @@ async function main() {
     '',
     shNote,
     '',
-    '## Conclusion: Nominatim-ready lands',
+    '## Conclusion',
     '',
-    'A land is treated as Nominatim-ready when it has a no-geo queue, at least 70% of those rows have address+zip+city, and fewer than 50% of no-geo rows lack a digit in the street.',
+    'A land is treated as complete enough for geocoding when it has a no-geo queue, at least 70% of those rows have address+zip+city, and fewer than 50% of no-geo rows lack a digit in the street.',
     '',
     ready.length > 0
       ? `- Ready: ${ready.map((c) => `${c} (${STATE_LABEL_DE[c]})`).join(', ')}.`
@@ -223,7 +223,7 @@ async function main() {
       ? `- Not ready (incomplete addresses or many streets without house numbers): ${notReady.map((c) => `${c} (${STATE_LABEL_DE[c]})`).join(', ')}.`
       : '- Not ready: none.',
     alreadyGeocoded.length > 0
-      ? `- No no-geo queue (already have coordinates): ${alreadyGeocoded.map((c) => `${c} (${STATE_LABEL_DE[c]})`).join(', ')}.`
+      ? `- No current no-geo rows (already have coordinates): ${alreadyGeocoded.map((c) => `${c} (${STATE_LABEL_DE[c]})`).join(', ')}.`
       : '- Every land has a no-geo queue.',
     '',
   ].join('\n')

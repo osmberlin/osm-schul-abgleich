@@ -1,4 +1,4 @@
-# Official address audit (Nominatim readiness)
+# Official address audit (address completeness for geocoding)
 
 **Script:** [`analysis/official-geocode/address-audit.ts`](./address-audit.ts)
 
@@ -53,12 +53,12 @@ JedeSchule ST mixes ArcGIS (`ST-ARC*`) and numeric (`ST-1…`) ids. Overlap uses
 
 ## Schleswig-Holstein house numbers
 
-Schleswig-Holstein: 62 of 64 no-geo rows (96.9%) have a street without a digit (house number). Structured Nominatim `street=` queries are likely weak there unless house numbers are filled in.
+Schleswig-Holstein: 62 of 64 no-geo rows (96.9%) have a street without a house number. Structured Nominatim `street=` is a poor query for those rows.
 
-## Conclusion: Nominatim-ready lands
+## Conclusion
 
-A land is treated as Nominatim-ready when it has a no-geo queue, at least 70% of those rows have address+zip+city, and fewer than 50% of no-geo rows lack a digit in the street.
+A land is treated as complete enough for geocoding when it has a no-geo queue, at least 70% of those rows have address+zip+city, and fewer than 50% of no-geo rows lack a digit in the street.
 
 - Ready: BW (Baden-Württemberg), HE (Hessen), MV (Mecklenburg-Vorpommern), NI (Niedersachsen), SN (Sachsen), ST (Sachsen-Anhalt), TH (Thüringen).
 - Not ready (incomplete addresses or many streets without house numbers): SH (Schleswig-Holstein).
-- No no-geo queue (already have coordinates): BY (Bayern), BE (Berlin), BB (Brandenburg), HB (Bremen), HH (Hamburg), NW (Nordrhein-Westfalen), RP (Rheinland-Pfalz), SL (Saarland).
+- No current no-geo rows (already have coordinates): BY (Bayern), BE (Berlin), BB (Brandenburg), HB (Bremen), HH (Hamburg), NW (Nordrhein-Westfalen), RP (Rheinland-Pfalz), SL (Saarland).

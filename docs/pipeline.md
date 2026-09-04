@@ -4,7 +4,7 @@ Orchestrierung im Code: [`scripts/lib/nationalPipeline.ts`](../scripts/lib/natio
 
 Es gibt **keine** nationalen Zwischendateien mehr (`schools_official_de.geojson` / `schools_matches_de.json`). Der Abgleich läuft **pro Bundesland** in einem Durchgang.
 
-Einige JedeSchule-Zeilen haben keine Land-Koordinaten (besonders NI). Die eingecheckte Datei [`data/official-geocode/points.json`](../data/official-geocode/points.json) (Nominatim-Adressgeocode, 2 km Filter — siehe README in diesem Ordner) füllt nur **null**-Geometrien und setzt `coord_source: nominatim`. Das Overlay liegt zwischen `officialGeojsonForState` und `gateOfficialFeatureCollection`. Es wird in CI nicht neu berechnet. Der Matcher-Radius bleibt unverändert.
+Einige JedeSchule-Zeilen haben keine Land-Koordinaten (besonders NI). Die eingecheckte Datei [`data/official-geocode/points.json`](../data/official-geocode/points.json) (Nominatim-Adressgeocode, 2 km Filter; siehe README in diesem Ordner) füllt nur **null**-Geometrien und setzt `coord_source: nominatim`. Das Overlay liegt zwischen `officialGeojsonForState` und `gateOfficialFeatureCollection`. Es wird in CI nicht neu berechnet.
 
 ## Ablauf (Mermaid)
 

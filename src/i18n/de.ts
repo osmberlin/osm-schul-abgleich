@@ -336,7 +336,7 @@ export const de = {
     nominatimCoordAlertTitle: 'Koordinaten aus Adress-Geocoding',
     nominatimCoordAlertBody:
       'Diese Koordinaten stammen **nicht** aus dem Schulstandort-Datensatz des Landes. Sie kommen aus einer einmaligen Nominatim-Geocodierung der JedeSchule-Adresse (OSM-Adressdaten). Die Stecknadel ist die **Straßenadresse** und kann neben dem Campus liegen.',
-    nominatimCoordAlertLinkLabel: 'Mehr zum Nominatim-Overlay',
+    nominatimCoordAlertLinkLabel: 'Mehr zur Nominatim-Geocodierung',
     jedeschuleApi: 'Auf JedeSchule öffnen (JSON)',
     openOsmBrowse: 'Auf OSM öffnen',
     licenceCompatibleLinkLabel: 'Datenlizenz: OSM-kompatibel',
