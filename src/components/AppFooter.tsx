@@ -1,6 +1,6 @@
 import { de } from '../i18n/de'
-import { buildMaprouletteBrowseUrl, buildMaprouletteCreatesBrowseUrl } from '../lib/editorLinks'
-import { schoolTagFixesChallengeId } from '../lib/maprouletteIds.const'
+import { buildMaprouletteBrowseUrl, buildMaprouletteIdEditorCampaignUrl } from '../lib/editorLinks'
+import { schoolCreatesChallengeId, schoolTagFixesChallengeId } from '../lib/maprouletteIds.const'
 import { maprouletteSchoolCreatesJsonUrl, maprouletteTagFixesJsonUrl } from '../lib/paths'
 import { HeartIcon } from '@heroicons/react/20/solid'
 import { Link } from '@tanstack/react-router'
@@ -19,11 +19,52 @@ const endFooterLinkClass =
   'hover:decoration-emerald-400 ' +
   'group-hover/footer:decoration-emerald-400'
 
+function FooterDot() {
+  return (
+    <span
+      aria-hidden
+      className="mx-1.5 text-zinc-500 transition-colors duration-150 group-hover/footer:text-emerald-300/70"
+    >
+      ·
+    </span>
+  )
+}
+
+function MaprouletteFooterRow({
+  topicLabel,
+  browseUrl,
+  idEditorUrl,
+  jsonUrl,
+}: {
+  topicLabel: string
+  browseUrl: string | null
+  idEditorUrl: string | null
+  jsonUrl: string
+}) {
+  const f = de.footer
+  const actions: { href: string; label: string }[] = []
+  if (browseUrl) actions.push({ href: browseUrl, label: f.maprouletteCampaignLabel })
+  if (idEditorUrl) actions.push({ href: idEditorUrl, label: f.maprouletteIdEditorLabel })
+  actions.push({ href: jsonUrl, label: f.maprouletteJsonLabel })
+
+  return (
+    <p>
+      {topicLabel}:{' '}
+      {actions.map((action, i) => (
+        <span key={action.href}>
+          {i > 0 ? <FooterDot /> : null}
+          <a href={action.href} className={endFooterLinkClass} target="_blank" rel="noreferrer">
+            {action.label}
+          </a>
+        </span>
+      ))}
+    </p>
+  )
+}
+
 export function AppFooter() {
   const f = de.footer
   const jedeschule = de.home.links.jedeschule
-  const tagFixesBrowseUrl = buildMaprouletteBrowseUrl(schoolTagFixesChallengeId)
-  const createsBrowseUrl = buildMaprouletteCreatesBrowseUrl()
 
   return (
     <footer className="group/footer border-t border-zinc-800 bg-zinc-950/40 py-8 text-xs text-zinc-400">
@@ -74,99 +115,33 @@ export function AppFooter() {
           </span>
         </p>
 
-        <p>
-          <Link to="/status" className={endFooterLinkClass}>
-            {de.navStatus}
-          </Link>
-          <span
-            aria-hidden
-            className="mx-1.5 text-zinc-500 transition-colors duration-150 group-hover/footer:text-emerald-300/70"
-          >
-            ·
-          </span>
-          <Link to="/changelog" className={endFooterLinkClass}>
-            {de.navChangelog}
-          </Link>
-          <span
-            aria-hidden
-            className="mx-1.5 text-zinc-500 transition-colors duration-150 group-hover/footer:text-emerald-300/70"
-          >
-            ·
-          </span>
-          {tagFixesBrowseUrl ? (
-            <>
-              <a
-                href={tagFixesBrowseUrl}
-                className={endFooterLinkClass}
-                target="_blank"
-                rel="noreferrer"
-              >
-                {f.maprouletteFeedLabel}
-              </a>{' '}
-              <a
-                href={maprouletteTagFixesJsonUrl()}
-                className={endFooterLinkClass}
-                target="_blank"
-                rel="noreferrer"
-              >
-                {f.maprouletteJsonLabel}
-              </a>
-            </>
-          ) : (
-            <a
-              href={maprouletteTagFixesJsonUrl()}
-              className={endFooterLinkClass}
-              target="_blank"
-              rel="noreferrer"
-            >
-              {f.maprouletteFeedLabel} {f.maprouletteJsonLabel}
+        <div className="space-y-2">
+          <p>
+            <Link to="/status" className={endFooterLinkClass}>
+              {de.navStatus}
+            </Link>
+            <FooterDot />
+            <Link to="/changelog" className={endFooterLinkClass}>
+              {de.navChangelog}
+            </Link>
+            <FooterDot />
+            <a href={f.githubHref} className={endFooterLinkClass} target="_blank" rel="noreferrer">
+              {f.githubLabel}
             </a>
-          )}
-          <span
-            aria-hidden
-            className="mx-1.5 text-zinc-500 transition-colors duration-150 group-hover/footer:text-emerald-300/70"
-          >
-            ·
-          </span>
-          {createsBrowseUrl ? (
-            <>
-              <a
-                href={createsBrowseUrl}
-                className={endFooterLinkClass}
-                target="_blank"
-                rel="noreferrer"
-              >
-                {f.maprouletteCreatesFeedLabel}
-              </a>{' '}
-              <a
-                href={maprouletteSchoolCreatesJsonUrl()}
-                className={endFooterLinkClass}
-                target="_blank"
-                rel="noreferrer"
-              >
-                {f.maprouletteJsonLabel}
-              </a>
-            </>
-          ) : (
-            <a
-              href={maprouletteSchoolCreatesJsonUrl()}
-              className={endFooterLinkClass}
-              target="_blank"
-              rel="noreferrer"
-            >
-              {f.maprouletteCreatesFeedLabel} {f.maprouletteJsonLabel}
-            </a>
-          )}
-          <span
-            aria-hidden
-            className="mx-1.5 text-zinc-500 transition-colors duration-150 group-hover/footer:text-emerald-300/70"
-          >
-            ·
-          </span>
-          <a href={f.githubHref} className={endFooterLinkClass} target="_blank" rel="noreferrer">
-            {f.githubLabel}
-          </a>
-        </p>
+          </p>
+          <MaprouletteFooterRow
+            topicLabel={f.maprouletteFeedLabel}
+            browseUrl={buildMaprouletteBrowseUrl(schoolTagFixesChallengeId)}
+            idEditorUrl={buildMaprouletteIdEditorCampaignUrl(schoolTagFixesChallengeId)}
+            jsonUrl={maprouletteTagFixesJsonUrl()}
+          />
+          <MaprouletteFooterRow
+            topicLabel={f.maprouletteCreatesFeedLabel}
+            browseUrl={buildMaprouletteBrowseUrl(schoolCreatesChallengeId)}
+            idEditorUrl={buildMaprouletteIdEditorCampaignUrl(schoolCreatesChallengeId)}
+            jsonUrl={maprouletteSchoolCreatesJsonUrl()}
+          />
+        </div>
       </div>
     </footer>
   )

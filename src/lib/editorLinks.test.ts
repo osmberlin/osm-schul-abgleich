@@ -3,12 +3,13 @@ import {
   buildJosmLoadObject,
   buildMaprouletteBrowseUrl,
   buildMaprouletteCreatesBrowseUrl,
+  buildMaprouletteIdEditorCampaignUrl,
   buildMaprouletteIdEditorUrl,
   buildMaprouletteIdEditorUrlFromBbox,
   buildOpenStreetMapOrgPinUrl,
   mapViewFromBbox,
 } from './editorLinks'
-import { schoolTagFixesChallengeId } from './maprouletteIds.const'
+import { schoolCreatesChallengeId, schoolTagFixesChallengeId } from './maprouletteIds.const'
 import { describe, expect, it } from 'vitest'
 
 describe('buildIdUrl', () => {
@@ -51,6 +52,24 @@ describe('buildMaprouletteIdEditorUrl', () => {
     const url = buildMaprouletteIdEditorUrl({ lat: 52.29434, lon: 13.63293, zoom: 18.5 })
     expect(url).toContain('map=18.50/52.29434/13.63293')
     expect(url).toContain(`maproulette=${schoolTagFixesChallengeId}`)
+  })
+})
+
+describe('buildMaprouletteIdEditorCampaignUrl', () => {
+  it('builds campaign iD URL without a map hash', () => {
+    expect(buildMaprouletteIdEditorCampaignUrl(schoolTagFixesChallengeId)).toBe(
+      `https://deploy-preview-4--tordans-id-experiments.netlify.app/#disable_features=boundaries&maproulette=${schoolTagFixesChallengeId}`,
+    )
+  })
+
+  it('builds campaign iD URL for the creates challenge', () => {
+    expect(buildMaprouletteIdEditorCampaignUrl(schoolCreatesChallengeId)).toBe(
+      `https://deploy-preview-4--tordans-id-experiments.netlify.app/#disable_features=boundaries&maproulette=${schoolCreatesChallengeId}`,
+    )
+  })
+
+  it('returns null when challenge id is unset', () => {
+    expect(buildMaprouletteIdEditorCampaignUrl(null)).toBeNull()
   })
 })
 

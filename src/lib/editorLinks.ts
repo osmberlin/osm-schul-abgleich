@@ -18,15 +18,30 @@ export function mapViewFromBbox(bbox: [number, number, number, number]): MapView
   return { lat, lon, zoom }
 }
 
+function maprouletteIdEditorHash(challengeId: number, view?: MapView): string {
+  const parts = ['disable_features=boundaries']
+  if (view) {
+    parts.push(`map=${view.zoom.toFixed(2)}/${view.lat.toFixed(5)}/${view.lon.toFixed(5)}`)
+  }
+  parts.push(`maproulette=${challengeId}`)
+  return parts.join('&')
+}
+
 /**
  * Open the school Tag Fix challenge in MapRoulette-enabled iD at a map position.
  * Challenge browse equivalent: `https://maproulette.org/browse/challenges/{id}`.
  */
 export function buildMaprouletteIdEditorUrl(view: MapView): string | null {
   if (schoolTagFixesChallengeId == null) return null
-  const map = `map=${view.zoom.toFixed(2)}/${view.lat.toFixed(5)}/${view.lon.toFixed(5)}`
-  const hash = `disable_features=boundaries&${map}&maproulette=${schoolTagFixesChallengeId}`
-  return `${MAPROULETTE_ID_EDITOR_ORIGIN}/#${hash}`
+  return `${MAPROULETTE_ID_EDITOR_ORIGIN}/#${maprouletteIdEditorHash(schoolTagFixesChallengeId, view)}`
+}
+
+/** Campaign-level iD editor (no map pin) — footer / challenge entry. */
+export function buildMaprouletteIdEditorCampaignUrl(
+  challengeId: number | null | undefined,
+): string | null {
+  if (challengeId == null) return null
+  return `${MAPROULETTE_ID_EDITOR_ORIGIN}/#${maprouletteIdEditorHash(challengeId)}`
 }
 
 export function buildMaprouletteIdEditorUrlFromBbox(
