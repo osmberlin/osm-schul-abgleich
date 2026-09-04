@@ -878,7 +878,7 @@ describe('matchSchools', () => {
     expect((amb?.ambiguousOfficialIds ?? []).sort()).toEqual(['NI-addr-a', 'NI-addr-b'])
   })
 
-  it('does not apply ref match to amenity=college when the official is not a Fachschule by name', () => {
+  it('applies unique ref match to amenity=college even when the official is not a Fachschule', () => {
     const off: OfficialInput = {
       id: 'BE-NOREF',
       name: 'Grundschule Nord',
@@ -895,8 +895,35 @@ describe('matchSchools', () => {
       centroid: [13.4, 52.52],
     }
     const { rows } = matchSchools([off], [osmCollege], landOpts(osmCollege, 'BE'))
-    expect(rows.filter((r) => r.category === 'matched')).toHaveLength(0)
-    expect(rows.some((r) => r.category === 'osm_only' && r.osmId === 'col1')).toBe(true)
+    const m = rows.filter((r) => r.category === 'matched')
+    expect(m).toHaveLength(1)
+    expect(m[0]?.officialId).toBe('BE-NOREF')
+    expect(m[0]?.osmId).toBe('col1')
+    expect(m[0]?.matchMode).toBe('ref')
+  })
+
+  it('applies ref match to amenity=college when school_type is Fachschule even if the name is not', () => {
+    const off: OfficialInput = {
+      id: 'BE-09P11',
+      name: 'Berufsbildungszentrum Chemie',
+      lon: 13.5525,
+      lat: 52.4283,
+      properties: { school_type: 'Fachschule' },
+    }
+    const osmCollege: OsmSchoolInput = {
+      osmType: 'way',
+      osmId: '41266735',
+      name: 'Berufsbildungszentrum Chemie',
+      tags: { amenity: 'college', name: 'Berufsbildungszentrum Chemie', ref: '09P11' },
+      geometry: { type: 'Point', coordinates: [13.5532, 52.4285] },
+      centroid: [13.5532, 52.4285],
+    }
+    const { rows } = matchSchools([off], [osmCollege], landOpts(osmCollege, 'BE'))
+    const m = rows.filter((r) => r.category === 'matched')
+    expect(m).toHaveLength(1)
+    expect(m[0]?.officialId).toBe('BE-09P11')
+    expect(m[0]?.osmId).toBe('41266735')
+    expect(m[0]?.matchMode).toBe('ref')
   })
 
   it('matches amenity=college with distance_and_name_prefix when the official Fachschule name extends the OSM name', () => {

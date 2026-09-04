@@ -6,7 +6,7 @@ import { schoolCreatesChallengeId, schoolTagFixesChallengeId } from './maproulet
 import { collectOfficialCreateTags } from './officialCreateTags'
 import { type StateCode, STATE_ORDER } from './stateConfig'
 
-/** Same licence gate as the MapRoulette Tag Fix feed (yes_licence / yes_waiver). */
+/** Same licence gate as official Tag Fix tasks (yes_licence / yes_waiver). */
 export function isOsmLicenceCompatibleForTagFix(compat: OsmLicenseCompatibility): boolean {
   return compat === 'yes_licence' || compat === 'yes_waiver'
 }
@@ -24,10 +24,10 @@ function stateIsOsmLicenceCompatible(stateKey: string): boolean {
   )
 }
 
-/** True when this Land is in the Tag Fix challenge and the challenge id is configured. */
+/** True when the Tag Fix challenge is configured (nationwide: official + OSM-only sources). */
 export function stateHasMaproulette(stateKey: string): boolean {
   if (schoolTagFixesChallengeId == null) return false
-  return stateIsOsmLicenceCompatible(stateKey)
+  return STATE_ORDER.includes(stateKey as StateCode)
 }
 
 /** True when the create-school challenge is configured for this licence-OK Land. */

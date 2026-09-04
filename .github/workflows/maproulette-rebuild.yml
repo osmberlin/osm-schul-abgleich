@@ -32,29 +32,8 @@ jobs:
       - run: bun install --frozen-lockfile
         env:
           HUSKY: '0'
-      - name: Confirm hosted Tag Fix feeds are reachable
-        run: |
-          set -euo pipefail
-          META_URL="https://schulabgleich.osm-verkehrswende.org/maproulette/school-tagfixes.meta.json"
-          echo "Probing ${META_URL}"
-          curl --fail -sS -o /tmp/mr-meta.json "${META_URL}"
-          bun -e 'const m = await Bun.file("/tmp/mr-meta.json").json(); console.log(`taskCount=${m.taskCount} generatedAt=${m.generatedAt}`)'
-
-          HEURISTIC_META_URL="https://schulabgleich.osm-verkehrswende.org/maproulette/school-tagfixes-osm-heuristic.meta.json"
-          echo "Probing ${HEURISTIC_META_URL}"
-          if curl --fail -sS -o /tmp/mr-heuristic-meta.json "${HEURISTIC_META_URL}"; then
-            bun -e 'const m = await Bun.file("/tmp/mr-heuristic-meta.json").json(); console.log(`taskCount=${m.taskCount} generatedAt=${m.generatedAt}`)'
-          else
-            echo "::warning::OSM-heuristic Tag Fix meta not reachable yet (ok until first pipeline deploy after enablement)"
-          fi
-
-          CREATES_META_URL="https://schulabgleich.osm-verkehrswende.org/maproulette/school-creates.meta.json"
-          echo "Probing ${CREATES_META_URL}"
-          if curl --fail -sS -o /tmp/mr-creates-meta.json "${CREATES_META_URL}"; then
-            bun -e 'const m = await Bun.file("/tmp/mr-creates-meta.json").json(); console.log(`taskCount=${m.taskCount} generatedAt=${m.generatedAt}`)'
-          else
-            echo "::warning::School-creates MapRoulette meta not reachable yet (ok until first pipeline deploy after enablement)"
-          fi
+      - name: Confirm hosted MapRoulette GeoJSON feeds are reachable JSON
+        run: bun run maproulette:probe-feeds
       - name: Trigger MapRoulette challenge rebuild(s)
         env:
           MAPROULETTE_API_KEY: ${{ secrets.MAPROULETTE_API_KEY }}

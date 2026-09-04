@@ -30,8 +30,7 @@ import {
 } from './jedeschuleCsv'
 import { JEDESCHULE_WEEKLY_CSV_URL, jedeschuleDumpAbsolutePath } from './jedeschuleDumpConfig'
 import { writeMaprouletteSchoolCreates } from './maprouletteSchoolCreates'
-import { writeMaprouletteSchoolTagFixes } from './maprouletteSchoolTagFixes'
-import { writeMaprouletteOsmHeuristicSchoolTagFixes } from './maprouletteSchoolTagFixesOsmHeuristic'
+import { writeMaprouletteSchoolTagFixes } from './maprouletteTagFixFeed'
 import {
   buildOsmSchoolsFromGeoJson,
   type MatchRowOut,
@@ -903,8 +902,6 @@ export async function runStateFirstPipeline(
 
   const mr = await writeMaprouletteSchoolTagFixes(projectRoot)
   errors.push(...mr.errors)
-  const mrOsm = await writeMaprouletteOsmHeuristicSchoolTagFixes(projectRoot)
-  errors.push(...mrOsm.errors)
   const mrCreates = await writeMaprouletteSchoolCreates(projectRoot)
   errors.push(...mrCreates.errors)
 
