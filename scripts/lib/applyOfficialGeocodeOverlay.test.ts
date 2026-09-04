@@ -100,4 +100,14 @@ describe('loadOfficialGeocodeOverlay', () => {
     )
     await expect(loadOfficialGeocodeOverlay(root)).rejects.toThrow(/id → \[lon, lat\]/)
   })
+
+  it('throws when a pair is not finite [lon, lat]', async () => {
+    const root = await tempProjectRoot()
+    await mkdir(path.join(root, 'data', 'official-geocode'), { recursive: true })
+    await writeFile(
+      path.join(root, 'data', 'official-geocode', 'points.json'),
+      JSON.stringify({ 'NI-1': [9.7, '52.4'] }),
+    )
+    await expect(loadOfficialGeocodeOverlay(root)).rejects.toThrow(/id → \[lon, lat\]/)
+  })
 })

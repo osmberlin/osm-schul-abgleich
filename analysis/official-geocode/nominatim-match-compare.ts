@@ -1,4 +1,5 @@
 #!/usr/bin/env bun
+import { parseOfficialPointsMap } from '../../scripts/lib/applyOfficialGeocodeOverlay'
 import { initBundeslandBoundaries } from '../../scripts/lib/bundeslandBoundaries'
 import { dedupeOfficialInputs } from '../../scripts/lib/dedupeOfficialInputs'
 import {
@@ -105,19 +106,7 @@ function featureOfficialId(f: Feature): string {
 }
 
 function parsePointsJson(raw: unknown): PointsMap {
-  if (typeof raw !== 'object' || raw == null || Array.isArray(raw)) {
-    throw new Error('points.json: root must be an object of id → [lon, lat]')
-  }
-  const m: PointsMap = new Map()
-  for (const [id, pair] of Object.entries(raw as Record<string, unknown>)) {
-    if (!Array.isArray(pair) || pair.length < 2) continue
-    const lon = pair[0]
-    const lat = pair[1]
-    if (typeof lon === 'number' && typeof lat === 'number' && Number.isFinite(lon + lat)) {
-      m.set(id, [lon, lat])
-    }
-  }
-  return m
+  return new Map(parseOfficialPointsMap(raw, 'points.json'))
 }
 
 function osmFcForState(fc: FeatureCollection, code: StateCode): FeatureCollection {

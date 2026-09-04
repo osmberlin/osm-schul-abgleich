@@ -5,21 +5,16 @@ import { collectOfficialCreateTags } from '../../src/lib/officialCreateTags'
 import { schoolsMatchRowSchema } from '../../src/lib/schemas'
 import type { StateCode } from '../../src/lib/stateConfig'
 import { parseJedeschuleLonLatFromRecord } from '../../src/lib/zodGeo'
+import { officialPointsMapSchema } from './applyOfficialGeocodeOverlay'
 import { datasetsDir, writeJson } from './pipelineCommon'
 import { mkdir } from 'node:fs/promises'
 import path from 'node:path'
-import { z } from 'zod'
 
 const RS = String.fromCharCode(0x1e)
 
 export const MAPROULETTE_CREATES_REL_DIR = 'maproulette'
 export const MAPROULETTE_CREATES_FILENAME = 'school-creates.json'
 export const MAPROULETTE_CREATES_META_FILENAME = 'school-creates.meta.json'
-
-const officialPointsMapSchema = z.record(
-  z.string(),
-  z.tuple([z.number().finite(), z.number().finite()]),
-)
 
 /**
  * Task pin for official_only: prefer `schools_official_points.json`, then JedeSchule lat/lon on props.

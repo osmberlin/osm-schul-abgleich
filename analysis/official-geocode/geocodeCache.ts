@@ -1,68 +1,27 @@
 import { existsSync, readFileSync } from 'node:fs'
 import { appendFile, mkdir } from 'node:fs/promises'
 import path from 'node:path'
+import { z } from 'zod'
 
-export type CacheRecord = {
-  id: string
-  query: string
-  attempt: 'structured' | 'unstructured'
-  status: 'ok' | 'not_found' | 'rejected' | 'http_error'
-  lon?: number | null
-  lat?: number | null
-  nominatimClass?: string | null
-  nominatimType?: string | null
-  displayName?: string | null
-  queriedAt: string
-  error?: string
-}
+const cacheRecordSchema = z.object({
+  id: z.string().min(1),
+  query: z.string(),
+  attempt: z.enum(['structured', 'unstructured']),
+  status: z.enum(['ok', 'not_found', 'rejected', 'http_error']),
+  lon: z.number().nullable().optional(),
+  lat: z.number().nullable().optional(),
+  nominatimClass: z.string().nullable().optional(),
+  nominatimType: z.string().nullable().optional(),
+  displayName: z.string().nullable().optional(),
+  queriedAt: z.string(),
+  error: z.string().optional(),
+})
 
-function isAttempt(v: unknown): v is CacheRecord['attempt'] {
-  return v === 'structured' || v === 'unstructured'
-}
-
-function isStatus(v: unknown): v is CacheRecord['status'] {
-  return v === 'ok' || v === 'not_found' || v === 'rejected' || v === 'http_error'
-}
-
-function optionalCoord(v: unknown): number | null | undefined {
-  if (v === undefined) return undefined
-  if (v === null) return null
-  return typeof v === 'number' ? v : undefined
-}
-
-function optionalNullableString(v: unknown): string | null | undefined {
-  if (v === undefined) return undefined
-  if (v === null) return null
-  return typeof v === 'string' ? v : undefined
-}
+export type CacheRecord = z.infer<typeof cacheRecordSchema>
 
 function parseCacheRecord(raw: unknown): CacheRecord | null {
-  if (typeof raw !== 'object' || raw == null || Array.isArray(raw)) return null
-  const o = raw as Record<string, unknown>
-  if (typeof o.id !== 'string' || o.id === '') return null
-  if (typeof o.query !== 'string') return null
-  if (!isAttempt(o.attempt)) return null
-  if (!isStatus(o.status)) return null
-  if (typeof o.queriedAt !== 'string') return null
-  const rec: CacheRecord = {
-    id: o.id,
-    query: o.query,
-    attempt: o.attempt,
-    status: o.status,
-    queriedAt: o.queriedAt,
-  }
-  const lon = optionalCoord(o.lon)
-  if (lon !== undefined) rec.lon = lon
-  const lat = optionalCoord(o.lat)
-  if (lat !== undefined) rec.lat = lat
-  const nominatimClass = optionalNullableString(o.nominatimClass)
-  if (nominatimClass !== undefined) rec.nominatimClass = nominatimClass
-  const nominatimType = optionalNullableString(o.nominatimType)
-  if (nominatimType !== undefined) rec.nominatimType = nominatimType
-  const displayName = optionalNullableString(o.displayName)
-  if (displayName !== undefined) rec.displayName = displayName
-  if (typeof o.error === 'string') rec.error = o.error
-  return rec
+  const parsed = cacheRecordSchema.safeParse(raw)
+  return parsed.success ? parsed.data : null
 }
 
 /** Last record per `id` wins. Missing file → empty map. Invalid lines skipped. */

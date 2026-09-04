@@ -14,6 +14,7 @@ import { classifyNominatimHit, isRejectedNominatimClassType } from './nominatimR
 import { point } from '@turf/helpers'
 import { mkdir } from 'node:fs/promises'
 import path from 'node:path'
+import { z } from 'zod'
 
 const ROOT = path.join(import.meta.dirname, '../..')
 const CACHE_PATH = path.join(import.meta.dirname, 'cache.ndjson')
@@ -114,27 +115,37 @@ function unstructuredQuery(school: JedeschuleSchool): string {
   return `${address}, ${zip} ${city}, Germany`
 }
 
+const nominatimCoordSchema = z.union([z.string(), z.number()])
+
+const nominatimHitJsonSchema = z.object({
+  lat: nominatimCoordSchema.optional(),
+  lon: nominatimCoordSchema.optional(),
+  class: z.string().optional(),
+  type: z.string().optional(),
+  display_name: z.string().optional(),
+  address: z.object({ postcode: z.string().optional() }).optional(),
+})
+
+function coordToString(v: string | number | undefined): string | null {
+  if (typeof v === 'string') return v
+  if (typeof v === 'number') return String(v)
+  return null
+}
+
 function parseNominatimHits(json: unknown): NominatimHit[] | null {
-  if (!Array.isArray(json)) return null
+  const arr = z.array(z.unknown()).safeParse(json)
+  if (!arr.success) return null
   const out: NominatimHit[] = []
-  for (const item of json) {
-    if (typeof item !== 'object' || item == null || Array.isArray(item)) continue
-    const o = item as Record<string, unknown>
-    let postcode: string | null = null
-    const addressRaw = o.address
-    if (typeof addressRaw === 'object' && addressRaw != null && !Array.isArray(addressRaw)) {
-      const pc = (addressRaw as Record<string, unknown>).postcode
-      if (typeof pc === 'string') postcode = pc
-    }
-    const lat = o.lat
-    const lon = o.lon
+  for (const item of arr.data) {
+    const hit = nominatimHitJsonSchema.safeParse(item)
+    if (!hit.success) continue
     out.push({
-      lat: typeof lat === 'string' ? lat : typeof lat === 'number' ? String(lat) : null,
-      lon: typeof lon === 'string' ? lon : typeof lon === 'number' ? String(lon) : null,
-      class: typeof o.class === 'string' ? o.class : '',
-      type: typeof o.type === 'string' ? o.type : '',
-      displayName: typeof o.display_name === 'string' ? o.display_name : null,
-      postcode,
+      lat: coordToString(hit.data.lat),
+      lon: coordToString(hit.data.lon),
+      class: hit.data.class ?? '',
+      type: hit.data.type ?? '',
+      displayName: hit.data.display_name ?? null,
+      postcode: hit.data.address?.postcode ?? null,
     })
   }
   return out

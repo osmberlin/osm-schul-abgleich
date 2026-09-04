@@ -1,4 +1,5 @@
 #!/usr/bin/env bun
+import { parseOfficialPointsMap } from '../../scripts/lib/applyOfficialGeocodeOverlay'
 import { initBundeslandBoundaries } from '../../scripts/lib/bundeslandBoundaries'
 import { dedupeOfficialInputs } from '../../scripts/lib/dedupeOfficialInputs'
 import {
@@ -12,6 +13,7 @@ import { NATIONAL, nationalPath } from '../../scripts/lib/nationalDatasetPaths'
 import { officialsFromNationalOfficialFc } from '../../scripts/lib/nationalPipeline'
 import { gateOfficialFeatureCollection } from '../../scripts/lib/officialCoordsBundeslandGate'
 import { officialGeojsonForState } from '../../scripts/lib/pipelineCommon'
+import { pipelineSourceMetaSchema } from '../../scripts/lib/pipelineMeta'
 import { officialStateCode, STATE_ORDER, type StateCode } from '../../src/lib/stateConfig'
 import { loadCache } from './geocodeCache'
 import {
@@ -24,6 +26,7 @@ import { point } from '@turf/helpers'
 import type { FeatureCollection } from 'geojson'
 import { existsSync } from 'node:fs'
 import path from 'node:path'
+import { z } from 'zod'
 
 const ROOT = path.join(import.meta.dirname, '../..')
 const CACHE_PATH = path.join(import.meta.dirname, 'cache.ndjson')
@@ -59,32 +62,29 @@ function stateOfSchool(s: JedeschuleSchool): StateCode | null {
   return officialStateCode({ state: s.state })
 }
 
+const discardedLonLatRecordSchema = z.object({
+  id: z.string().min(1),
+  lon: z.number().finite(),
+  lat: z.number().finite(),
+})
+
+const osmExtractMetaTimesSchema = pipelineSourceMetaSchema.pick({
+  overpassResponseTimestamp: true,
+  generatedAt: true,
+})
+
 function parsePointsJson(raw: unknown): PointsMap {
-  if (typeof raw !== 'object' || raw == null || Array.isArray(raw)) {
-    throw new Error('points.json: root must be an object of id → [lon, lat]')
-  }
-  const m: PointsMap = new Map()
-  for (const [id, pair] of Object.entries(raw as Record<string, unknown>)) {
-    if (!Array.isArray(pair) || pair.length < 2) continue
-    const lon = pair[0]
-    const lat = pair[1]
-    if (typeof lon === 'number' && typeof lat === 'number' && Number.isFinite(lon + lat)) {
-      m.set(id, [lon, lat])
-    }
-  }
-  return m
+  return new Map(parseOfficialPointsMap(raw, 'points.json'))
 }
 
 function parseDiscardedLonLat(raw: unknown): PointsMap {
   const m: PointsMap = new Map()
-  if (!Array.isArray(raw)) return m
-  for (const item of raw) {
-    if (typeof item !== 'object' || item == null || Array.isArray(item)) continue
-    const o = item as Record<string, unknown>
-    if (typeof o.id !== 'string' || o.id === '') continue
-    if (typeof o.lon !== 'number' || typeof o.lat !== 'number') continue
-    if (!Number.isFinite(o.lon) || !Number.isFinite(o.lat)) continue
-    m.set(o.id, [o.lon, o.lat])
+  const arr = z.array(z.unknown()).safeParse(raw)
+  if (!arr.success) return m
+  for (const item of arr.data) {
+    const rec = discardedLonLatRecordSchema.safeParse(item)
+    if (!rec.success) continue
+    m.set(rec.data.id, [rec.data.lon, rec.data.lat])
   }
   return m
 }
@@ -151,13 +151,10 @@ async function loadOsmExtractGeneratedAt(): Promise<string | null> {
   for (const p of candidates) {
     const f = Bun.file(p)
     if (!(await f.exists())) continue
-    const raw: unknown = await f.json()
-    if (typeof raw !== 'object' || raw == null || Array.isArray(raw)) continue
-    const o = raw as Record<string, unknown>
-    if (typeof o.overpassResponseTimestamp === 'string' && o.overpassResponseTimestamp !== '') {
-      return o.overpassResponseTimestamp
-    }
-    if (typeof o.generatedAt === 'string' && o.generatedAt !== '') return o.generatedAt
+    const parsed = osmExtractMetaTimesSchema.safeParse(await f.json())
+    if (!parsed.success) continue
+    if (parsed.data.overpassResponseTimestamp) return parsed.data.overpassResponseTimestamp
+    if (parsed.data.generatedAt) return parsed.data.generatedAt
   }
   return null
 }

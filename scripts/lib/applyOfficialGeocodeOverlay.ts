@@ -2,6 +2,24 @@ import type { Feature, FeatureCollection } from 'geojson'
 import { existsSync } from 'node:fs'
 import { readFile } from 'node:fs/promises'
 import path from 'node:path'
+import { z } from 'zod'
+
+/** `data/official-geocode/points.json` and per-state `schools_official_points.json`: id → `[lon, lat]`. */
+export const officialPointsMapSchema = z.record(
+  z.string(),
+  z.tuple([z.number().finite(), z.number().finite()]),
+)
+
+export function parseOfficialPointsMap(
+  raw: unknown,
+  fileLabel: string,
+): ReadonlyMap<string, [number, number]> {
+  const parsed = officialPointsMapSchema.safeParse(raw)
+  if (!parsed.success) {
+    throw new Error(`${fileLabel}: root must be an object of id → [lon, lat]`)
+  }
+  return new Map(Object.entries(parsed.data))
+}
 
 function featureOfficialId(f: Feature): string {
   if (typeof f.id === 'string' && f.id !== '') return f.id
@@ -13,26 +31,7 @@ function featureOfficialId(f: Feature): string {
   return ''
 }
 
-function parseOverlayJson(raw: unknown): ReadonlyMap<string, [number, number]> {
-  if (typeof raw !== 'object' || raw == null || Array.isArray(raw)) {
-    throw new Error('data/official-geocode/points.json: root must be an object of id → [lon, lat]')
-  }
-  const m = new Map<string, [number, number]>()
-  for (const [id, pair] of Object.entries(raw as Record<string, unknown>)) {
-    if (!Array.isArray(pair) || pair.length < 2) {
-      throw new Error(`data/official-geocode/points.json: "${id}" must be [lon, lat]`)
-    }
-    const lon = pair[0]
-    const lat = pair[1]
-    if (typeof lon !== 'number' || typeof lat !== 'number' || !Number.isFinite(lon + lat)) {
-      throw new Error(
-        `data/official-geocode/points.json: "${id}" must be [lon, lat] with finite numbers`,
-      )
-    }
-    m.set(id, [lon, lat])
-  }
-  return m
-}
+const OVERLAY_POINTS_LABEL = 'data/official-geocode/points.json'
 
 export async function loadOfficialGeocodeOverlay(
   projectRoot: string,
@@ -41,10 +40,10 @@ export async function loadOfficialGeocodeOverlay(
   if (typeof Bun !== 'undefined') {
     const f = Bun.file(filePath)
     if (!(await f.exists())) return new Map()
-    return parseOverlayJson(await f.json())
+    return parseOfficialPointsMap(await f.json(), OVERLAY_POINTS_LABEL)
   }
   if (!existsSync(filePath)) return new Map()
-  return parseOverlayJson(JSON.parse(await readFile(filePath, 'utf8')))
+  return parseOfficialPointsMap(JSON.parse(await readFile(filePath, 'utf8')), OVERLAY_POINTS_LABEL)
 }
 
 export function applyOfficialGeocodeOverlay(
