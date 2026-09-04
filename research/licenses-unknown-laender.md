@@ -77,7 +77,8 @@ Hinweis: CC-BY allein ist für OSM typischerweise **nicht** `yes_licence` ohne A
 - **LSN:** Shapefiles/Karten zum Download ([LSN Schulstandorte](https://www.statistik.niedersachsen.de/startseite/datenangebote/georeferenzierte_karten/schulstandorte_in_niedersachsen/)) — auf den geprüften Seiten **keine** dl-de/CC-Angabe
 - **OSM Wiki:** [DE:Niedersachsen/Geoportal](https://wiki.openstreetmap.org/wiki/DE:Niedersachsen/Geoportal) = LGLN-Geodaten, nicht NiBiS; keine Permissions-Einträge für Schulverzeichnis
 - **Vorschlag:** `officialLicense: unknown`, `osmCompatible: unknown`
-- **Nächste Schritte:** NLQ/LSN um Klarstellung bitten; Shapefile-Metadaten prüfen
+- **Kontakt:** Lea Gerling, NLQ (`gerling@nibis.de`, via `service@nibis.de`). Mai 2026 Ticket **#31206457** mit Tim Fangmeyer / jedeSchule: kein kombinierter Datensatz Schulnummer+Koordinaten; Karte soll OSM-Geokodierung nutzen; REST-API der Schuldatenbank angeboten. Korrekte Bezeichnung: NiBiS-Schuldatenbank (nicht Bildungsportal).
+- **Nächste Schritte:** Anschreiben an Frau Gerling (CC NLQ-Poststelle) um Open-Data-Lizenz der Stammdaten/API; Shapefile-Metadaten LSN separat. Entwurf: [`waiver-emails/NI-niedersachsen.md`](waiver-emails/NI-niedersachsen.md)
 
 ### RP — Rheinland-Pfalz
 

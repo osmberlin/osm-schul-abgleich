@@ -14,34 +14,34 @@ Unten: Kontakte aus Metadaten / Open-Data-Portalen / Impressum. Wo vorhanden: **
 
 ## Übersicht
 
-| Datei                              | Land                   | Situation                                                 | Empfänger (primär)                              | CC / Hinweis                                     | Addendum-Typ                                                                |
-| ---------------------------------- | ---------------------- | --------------------------------------------------------- | ----------------------------------------------- | ------------------------------------------------ | --------------------------------------------------------------------------- |
-| [BY](BY-bayern.md)                 | Bayern                 | CC BY 4.0, OSM unklar                                     | `poststelle@stmuk.bayern.de`                    | `oc@bydata.de` (open bydata)                     | [CC-BY](https://www.openstreetmap.de/beitragen/recht/addendum-cc-by/)       |
-| [HB](HB-bremen.md)                 | Bremen                 | CC-BY Open Data                                           | `iqhb@iqhb.bremen.de`                           | Dataset-Herausgeber                              | CC-BY                                                                       |
-| [HH](HH-hamburg.md)                | Hamburg                | DL-DE BY 2.0                                              | `oliver.gersch@bsb.hamburg.de`                  | Poststelle + `transparenzgesetz@bsfb.hamburg.de` | [DL-DE-BY](https://www.openstreetmap.de/beitragen/recht/addendum-dl-de-by/) |
-| [NW](NW-nrw.md)                    | NRW                    | DL-DE BY 2.0                                              | `markus.guhl@msb.nrw.de`                        | Open.NRW `publisher_email`                       | DL-DE-BY                                                                    |
-| [SL](SL-saarland.md)               | Saarland               | CC BY 4.0                                                 | `gdi-sl@lvgl.saarland.de`                       | GDI-Metadaten                                    | CC-BY                                                                       |
-| [TH](TH-thueringen.md)             | Thüringen              | DL-DE BY 2.0, **kommunales Eigentum**                     | `kompetenzzentrum.gdi-th@tlbg.thueringen.de`    | GDI-Th                                           | DL-DE-BY (+ Klarstellung Kommunen)                                          |
-| [BW](BW-baden-wuerttemberg.md)     | Baden-Württemberg      | keine Open-Data-Lizenz                                    | `open-data@im.bwl.de`                           | daten.bw; CC Kultus-Poststelle                   | erst Lizenz/Freigabe                                                        |
-| [HE](HE-hessen.md)                 | Hessen                 | Live-DB ohne Lizenz; AFL-Liste 2012 (Permissions wartend) | `mail@opendata.hessen.de`                       | CC Lehrkräfteakademie                            | Fortgeltung 2012 + Open Data / Addendum                                     |
-| [MV](MV-mecklenburg-vorpommern.md) | Mecklenburg-Vorpommern | Schulen ohne Lizenz; Geobasis hat CC-BY+OSM-Waiver        | `statistik.auskunft@statistik-mv.de`            | CC Bildungsministerium                           | Analog Geobasis-Waiver für Schulen                                          |
-| [NI](NI-niedersachsen.md)          | Niedersachsen          | NiBiS ohne Open-Data-Lizenz                               | `poststelle@nlq.niedersachsen.de`               | kein OD-Postfach gefunden; CC `support@nibis.de` | Freigabe / Open Data                                                        |
-| [RP](RP-rheinland-pfalz.md)        | Rheinland-Pfalz        | restriktiv; Permissions 2022 wartend                      | `cc-od@open.rlp.de`                             | Kompetenzzentrum Open Data; CC Bildungsserver    | Freigabe (Nachfassen)                                                       |
-| [SN](SN-sachsen.md)                | Sachsen                | Schul-DB unklar; Geodaten DL-DE BY                        | `support@schuldatenbank.sachsen.de`             | Fachredaktion SSDB                               | Klarstellung + ggf. DL-DE-BY-Addendum                                       |
-| [ST](ST-sachsen-anhalt.md)         | Sachsen-Anhalt         | Verbreitung untersagt                                     | `georeferenzierung@statistik.sachsen-anhalt.de` | MetaVer Georeferenzierung                        | Freigabe / Open Data                                                        |
+| Datei                              | Land                   | Situation                                                 | Empfänger (primär)                              | CC / Hinweis                                                               | Addendum-Typ                                                                |
+| ---------------------------------- | ---------------------- | --------------------------------------------------------- | ----------------------------------------------- | -------------------------------------------------------------------------- | --------------------------------------------------------------------------- |
+| [BY](BY-bayern.md)                 | Bayern                 | CC BY 4.0, OSM unklar                                     | `poststelle@stmuk.bayern.de`                    | `oc@bydata.de` (open bydata)                                               | [CC-BY](https://www.openstreetmap.de/beitragen/recht/addendum-cc-by/)       |
+| [HB](HB-bremen.md)                 | Bremen                 | CC-BY Open Data                                           | `iqhb@iqhb.bremen.de`                           | Dataset-Herausgeber                                                        | CC-BY                                                                       |
+| [HH](HH-hamburg.md)                | Hamburg                | DL-DE BY 2.0                                              | `oliver.gersch@bsb.hamburg.de`                  | Poststelle + `transparenzgesetz@bsfb.hamburg.de`                           | [DL-DE-BY](https://www.openstreetmap.de/beitragen/recht/addendum-dl-de-by/) |
+| [NW](NW-nrw.md)                    | NRW                    | DL-DE BY 2.0                                              | `markus.guhl@msb.nrw.de`                        | Open.NRW `publisher_email`                                                 | DL-DE-BY                                                                    |
+| [SL](SL-saarland.md)               | Saarland               | CC BY 4.0                                                 | `gdi-sl@lvgl.saarland.de`                       | GDI-Metadaten                                                              | CC-BY                                                                       |
+| [TH](TH-thueringen.md)             | Thüringen              | DL-DE BY 2.0, **kommunales Eigentum**                     | `kompetenzzentrum.gdi-th@tlbg.thueringen.de`    | GDI-Th                                                                     | DL-DE-BY (+ Klarstellung Kommunen)                                          |
+| [BW](BW-baden-wuerttemberg.md)     | Baden-Württemberg      | keine Open-Data-Lizenz                                    | `open-data@im.bwl.de`                           | daten.bw; CC Kultus-Poststelle                                             | erst Lizenz/Freigabe                                                        |
+| [HE](HE-hessen.md)                 | Hessen                 | Live-DB ohne Lizenz; AFL-Liste 2012 (Permissions wartend) | `mail@opendata.hessen.de`                       | CC Lehrkräfteakademie                                                      | Fortgeltung 2012 + Open Data / Addendum                                     |
+| [MV](MV-mecklenburg-vorpommern.md) | Mecklenburg-Vorpommern | Schulen ohne Lizenz; Geobasis hat CC-BY+OSM-Waiver        | `statistik.auskunft@statistik-mv.de`            | CC Bildungsministerium                                                     | Analog Geobasis-Waiver für Schulen                                          |
+| [NI](NI-niedersachsen.md)          | Niedersachsen          | NiBiS ohne Open-Data-Lizenz                               | `gerling@nibis.de`                              | CC Poststelle + `service@nibis.de`; Ticket #31206457 / jedeSchule Mai 2026 | Freigabe / Open Data                                                        |
+| [RP](RP-rheinland-pfalz.md)        | Rheinland-Pfalz        | restriktiv; Permissions 2022 wartend                      | `cc-od@open.rlp.de`                             | Kompetenzzentrum Open Data; CC Bildungsserver                              | Freigabe (Nachfassen)                                                       |
+| [SN](SN-sachsen.md)                | Sachsen                | Schul-DB unklar; Geodaten DL-DE BY                        | `support@schuldatenbank.sachsen.de`             | Fachredaktion SSDB                                                         | Klarstellung + ggf. DL-DE-BY-Addendum                                       |
+| [ST](ST-sachsen-anhalt.md)         | Sachsen-Anhalt         | Verbreitung untersagt                                     | `georeferenzierung@statistik.sachsen-anhalt.de` | MetaVer Georeferenzierung                                                  | Freigabe / Open Data                                                        |
 
 ### Was geändert wurde (Poststelle → Open Data / Named)
 
-| Land | Vorher             | Jetzt                                            |
-| ---- | ------------------ | ------------------------------------------------ |
-| HH   | `poststelle@bsfb…` | MetaVer-Ansprechpartner Dr. Oliver Gersch        |
-| NW   | `poststelle@msb…`  | Open.NRW `markus.guhl@msb.nrw.de`                |
-| BW   | Kultus-Poststelle  | `open-data@im.bwl.de` (daten.bw)                 |
-| HE   | LA-Poststelle      | `mail@opendata.hessen.de`                        |
-| RP   | nur Bildungsserver | `cc-od@open.rlp.de`                              |
-| MV   | BM-Poststelle      | `statistik.auskunft@statistik-mv.de`             |
-| BY   | `webkontakt@…`     | WFS-`poststelle@stmuk…` + CC `oc@bydata.de`      |
-| NI   | Poststelle         | unverändert — kein OD-Funktionspostfach gefunden |
+| Land | Vorher             | Jetzt                                                                     |
+| ---- | ------------------ | ------------------------------------------------------------------------- |
+| HH   | `poststelle@bsfb…` | MetaVer-Ansprechpartner Dr. Oliver Gersch                                 |
+| NW   | `poststelle@msb…`  | Open.NRW `markus.guhl@msb.nrw.de`                                         |
+| BW   | Kultus-Poststelle  | `open-data@im.bwl.de` (daten.bw)                                          |
+| HE   | LA-Poststelle      | `mail@opendata.hessen.de`                                                 |
+| RP   | nur Bildungsserver | `cc-od@open.rlp.de`                                                       |
+| MV   | BM-Poststelle      | `statistik.auskunft@statistik-mv.de`                                      |
+| BY   | `webkontakt@…`     | WFS-`poststelle@stmuk…` + CC `oc@bydata.de`                               |
+| NI   | Poststelle         | `gerling@nibis.de` (Ticket #31206457); Poststelle + `service@nibis.de` CC |
 
 ## Was genügt als Freigabe?
 
