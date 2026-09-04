@@ -1,9 +1,31 @@
 {
-  "generatedAt": "2026-09-04T09:32:31.038Z",
+  "generatedAt": "2026-09-04T15:22:31.780Z",
   "months": [
     {
       "month": "2026-09",
       "entries": [
+        {
+          "refs": [
+            "857c5df"
+          ],
+          "descriptionMd": "Neue Seite [`/download`](/download): pro Bundesland eine CSV mit dem Abgleich (amtlich, OSM, gematcht), verlinkt im Footer und auf der Land-Übersicht.\nDie Datei ist zum Prüfen und Verstehen gedacht — OSM (ODbL) gemischt mit amtlichen Quellen ergibt keine klare Weiterverwendungslizenz.",
+          "committedAtIso": "2026-09-04T16:49:39+02:00",
+          "committedAtShort": "2026-09-04",
+          "refsDisplay": [
+            "857c5df"
+          ]
+        },
+        {
+          "refs": [
+            "1697166"
+          ],
+          "descriptionMd": "Im Footer hat jede MapRoulette-Kampagne eine eigene Zeile: Link zur Kampagne, ein Spezial-iD-Editor zum direkten Mappen, und die Rohdaten (JSON).",
+          "committedAtIso": "2026-09-04T12:02:24+02:00",
+          "committedAtShort": "2026-09-04",
+          "refsDisplay": [
+            "1697166"
+          ]
+        },
         {
           "refs": [
             "362beb84017578044c9ba3bbae235b5a471106d0"

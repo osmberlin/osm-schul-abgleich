@@ -4,6 +4,15 @@ Automatisch aus `changelog.registry.yaml` erzeugt.
 
 ## 2026-09
 
+### `857c5df`
+
+Neue Seite [`/download`](/download): pro Bundesland eine CSV mit dem Abgleich (amtlich, OSM, gematcht), verlinkt im Footer und auf der Land-Übersicht.
+Die Datei ist zum Prüfen und Verstehen gedacht — OSM (ODbL) gemischt mit amtlichen Quellen ergibt keine klare Weiterverwendungslizenz.
+
+### `1697166`
+
+Im Footer hat jede MapRoulette-Kampagne eine eigene Zeile: Link zur Kampagne, ein Spezial-iD-Editor zum direkten Mappen, und die Rohdaten (JSON).
+
 ### `362beb8`
 
 Schulen ohne amtliche Koordinaten (vor allem in Niedersachsen) können jetzt per Distanz zugeordnet werden.

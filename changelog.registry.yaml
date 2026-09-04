@@ -135,3 +135,22 @@ entries:
       Schulen ohne amtliche Koordinaten (vor allem in Niedersachsen) können jetzt per Distanz zugeordnet werden.
       Die Adresse wurde einmalig mit Nominatim geocodiert; auf der Detailseite steht, wenn der Punkt eine Straßenadresse ist und nicht ein vermessener Schulstandort.
       Nominatim-Treffer, die mehr als 2 km von einem bestehenden Namens-, Website- oder Adress-Match liegen, werden nicht verwendet.
+  - refs:
+      - '44fd2d9'
+      - '9770940'
+      - 'eee6b54'
+      - '1af7bc1'
+      - 'f41e7fa'
+    hide: true
+  - refs:
+      - '1697166'
+    descriptionMd: |
+      Im Footer hat jede MapRoulette-Kampagne eine eigene Zeile: Link zur Kampagne, ein Spezial-iD-Editor zum direkten Mappen, und die Rohdaten (JSON).
+  - refs:
+      - '7fceb8c'
+    hide: true
+  - refs:
+      - '857c5df'
+    descriptionMd: |
+      Neue Seite [`/download`](/download): pro Bundesland eine CSV mit dem Abgleich (amtlich, OSM, gematcht), verlinkt im Footer und auf der Land-Übersicht.
+      Die Datei ist zum Prüfen und Verstehen gedacht — OSM (ODbL) gemischt mit amtlichen Quellen ergibt keine klare Weiterverwendungslizenz.
