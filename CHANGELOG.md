@@ -4,6 +4,11 @@ Automatisch aus `changelog.registry.yaml` erzeugt.
 
 ## 2026-09
 
+### `189e477`
+
+MapRoulette Tag-Fix ist eine Kampagne mit einer GeoJSON-Datei: lizenzfreie amtliche Vorschläge wo möglich, sonst bundesweit nur aus OSM (ohne `ref`/Betreiber).
+Länder ohne amtliche Lizenz erscheinen in derselben Kampagne; Übersicht und Schuldetail verlinken MapRoulette überall.
+
 ### `857c5df`
 
 Neue Seite [`/download`](/download): pro Bundesland eine CSV mit dem Abgleich (amtlich, OSM, gematcht), verlinkt im Footer und auf der Land-Übersicht.

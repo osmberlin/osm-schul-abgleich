@@ -154,3 +154,11 @@ entries:
     descriptionMd: |
       Neue Seite [`/download`](/download): pro Bundesland eine CSV mit dem Abgleich (amtlich, OSM, gematcht), verlinkt im Footer und auf der Land-Übersicht.
       Die Datei ist zum Prüfen und Verstehen gedacht — OSM (ODbL) gemischt mit amtlichen Quellen ergibt keine klare Weiterverwendungslizenz.
+  - refs:
+      - '189e477a79c1b17c25d8429212ebf0eb78a38a07'
+    descriptionMd: |
+      MapRoulette Tag-Fix ist eine Kampagne mit einer GeoJSON-Datei: lizenzfreie amtliche Vorschläge wo möglich, sonst bundesweit nur aus OSM (ohne `ref`/Betreiber).
+      Länder ohne amtliche Lizenz erscheinen in derselben Kampagne; Übersicht und Schuldetail verlinken MapRoulette überall.
+  - refs:
+      - 'ed7022a116507b66720014ecc50475fb18d408c3'
+    hide: true
