@@ -434,7 +434,6 @@ function extractRefMatches(
     const off = index.get(refKey)
     if (!off) continue
     if (reservedOfficialIds.has(off.id)) continue
-    if (osmAmenityIsCollege(o.tags) && !officialEligibleForCollegeOsmMatch(off)) continue
 
     reservedOfficialIds.add(off.id)
     consumedOsmKeys.add(landKey)
