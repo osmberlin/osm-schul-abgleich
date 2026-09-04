@@ -175,6 +175,8 @@ export const schoolsMatchMapRowSchema = z
 
 export const schoolsMatchesMapFileSchema = z.array(schoolsMatchMapRowSchema)
 export const schoolsMatchesDetailFileSchema = z.array(schoolsMatchRowSchema)
+/** Object map of match rows. Values stay unknown so callers can skip a bad row. */
+export const schoolsMatchesDetailEnvelopeSchema = z.record(z.string(), z.unknown())
 export const schoolsMatchesDetailByKeyFileSchema = z.record(z.string(), schoolsMatchRowSchema)
 
 /**

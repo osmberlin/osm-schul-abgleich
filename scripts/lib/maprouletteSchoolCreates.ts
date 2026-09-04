@@ -2,7 +2,7 @@ import { osmCompatibleStateCodes } from '../../src/lib/maprouletteAvailability'
 import { maprouletteSchoolCreatesPublicUrl } from '../../src/lib/maprouletteIds.const'
 import { buildMaprouletteCreateSchoolTaskMarkdown } from '../../src/lib/maprouletteTaskMarkdown'
 import { collectOfficialCreateTags } from '../../src/lib/officialCreateTags'
-import { schoolsMatchRowSchema } from '../../src/lib/schemas'
+import { schoolsMatchRowSchema, schoolsMatchesDetailEnvelopeSchema } from '../../src/lib/schemas'
 import type { StateCode } from '../../src/lib/stateConfig'
 import { parseJedeschuleLonLatFromRecord } from '../../src/lib/zodGeo'
 import { officialPointsMapSchema } from './applyOfficialGeocodeOverlay'
@@ -160,7 +160,8 @@ export async function writeMaprouletteSchoolCreates(
       errors.push(`maproulette-creates: invalid JSON ${code}/schools_matches_detail.json`)
       continue
     }
-    if (typeof raw !== 'object' || raw === null || Array.isArray(raw)) {
+    const envelope = schoolsMatchesDetailEnvelopeSchema.safeParse(raw)
+    if (!envelope.success) {
       errors.push(`maproulette-creates: expected object map in ${code}/schools_matches_detail.json`)
       continue
     }
@@ -168,7 +169,7 @@ export async function writeMaprouletteSchoolCreates(
     const { points, error: pointsError } = await loadOfficialPoints(projectRoot, code)
     if (pointsError) errors.push(pointsError)
 
-    for (const value of Object.values(raw as Record<string, unknown>)) {
+    for (const value of Object.values(envelope.data)) {
       const parsed = schoolsMatchRowSchema.safeParse(value)
       if (!parsed.success) continue
       const row = parsed.data

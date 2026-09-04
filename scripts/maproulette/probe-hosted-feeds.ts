@@ -1,11 +1,12 @@
 #!/usr/bin/env bun
-/**
- * Fail if hosted MapRoulette GeoJSON feeds are missing or are SPA HTML (GitHub Pages 404.html).
- */
 import {
   maprouletteSchoolCreatesPublicUrl,
   maprouletteTagFixesPublicUrl,
 } from '../../src/lib/maprouletteIds.const'
+/**
+ * Fail if hosted MapRoulette GeoJSON feeds are missing or are SPA HTML (GitHub Pages 404.html).
+ */
+import { hostedMaprouletteMetaSchema } from '../lib/hostedMaprouletteMeta'
 
 const FEEDS = [
   { label: 'tag-fix', url: maprouletteTagFixesPublicUrl },
@@ -22,8 +23,11 @@ async function probeMeta(url: string): Promise<void> {
   if (!response.ok) {
     throw new Error(`meta ${url} HTTP ${response.status}`)
   }
-  const meta = (await response.json()) as { taskCount?: unknown; generatedAt?: unknown }
-  console.info(`taskCount=${String(meta.taskCount)} generatedAt=${String(meta.generatedAt)}`)
+  const parsed = hostedMaprouletteMetaSchema.safeParse(await response.json())
+  if (!parsed.success) {
+    throw new Error(`meta ${url} is not MapRoulette feed meta JSON`)
+  }
+  console.info(`taskCount=${parsed.data.taskCount} generatedAt=${parsed.data.generatedAt}`)
 }
 
 async function probeGeojsonHead(url: string): Promise<void> {

@@ -1,7 +1,7 @@
 import { BUNDESLAND_OFFICIAL_SOURCES } from '../../src/lib/bundeslandOfficialSources'
 import { isOsmLicenceCompatibleForTagFix } from '../../src/lib/maprouletteAvailability'
 import { maprouletteTagFixesPublicUrl } from '../../src/lib/maprouletteIds.const'
-import { schoolsMatchRowSchema } from '../../src/lib/schemas'
+import { schoolsMatchRowSchema, schoolsMatchesDetailEnvelopeSchema } from '../../src/lib/schemas'
 import { type StateCode, STATE_ORDER } from '../../src/lib/stateConfig'
 import {
   buildMaprouletteTagFixTask,
@@ -116,7 +116,8 @@ export async function writeMaprouletteSchoolTagFixes(
       errors.push(`maproulette: invalid JSON ${code}/schools_matches_detail.json`)
       continue
     }
-    if (typeof raw !== 'object' || raw === null || Array.isArray(raw)) {
+    const envelope = schoolsMatchesDetailEnvelopeSchema.safeParse(raw)
+    if (!envelope.success) {
       errors.push(`maproulette: expected object map in ${code}/schools_matches_detail.json`)
       continue
     }
@@ -125,7 +126,7 @@ export async function writeMaprouletteSchoolTagFixes(
       BUNDESLAND_OFFICIAL_SOURCES[code].osmCompatible,
     )
     let stateHadTask = false
-    for (const value of Object.values(raw as Record<string, unknown>)) {
+    for (const value of Object.values(envelope.data)) {
       const parsed = schoolsMatchRowSchema.safeParse(value)
       if (!parsed.success) continue
       const row = parsed.data
