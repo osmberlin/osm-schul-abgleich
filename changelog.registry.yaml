@@ -155,16 +155,16 @@ entries:
       Neue Seite [`/download`](/download): pro Bundesland eine CSV mit dem Abgleich (amtlich, OSM, gematcht), verlinkt im Footer und auf der Land-Übersicht.
       Die Datei ist zum Prüfen und Verstehen gedacht — OSM (ODbL) gemischt mit amtlichen Quellen ergibt keine klare Weiterverwendungslizenz.
   - refs:
-      - '189e477a79c1b17c25d8429212ebf0eb78a38a07'
+      - 'e235577'
+    hide: true
+  - refs:
+      - '57eabd0'
+    hide: true
+  - refs:
+      - 'bc8f5d0'
     descriptionMd: |
       MapRoulette Tag-Fix ist eine Kampagne mit einer GeoJSON-Datei: lizenzfreie amtliche Vorschläge wo möglich, sonst bundesweit nur aus OSM (ohne `ref`/Betreiber).
       Länder ohne amtliche Lizenz erscheinen in derselben Kampagne; Übersicht und Schuldetail verlinken MapRoulette überall.
   - refs:
-      - '72b7000'
-    descriptionMd: |
-      Beim Abgleich werden OSM-Objekte mit `amenity=college` jetzt auch einer amtlichen Fachschule zugeordnet, wenn der Name kein „Fachschule“ enthält, aber `school_type` Fachschule ist (zum Beispiel Berufsbildungszentrum).
-  - refs:
-      - '191930f'
-    descriptionMd: |
-      Ein eindeutiger OSM-`ref` wird jetzt immer der passenden amtlichen Schule zugeordnet, auch wenn das OSM-Objekt `amenity=college` ist.
-      Ohne `ref` bleiben Colleges weiterhin nur Fachschulen zugeordnet.
+      - 'e2779cb'
+    hide: true

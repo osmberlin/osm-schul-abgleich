@@ -1,40 +1,18 @@
 {
-  "generatedAt": "2026-09-04T20:36:42.965Z",
+  "generatedAt": "2026-09-04T20:47:22.977Z",
   "months": [
     {
       "month": "2026-09",
       "entries": [
         {
           "refs": [
-            "191930f"
-          ],
-          "descriptionMd": "Ein eindeutiger OSM-`ref` wird jetzt immer der passenden amtlichen Schule zugeordnet, auch wenn das OSM-Objekt `amenity=college` ist.\nOhne `ref` bleiben Colleges weiterhin nur Fachschulen zugeordnet.",
-          "committedAtIso": "2026-09-04T22:36:17+02:00",
-          "committedAtShort": "2026-09-04",
-          "refsDisplay": [
-            "191930f"
-          ]
-        },
-        {
-          "refs": [
-            "72b7000"
-          ],
-          "descriptionMd": "Beim Abgleich werden OSM-Objekte mit `amenity=college` jetzt auch einer amtlichen Fachschule zugeordnet, wenn der Name kein „Fachschule“ enthält, aber `school_type` Fachschule ist (zum Beispiel Berufsbildungszentrum).",
-          "committedAtIso": "2026-09-04T22:35:49+02:00",
-          "committedAtShort": "2026-09-04",
-          "refsDisplay": [
-            "72b7000"
-          ]
-        },
-        {
-          "refs": [
-            "189e477a79c1b17c25d8429212ebf0eb78a38a07"
+            "bc8f5d0"
           ],
           "descriptionMd": "MapRoulette Tag-Fix ist eine Kampagne mit einer GeoJSON-Datei: lizenzfreie amtliche Vorschläge wo möglich, sonst bundesweit nur aus OSM (ohne `ref`/Betreiber).\nLänder ohne amtliche Lizenz erscheinen in derselben Kampagne; Übersicht und Schuldetail verlinken MapRoulette überall.",
-          "committedAtIso": "2026-09-04T22:25:03+02:00",
+          "committedAtIso": "2026-09-04T22:41:49+02:00",
           "committedAtShort": "2026-09-04",
           "refsDisplay": [
-            "189e477"
+            "bc8f5d0"
           ]
         },
         {
