@@ -28,6 +28,9 @@ export function PageBreadcrumb() {
     if (pathname === '/changelog') {
       return { homeCurrent: false, items: [{ name: de.navChangelog, current: true }] }
     }
+    if (pathname === '/download') {
+      return { homeCurrent: false, items: [{ name: de.navDownload, current: true }] }
+    }
     if (pathname === '/aenderungen') {
       return { homeCurrent: false, items: [{ name: de.osm.reviewBreadcrumb, current: true }] }
     }

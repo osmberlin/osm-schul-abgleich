@@ -28,6 +28,7 @@ export const USER_FACING_FILES = [
   'schools_osm_areas.json',
   'schools_matches_map.json',
   'schools_matches_detail.json',
+  'schools_matches.csv',
   'schools_osm.meta.json',
 ] as const
 

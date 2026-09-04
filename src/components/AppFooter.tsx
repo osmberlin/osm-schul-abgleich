@@ -125,6 +125,10 @@ export function AppFooter() {
               {de.navChangelog}
             </Link>
             <FooterDot />
+            <Link to="/download" className={endFooterLinkClass}>
+              {de.navDownload}
+            </Link>
+            <FooterDot />
             <a href={f.githubHref} className={endFooterLinkClass} target="_blank" rel="noreferrer">
               {f.githubLabel}
             </a>

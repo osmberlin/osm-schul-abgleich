@@ -5,6 +5,7 @@ export const de = {
   navHome: 'Start',
   navStatus: 'Pipeline-Status',
   navChangelog: 'Changelog',
+  navDownload: 'Daten-Download',
 
   osm: {
     authLoading: 'OSM …',
@@ -185,6 +186,56 @@ export const de = {
         yesLicenceOrWaiver: 'Diese Daten dürfen in OSM übernommen werden.',
       },
     },
+  },
+  download: {
+    heading: 'Daten-Download',
+    lead: 'Pro Bundesland gibt es eine CSV-Datei mit dem Abgleich von amtlichen Schuldaten (JedeSchule) und OpenStreetMap. Eine Zeile ist ein Abgleichs-Datensatz: nur amtlich, nur OSM, eindeutig gematcht, uneindeutig oder amtlich ohne Koordinaten. Wo ein Match gelingt, sind Standorte gegeneinander geprüft; OSM ergänzt Geometrie und Tags, die im Register fehlen.',
+    jedeschuleHeading: 'Originaldaten bei JedeSchule',
+    jedeschuleLead:
+      'Die unbehandelten öffentlichen Registerdaten kommen von JedeSchule. Unser Download ist ein abgeleiteter Snapshot aus dem Abgleich – kein Ersatz für das Original.',
+    jedeschuleCsvLabel: 'JedeSchule-CSV (bundesweit, wöchentlich)',
+    jedeschuleAboutLabel: 'Über JedeSchule',
+    licenceHeading: 'Lizenzen',
+    licenceCalloutTitle: 'Keine klare Lizenz',
+    licenceCalloutLeadBeforeOdbl: 'OSM-Anteile stehen unter der ',
+    licenceCalloutOdblLink: 'Open Database Licence (ODbL)',
+    licenceCalloutLeadAfterOdbl:
+      '. Eine Mischung mit anderen Daten erzeugt eine abgeleitete Datenbank, die unter ODbL fällt.',
+    licenceCalloutCompatBefore: 'Gleichzeitig sind einige amtliche Quellen in dieser Datei ',
+    licenceCalloutCompatLink: 'nicht OSM-kompatibel oder die Kompatibilität ist noch ungeklärt',
+    licenceCalloutCompatAfter:
+      '. Die kombinierte CSV hat daher nach unserem Kenntnisstand keine saubere Lizenz und ist nicht ohne Weiteres nutzbar.',
+    licenceCalloutPurpose:
+      'Die Datei dient dazu, die Daten zu prüfen und zu verstehen – nicht zur Weitergabe als Open-Data-Datensatz.',
+    legendHeading: 'Legende der CSV-Spalten',
+    legendLead:
+      'Kopfzeile auf Englisch (snake_case), damit die Datei zu JedeSchule und OSM-Tags passt. Leere Zellen bedeuten: diese Seite der Zuordnung gibt es in dieser Zeile nicht.',
+    legendColHeader: 'Spalte',
+    legendColMeaning: 'Bedeutung',
+    categoryLegendHeading: 'Werte in der Spalte category',
+    categoryHelp: {
+      matched:
+        'Amtlicher Eintrag und OSM-Objekt eindeutig zugeordnet. Amtliche und OSM-Spalten sind gefüllt.',
+      official_only: 'Amtliche Schule mit Koordinaten, ohne OSM-Partner. OSM-Spalten bleiben leer.',
+      osm_only: 'OSM-Schulobjekt ohne amtlichen Partner. Amtliche Spalten bleiben leer.',
+      match_ambiguous:
+        'OSM-Objekt mit mehreren amtlichen Kandidaten. Die IDs stehen in ambiguous_official_ids.',
+      official_no_coord:
+        'Amtliche Schule ohne nutzbare Koordinaten und ohne eindeutigen OSM-Partner.',
+    },
+    formatHeading: 'Dateiformat',
+    formatLead:
+      'UTF-8 mit BOM, Komma als Trennzeichen (wie die JedeSchule-CSV), RFC-4180-Quoting. Der Dateiname bleibt gleich; den Datenstand zeigt die Tabelle unten.',
+    filesHeading: 'Download je Bundesland',
+    filesLead: 'Eine Datei pro Land, alle Kategorien in einer Tabelle.',
+    filesSnapshot: 'Datenstand',
+    colState: 'Bundesland',
+    colRows: 'Zeilen',
+    colDownload: 'Datei',
+    csvLink: 'CSV herunterladen',
+    loading: 'Lade Übersicht…',
+    error: 'Übersicht konnte nicht geladen werden.',
+    overviewLink: 'CSV herunterladen',
   },
   changelog: {
     heading: 'Changelog',

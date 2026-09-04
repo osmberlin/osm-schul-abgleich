@@ -1,8 +1,7 @@
+import { JEDESCHULE_WEEKLY_CSV_URL } from '../../src/lib/jedeschuleUrls'
 import path from 'node:path'
 
-/** Weekly nationwide dump (same data as the jedeschule.codefor.de API). */
-export const JEDESCHULE_WEEKLY_CSV_URL =
-  'https://jedeschule.codefor.de/csv-data/latest.csv' as const
+export { JEDESCHULE_WEEKLY_CSV_URL }
 
 /**
  * Path relative to the project root. The download script writes here; the

@@ -8,6 +8,7 @@ import { STATE_ORDER } from './lib/stateConfig'
 import { validateStateRouteSearch } from './lib/stateRouteSearch'
 import { AenderungenPage } from './pages/AenderungenPage'
 import { ChangelogPage } from './pages/ChangelogPage'
+import { DownloadPage } from './pages/DownloadPage'
 import { HomePage } from './pages/HomePage'
 import { NotFoundPage } from './pages/NotFoundPage'
 import { SchoolDetail } from './pages/SchoolDetail'
@@ -117,6 +118,12 @@ const changelogRoute = createRoute({
   component: ChangelogPage,
 })
 
+const downloadRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: '/download',
+  component: DownloadPage,
+})
+
 const stateRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: '/bundesland/$stateKey',
@@ -153,6 +160,7 @@ const routeTree = rootRoute.addChildren([
   statusRoute,
   aenderungenRoute,
   changelogRoute,
+  downloadRoute,
   stateRoute.addChildren([stateIndexRoute, schoolRoute]),
 ])
 

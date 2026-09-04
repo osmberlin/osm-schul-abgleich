@@ -2,14 +2,17 @@ import { CategoryLegendSwatch } from '../components/CategoryLegendSwatch'
 import { de } from '../i18n/de'
 import { buildMaprouletteIdEditorUrlFromBbox } from '../lib/editorLinks'
 import { stateHasMaproulette } from '../lib/maprouletteAvailability'
+import { stateMatchesCsvUrl } from '../lib/paths'
 import { type StateCode, STATE_BOUNDS, STATE_LABEL_DE } from '../lib/stateConfig'
 import { stateListSearchQueryOptions } from '../lib/stateDatasetQueries'
 import type { StateMatchCategory } from '../lib/stateMatchCategories'
 import { useQuery } from '@tanstack/react-query'
-import { Outlet, useParams, useRouterState } from '@tanstack/react-router'
+import { Outlet, Link, useParams, useRouterState } from '@tanstack/react-router'
 
 const MAPROULETTE_LINK_CLASS_NAME =
   'inline-flex shrink-0 items-center rounded-md bg-brand-800 px-3 py-1.5 text-sm font-medium text-white hover:bg-brand-900'
+const CSV_DOWNLOAD_LINK_CLASS_NAME =
+  'inline-flex shrink-0 items-center rounded-md border border-zinc-600 bg-zinc-800/80 px-3 py-1.5 text-sm font-medium text-zinc-100 hover:border-zinc-500 hover:bg-zinc-800'
 
 export function StateLayout() {
   const { stateKey } = useParams({ strict: false }) as { stateKey: string }
@@ -79,16 +82,28 @@ export function StateLayout() {
         <h1 className="min-w-0 text-2xl font-semibold text-zinc-100">
           {de.state.overviewTitle.replace('{name}', label).replace('{stateKey}', stateKey)}
         </h1>
-        {overviewMaprouletteUrl && (
+        <div className="flex shrink-0 flex-wrap items-center gap-2 sm:justify-end">
+          <Link to="/download" hash={stateKey} className={CSV_DOWNLOAD_LINK_CLASS_NAME}>
+            {de.navDownload}
+          </Link>
           <a
-            href={overviewMaprouletteUrl}
-            target="_blank"
-            rel="noreferrer"
-            className={MAPROULETTE_LINK_CLASS_NAME}
+            href={stateMatchesCsvUrl(stateKey)}
+            download={`schulabgleich_${stateKey}_schools_matches.csv`}
+            className={CSV_DOWNLOAD_LINK_CLASS_NAME}
           >
-            {de.state.editMaproulette}
+            {de.download.overviewLink}
           </a>
-        )}
+          {overviewMaprouletteUrl ? (
+            <a
+              href={overviewMaprouletteUrl}
+              target="_blank"
+              rel="noreferrer"
+              className={MAPROULETTE_LINK_CLASS_NAME}
+            >
+              {de.state.editMaproulette}
+            </a>
+          ) : null}
+        </div>
       </div>
     )
 

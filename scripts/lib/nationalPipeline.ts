@@ -2,7 +2,12 @@ import { berlinCalendarDateKey } from '../../src/lib/berlinCalendarDateKey'
 import { promoteClosedLineStringsToPolygons } from '../../src/lib/osmClosedRingsToPolygons'
 import { centroidFromOsmGeometry } from '../../src/lib/osmGeometryCentroid'
 import { parseRunHistoryFileText, stringifyRunHistoryJsonl } from '../../src/lib/runHistoryJsonl'
+import { schoolsMatchRowSchema, stateOfficialPointsFileSchema } from '../../src/lib/schemas'
 import { classifySchoolFormCombo } from '../../src/lib/schoolFormRules'
+import {
+  SCHOOLS_MATCH_CSV_FILE_NAME,
+  stringifySchoolsMatchCsv,
+} from '../../src/lib/schoolsMatchCsv'
 import {
   type StateCode,
   officialStateCode,
@@ -53,6 +58,7 @@ import type { Feature, FeatureCollection, Geometry } from 'geojson'
 import { createHash } from 'node:crypto'
 import { mkdir, rm } from 'node:fs/promises'
 import path from 'node:path'
+import { z } from 'zod'
 
 function envScopedJsonFileName(fileName: string): string {
   if (process.env.GITHUB_ACTIONS === 'true') return fileName
@@ -804,6 +810,14 @@ export async function runStateFirstPipeline(
     await writeJson(
       path.join(datasetsDir(projectRoot), code, 'schools_matches_detail.json'),
       rowsStateDetailByKey,
+    )
+    const csvRows = z.array(schoolsMatchRowSchema).parse(rowsStateDetailUser)
+    await Bun.write(
+      path.join(datasetsDir(projectRoot), code, SCHOOLS_MATCH_CSV_FILE_NAME),
+      stringifySchoolsMatchCsv(csvRows, {
+        bundesland: code,
+        officialPointsById: stateOfficialPointsFileSchema.parse(officialPointsById),
+      }),
     )
 
     const osmSource: 'live' | 'cached' | 'missing' =
