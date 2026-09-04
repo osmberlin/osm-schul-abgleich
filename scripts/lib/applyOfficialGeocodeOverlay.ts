@@ -29,11 +29,6 @@ const OVERLAY_POINTS_LABEL = 'data/official-geocode/points.json'
 
 export async function loadOfficialGeocodeOverlay(projectRoot: string) {
   const filePath = path.join(projectRoot, 'data', 'official-geocode', 'points.json')
-  if (typeof Bun !== 'undefined') {
-    const f = Bun.file(filePath)
-    if (!(await f.exists())) return new Map()
-    return parseOfficialPointsMap(await f.json(), OVERLAY_POINTS_LABEL)
-  }
   if (!existsSync(filePath)) return new Map()
   return parseOfficialPointsMap(JSON.parse(await readFile(filePath, 'utf8')), OVERLAY_POINTS_LABEL)
 }
