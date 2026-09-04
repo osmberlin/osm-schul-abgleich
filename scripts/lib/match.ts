@@ -6,9 +6,9 @@ import {
   normalizeOfficialIdRefSegment,
   normalizeSchoolNameForMatch,
   normalizeWebsiteMatchKey,
-  isFachschuleOfficialName,
 } from '../../src/lib/compareMatchKeys'
 import { MATCH_RADIUS_KM } from '../../src/lib/matchRadius'
+import { officialEligibleForCollegeOsmMatch } from '../../src/lib/officialFachschule'
 import { centroidFromOsmGeometry } from '../../src/lib/osmGeometryCentroid'
 import { OSM_SCHOOL_NAME_TAGS_IN_ORDER, type OsmNameMatchTag } from '../../src/lib/osmNameMatchTags'
 import { canonicalSchoolKindDe } from '../../src/lib/osmSchoolKindDe'
@@ -74,7 +74,7 @@ function officialsNearOsmFachschule(
   excludeReserved?: Set<string>,
 ): OfficialInput[] {
   return officialsNearOsm(o, withCoord, osmState, excludeReserved).filter((off) =>
-    isFachschuleOfficialName(off.name),
+    officialEligibleForCollegeOsmMatch(off),
   )
 }
 
@@ -434,7 +434,7 @@ function extractRefMatches(
     const off = index.get(refKey)
     if (!off) continue
     if (reservedOfficialIds.has(off.id)) continue
-    if (osmAmenityIsCollege(o.tags) && !isFachschuleOfficialName(off.name)) continue
+    if (osmAmenityIsCollege(o.tags) && !officialEligibleForCollegeOsmMatch(off)) continue
 
     reservedOfficialIds.add(off.id)
     consumedOsmKeys.add(landKey)
@@ -520,7 +520,7 @@ export function matchSchools(
       full,
       variantMap,
       college ? normalizeForFachschuleCollegeMatch : normalizeSchoolNameForMatch,
-      college ? (off) => isFachschuleOfficialName(off.name) : undefined,
+      college ? officialEligibleForCollegeOsmMatch : undefined,
     )
     if (!uniq) continue
     const { winner, nameMatchVariant } = uniq
@@ -674,7 +674,7 @@ export function matchSchools(
     const normOff = college ? normalizeForFachschuleCollegeMatch : normalizeSchoolNameForMatch
     if (variantMapMulti.size > 0) {
       const nameMatches = withDist.filter((x) => {
-        if (college && !isFachschuleOfficialName(x.off.name)) return false
+        if (college && !officialEligibleForCollegeOsmMatch(x.off)) return false
         const offN = normOff(x.off.name)
         for (const K of variantMapMulti.keys()) {
           if (offN === K || offN.startsWith(K)) return true
@@ -857,7 +857,7 @@ export function matchSchools(
     const matches = statewideFallbackOfficials.filter((off) => {
       if (statewideFallbackMatched.has(off.id)) return false
       if (officialStateCode(off.properties) !== rowLand) return false
-      if (!isFachschuleOfficialName(off.name)) return false
+      if (!officialEligibleForCollegeOsmMatch(off)) return false
       const offN = normalizeForFachschuleCollegeMatch(off.name)
       for (const K of variantMap.keys()) {
         if (offN === K || offN.startsWith(K)) return true

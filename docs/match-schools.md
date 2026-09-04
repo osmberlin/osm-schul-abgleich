@@ -33,7 +33,7 @@ flowchart TB
 ## Kurzbeschreibung der Phasen
 
 1. **`extractRefMatches`**  
-   Paart OSM-`ref` mit dem JedeSchule-ID-Suffix (gleiches Bundesland), wenn der Index eindeutig ist.
+   Paart OSM-`ref` mit dem JedeSchule-ID-Suffix (gleiches Bundesland), wenn der Index eindeutig ist. OSM mit `amenity`/`education=college` wird nur mit Fachschule-Officials gepaart (Name enthält „fachschule“ **oder** `school_type` zeigt Fachschule).
 
 2. **Phase 1 (mehrere im Radius + Name)**  
    Globale Priorisierung nach Distanz: Wenn mehrere offizielle Punkte im Radius liegen und **genau einer** den normalisierten OSM-Namen trifft, wird dieser zuerst reserviert (`distance_and_name`).
