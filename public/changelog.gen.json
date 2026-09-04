@@ -1,9 +1,31 @@
 {
-  "generatedAt": "2026-09-04T20:25:27.960Z",
+  "generatedAt": "2026-09-04T20:36:42.965Z",
   "months": [
     {
       "month": "2026-09",
       "entries": [
+        {
+          "refs": [
+            "191930f"
+          ],
+          "descriptionMd": "Ein eindeutiger OSM-`ref` wird jetzt immer der passenden amtlichen Schule zugeordnet, auch wenn das OSM-Objekt `amenity=college` ist.\nOhne `ref` bleiben Colleges weiterhin nur Fachschulen zugeordnet.",
+          "committedAtIso": "2026-09-04T22:36:17+02:00",
+          "committedAtShort": "2026-09-04",
+          "refsDisplay": [
+            "191930f"
+          ]
+        },
+        {
+          "refs": [
+            "72b7000"
+          ],
+          "descriptionMd": "Beim Abgleich werden OSM-Objekte mit `amenity=college` jetzt auch einer amtlichen Fachschule zugeordnet, wenn der Name kein „Fachschule“ enthält, aber `school_type` Fachschule ist (zum Beispiel Berufsbildungszentrum).",
+          "committedAtIso": "2026-09-04T22:35:49+02:00",
+          "committedAtShort": "2026-09-04",
+          "refsDisplay": [
+            "72b7000"
+          ]
+        },
         {
           "refs": [
             "189e477a79c1b17c25d8429212ebf0eb78a38a07"

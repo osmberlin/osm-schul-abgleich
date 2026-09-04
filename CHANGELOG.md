@@ -4,6 +4,15 @@ Automatisch aus `changelog.registry.yaml` erzeugt.
 
 ## 2026-09
 
+### `191930f`
+
+Ein eindeutiger OSM-`ref` wird jetzt immer der passenden amtlichen Schule zugeordnet, auch wenn das OSM-Objekt `amenity=college` ist.
+Ohne `ref` bleiben Colleges weiterhin nur Fachschulen zugeordnet.
+
+### `72b7000`
+
+Beim Abgleich werden OSM-Objekte mit `amenity=college` jetzt auch einer amtlichen Fachschule zugeordnet, wenn der Name kein „Fachschule“ enthält, aber `school_type` Fachschule ist (zum Beispiel Berufsbildungszentrum).
+
 ### `189e477`
 
 MapRoulette Tag-Fix ist eine Kampagne mit einer GeoJSON-Datei: lizenzfreie amtliche Vorschläge wo möglich, sonst bundesweit nur aus OSM (ohne `ref`/Betreiber).
