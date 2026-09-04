@@ -136,7 +136,7 @@ export function buildMaprouletteTaskMarkdown(input: {
 }
 
 /**
- * Task markdown for the nationwide OSM-heuristic challenge (no official-data claims).
+ * Task markdown for OSM-only Tag Fix tasks (no official-data claims).
  * Prefers OSM website only in Hilfsmittel.
  */
 export function buildMaprouletteOsmHeuristicTaskMarkdown(input: {

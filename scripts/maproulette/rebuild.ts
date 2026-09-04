@@ -1,6 +1,6 @@
 #!/usr/bin/env bun
 /**
- * Trigger MapRoulette rebuild from remoteGeoJson for configured challenges.
+ * Trigger MapRoulette rebuild from remoteGeoJson for the Tag Fix and Creates challenges.
  * Requires MAPROULETTE_API_KEY. Skips challenges whose id is still null.
  *
  * Transient MapRoulette/Cloudflare errors (502/503/504) are retried. Failure here
@@ -10,7 +10,6 @@
 import {
   schoolCreatesChallengeId,
   schoolTagFixesChallengeId,
-  schoolTagFixesOsmHeuristicChallengeId,
 } from '../../src/lib/maprouletteIds.const'
 
 const MAX_ATTEMPTS = 3
@@ -33,7 +32,17 @@ function isRetryableStatus(status: number): boolean {
   return RETRYABLE_STATUSES.has(status)
 }
 
-async function rebuildChallenge(id: number, label: string, apiKey: string): Promise<void> {
+function logMaprouletteNotCritical(label: string, id: number): void {
+  console.error(
+    [
+      `Not critical for the published site: hosted MapRoulette GeoJSON/meta feeds were already probed and are fine.`,
+      `Only maproulette.org failed to accept the rebuild for "${label}" (challenge ${id}).`,
+      `Re-run this workflow later, or trigger a rebuild manually in MapRoulette.`,
+    ].join('\n'),
+  )
+}
+
+async function rebuildChallenge(id: number, label: string, apiKey: string): Promise<boolean> {
   const apiUrl = `https://maproulette.org/api/v2/challenge/${id}/rebuild?removeUnmatched=true&skipSnapshot=true`
 
   for (let attempt = 1; attempt <= MAX_ATTEMPTS; attempt++) {
@@ -45,7 +54,7 @@ async function rebuildChallenge(id: number, label: string, apiKey: string): Prom
 
       if (response.ok) {
         console.info(`Rebuild triggered for ${label} challenge`, id)
-        return
+        return true
       }
 
       const body = await response.text()
@@ -63,15 +72,6 @@ async function rebuildChallenge(id: number, label: string, apiKey: string): Prom
         await sleep(2_000 * attempt)
         continue
       }
-
-      console.error(
-        [
-          `Not critical for the published site: hosted MapRoulette GeoJSON/meta feeds were already probed and are fine.`,
-          `Only maproulette.org failed to accept the rebuild for "${label}" (challenge ${id}).`,
-          `Re-run this workflow later, or trigger a rebuild manually in MapRoulette.`,
-        ].join('\n'),
-      )
-      process.exit(1)
     } catch (error) {
       const willRetry = attempt < MAX_ATTEMPTS
       console.error(
@@ -84,23 +84,18 @@ async function rebuildChallenge(id: number, label: string, apiKey: string): Prom
         await sleep(2_000 * attempt)
         continue
       }
-      console.error(
-        [
-          `Not critical for the published site: hosted MapRoulette GeoJSON/meta feeds were already probed and are fine.`,
-          `Only the MapRoulette API call failed for "${label}" (challenge ${id}).`,
-          `Re-run this workflow later, or trigger a rebuild manually in MapRoulette.`,
-        ].join('\n'),
-      )
-      process.exit(1)
     }
   }
+
+  logMaprouletteNotCritical(label, id)
+  return false
 }
 
 async function main() {
   const apiKey = requireApiKey()
+  const failed: string[] = []
   const jobs: { id: number | null; label: string }[] = [
-    { id: schoolTagFixesChallengeId, label: 'official' },
-    { id: schoolTagFixesOsmHeuristicChallengeId, label: 'osm-heuristic' },
+    { id: schoolTagFixesChallengeId, label: 'tag-fix' },
     { id: schoolCreatesChallengeId, label: 'creates' },
   ]
 
@@ -113,12 +108,16 @@ async function main() {
       continue
     }
     any = true
-    await rebuildChallenge(job.id, job.label, apiKey)
+    const ok = await rebuildChallenge(job.id, job.label, apiKey)
+    if (!ok) failed.push(job.label)
   }
 
   if (!any) {
     console.warn('No MapRoulette challenge ids configured — nothing to rebuild')
-    process.exit(0)
+  }
+  if (failed.length > 0) {
+    console.error(`MapRoulette rebuild finished with failures: ${failed.join(', ')}`)
+    process.exit(1)
   }
 }
 

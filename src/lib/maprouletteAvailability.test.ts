@@ -6,15 +6,13 @@ import {
 import { describe, expect, it } from 'vitest'
 
 describe('stateHasMaproulette', () => {
-  it('is true for OSM-licence-compatible Länder (BE, BB, SH)', () => {
+  it('is true for every Land when the Tag Fix challenge id is set', () => {
     expect(stateHasMaproulette('BE')).toBe(true)
-    expect(stateHasMaproulette('BB')).toBe(true)
-    expect(stateHasMaproulette('SH')).toBe(true)
+    expect(stateHasMaproulette('BY')).toBe(true)
+    expect(stateHasMaproulette('NW')).toBe(true)
   })
 
-  it('is false for incompatible or unknown Länder', () => {
-    expect(stateHasMaproulette('BY')).toBe(false)
-    expect(stateHasMaproulette('NW')).toBe(false)
+  it('is false for unknown state keys', () => {
     expect(stateHasMaproulette('XX')).toBe(false)
   })
 })
