@@ -1,6 +1,6 @@
+import { Link } from '@tanstack/react-router'
 import { de } from '../i18n/de'
 import { APP_LOGO_SRC } from '../lib/branding'
-import { Link } from '@tanstack/react-router'
 
 export type AppBreadcrumbCrumb =
   | { name: string; to: string; shortName?: string }

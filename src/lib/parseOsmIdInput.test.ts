@@ -1,5 +1,5 @@
-import { parseOsmIdInput } from './parseOsmIdInput'
 import { describe, expect, it } from 'vitest'
+import { parseOsmIdInput } from './parseOsmIdInput'
 
 describe('parseOsmIdInput', () => {
   it('parses compact prefixes', () => {

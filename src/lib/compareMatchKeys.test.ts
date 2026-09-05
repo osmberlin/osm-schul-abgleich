@@ -1,3 +1,4 @@
+import { describe, expect, it } from 'vitest'
 import {
   addressCompareTargetsFromOsmParts,
   isFachschuleOfficialName,
@@ -6,7 +7,6 @@ import {
   normalizeSchoolNameForMatch,
   normalizeWebsiteMatchKey,
 } from './compareMatchKeys'
-import { describe, expect, it } from 'vitest'
 
 describe('normalizeSchoolNameForMatch', () => {
   it('normalizes casing, umlauts, diacritics and parenthetical text', () => {

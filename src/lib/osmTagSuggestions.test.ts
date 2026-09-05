@@ -1,9 +1,9 @@
+import { describe, expect, it } from 'vitest'
 import {
   collectOsmTagSuggestions,
   maproulettePriorityFromPendingTags,
   pendingTagsFromSuggestSpecs,
 } from './osmTagSuggestions'
-import { describe, expect, it } from 'vitest'
 
 describe('collectOsmTagSuggestions', () => {
   it('proposes primary school tags for Grundschule', () => {

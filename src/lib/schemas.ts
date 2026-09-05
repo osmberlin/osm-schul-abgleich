@@ -1,5 +1,5 @@
-import { OSM_SCHOOL_NAME_TAGS_IN_ORDER } from './osmNameMatchTags'
 import { z } from 'zod'
+import { OSM_SCHOOL_NAME_TAGS_IN_ORDER } from './osmNameMatchTags'
 
 const schoolKindDeSourceSchema = z.enum([
   'school:de',

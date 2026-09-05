@@ -1,9 +1,9 @@
 #!/usr/bin/env bun
-import { writeMaprouletteSchoolCreates } from '../lib/maprouletteSchoolCreates'
 /**
  * Write the create-school MapRoulette feed from current datasets (no full pipeline).
  */
 import path from 'node:path'
+import { writeMaprouletteSchoolCreates } from '../lib/maprouletteSchoolCreates'
 
 const projectRoot = path.resolve(import.meta.dir, '../..')
 const { errors, meta } = await writeMaprouletteSchoolCreates(projectRoot)

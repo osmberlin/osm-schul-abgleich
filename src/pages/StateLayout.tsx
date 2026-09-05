@@ -1,3 +1,5 @@
+import { useQuery } from '@tanstack/react-query'
+import { Outlet, Link, useParams, useRouterState } from '@tanstack/react-router'
 import { CategoryLegendSwatch } from '../components/CategoryLegendSwatch'
 import { de } from '../i18n/de'
 import { buildMaprouletteIdEditorUrlFromBbox } from '../lib/editorLinks'
@@ -7,8 +9,6 @@ import { SCHOOLS_MATCH_CSV_DOWNLOAD_FILE_NAME } from '../lib/schoolsMatchCsv'
 import { type StateCode, STATE_BOUNDS, STATE_LABEL_DE } from '../lib/stateConfig'
 import { stateListSearchQueryOptions } from '../lib/stateDatasetQueries'
 import type { StateMatchCategory } from '../lib/stateMatchCategories'
-import { useQuery } from '@tanstack/react-query'
-import { Outlet, Link, useParams, useRouterState } from '@tanstack/react-router'
 
 const MAPROULETTE_LINK_CLASS_NAME =
   'inline-flex shrink-0 items-center rounded-md bg-brand-800 px-3 py-1.5 text-sm font-medium text-white hover:bg-brand-900'

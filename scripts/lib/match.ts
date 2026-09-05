@@ -1,3 +1,6 @@
+import distance from '@turf/distance'
+import { point } from '@turf/helpers'
+import type { FeatureCollection, Geometry } from 'geojson'
 import {
   flattenOfficialForCompare,
   flattenOsmTagsForCompare,
@@ -20,9 +23,6 @@ import type {
 } from '../../src/lib/schoolFormRules'
 import type { StateCode } from '../../src/lib/stateConfig'
 import { officialStateCode } from '../../src/lib/stateConfig'
-import distance from '@turf/distance'
-import { point } from '@turf/helpers'
-import type { FeatureCollection, Geometry } from 'geojson'
 
 export { centroidFromOsmGeometry } from '../../src/lib/osmGeometryCentroid'
 export { MATCH_RADIUS_KM }
@@ -455,7 +455,7 @@ function extractRefMatches(
       osmName: o.name,
       osmTags: o.tags,
       ...schoolKindFromOsmTags(o.tags),
-      matchedByRefNormalized: o.tags.ref.trim(),
+      matchedByRefNormalized: o.tags.ref?.trim() ?? refKey,
     })
   }
 
@@ -617,6 +617,7 @@ export function matchSchools(
 
     if (cands.length === 1) {
       const off = cands[0]
+      if (!off) continue
       const dM =
         distance(point([off.lon, off.lat]), point([lon, lat]), { units: 'kilometers' }) * 1000
       // If location filtering leaves exactly one candidate, keep the row resolved.
@@ -664,7 +665,9 @@ export function matchSchools(
       distKm: distance(point([off.lon, off.lat]), point([lon, lat]), { units: 'kilometers' }),
     }))
     withDist.sort((a, b) => a.distKm - b.distKm)
-    const closestKm = withDist[0].distKm
+    const closest = withDist[0]
+    if (closest === undefined) continue
+    const closestKm = closest.distKm
 
     const college = osmAmenityIsCollege(o.tags)
     const variantMapMulti = college
@@ -770,6 +773,7 @@ export function matchSchools(
   const osmOnlyByNameAndLand = new Map<string, Map<StateCode, number[]>>()
   for (let idx = 0; idx < rows.length; idx++) {
     const row = rows[idx]
+    if (!row) continue
     if (row.category !== 'osm_only') continue
     if (osmAmenityIsCollege(row.osmTags ?? {})) continue
     const rowLand = rowLandByOsmRef(row, opts)
@@ -803,10 +807,13 @@ export function matchSchools(
       if (!osmIdxs) continue
       if (osmIdxs.length !== 1) continue
       const targetIdx = osmIdxs[0]
+      if (targetIdx === undefined) continue
       const base = rows[targetIdx]
+      if (!base) continue
       if (officialsWithName.length === 0) continue
       if (officialsWithName.length === 1) {
         const off = officialsWithName[0]
+        if (!off) continue
         if (statewideFallbackMatched.has(off.id)) continue
         const noCoordVariantMap = normalizedOsmNameVariantMap(base.osmTags ?? {})
         rows[targetIdx] = {
@@ -849,6 +856,7 @@ export function matchSchools(
 
   for (let idx = 0; idx < rows.length; idx++) {
     const base = rows[idx]
+    if (!base) continue
     if (base.category !== 'osm_only' || !osmAmenityIsCollege(base.osmTags ?? {})) continue
     const rowLand = rowLandByOsmRef(base, opts)
     const variantMap = normalizedOsmNameVariantMapFachschule(base.osmTags ?? {})
@@ -902,6 +910,7 @@ export function matchSchools(
   const osmOnlyByWebsiteAndLand = new Map<string, Map<StateCode, number[]>>()
   for (let idx = 0; idx < rows.length; idx++) {
     const row = rows[idx]
+    if (!row) continue
     if (row.category !== 'osm_only') continue
     if (osmAmenityIsCollege(row.osmTags ?? {})) continue
     const rowLand = rowLandByOsmRef(row, opts)
@@ -925,10 +934,13 @@ export function matchSchools(
       if (!osmIdxs) continue
       if (osmIdxs.length !== 1) continue
       const targetIdx = osmIdxs[0]
+      if (targetIdx === undefined) continue
       const base = rows[targetIdx]
+      if (!base) continue
       if (officialsWithWebsite.length === 0) continue
       if (officialsWithWebsite.length === 1) {
         const off = officialsWithWebsite[0]
+        if (!off) continue
         if (statewideFallbackMatched.has(off.id)) continue
         rows[targetIdx] = {
           ...base,
@@ -977,6 +989,7 @@ export function matchSchools(
   const osmOnlyByAddressAndLand = new Map<string, Map<StateCode, number[]>>()
   for (let idx = 0; idx < rows.length; idx++) {
     const row = rows[idx]
+    if (!row) continue
     if (row.category !== 'osm_only') continue
     if (osmAmenityIsCollege(row.osmTags ?? {})) continue
     const rowLand = rowLandByOsmRef(row, opts)
@@ -1000,10 +1013,13 @@ export function matchSchools(
       if (!osmIdxs) continue
       if (osmIdxs.length !== 1) continue
       const targetIdx = osmIdxs[0]
+      if (targetIdx === undefined) continue
       const base = rows[targetIdx]
+      if (!base) continue
       if (officialsWithAddress.length === 0) continue
       if (officialsWithAddress.length === 1) {
         const off = officialsWithAddress[0]
+        if (!off) continue
         if (statewideFallbackMatched.has(off.id)) continue
         rows[targetIdx] = {
           ...base,

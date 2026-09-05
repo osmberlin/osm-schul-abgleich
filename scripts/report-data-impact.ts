@@ -1,3 +1,5 @@
+import { mkdir, readdir, rename, rm, stat, writeFile } from 'node:fs/promises'
+import path from 'node:path'
 import {
   collectPerLandUserFacingDatasets,
   collectRootDatasetSnapshotFiles,
@@ -5,8 +7,6 @@ import {
   LAND_CODES,
   USER_FACING_FILES,
 } from './lib/userFacingDatasetSizes'
-import { mkdir, readdir, rename, rm, stat, writeFile } from 'node:fs/promises'
-import path from 'node:path'
 
 const DEFAULT_OUT = path.join('analysis', 'out', 'data-impact-report.md')
 const TOP_N = 18
@@ -380,7 +380,7 @@ async function main() {
   lines.push('')
   const rootRows = Object.keys(rootSnap.byPath)
     .sort()
-    .map((k) => [`\`${k}\``, formatMiB(rootSnap.byPath[k]), String(rootSnap.byPath[k])])
+    .map((k) => [`\`${k}\``, formatMiB(rootSnap.byPath[k] ?? 0), String(rootSnap.byPath[k] ?? 0)])
   if (rootRows.length) {
     lines.push(mdTable(['Path', 'Size', 'Bytes'], rootRows))
     lines.push('')
@@ -568,10 +568,10 @@ async function main() {
       'yes (same as state route)',
     ],
   ]
-  const detailRouteTotal = detailRouteRows.reduce((sum, r) => sum + Number(r[2]), 0)
+  const detailRouteTotal = detailRouteRows.reduce((sum, r) => sum + Number(r[2] ?? 0), 0)
   const detailRouteCached = detailRouteRows
-    .filter((r) => r[3].startsWith('yes'))
-    .reduce((sum, r) => sum + Number(r[2]), 0)
+    .filter((r) => (r[3] ?? '').startsWith('yes'))
+    .reduce((sum, r) => sum + Number(r[2] ?? 0), 0)
   const detailRouteOnly = detailRouteTotal - detailRouteCached
   lines.push(mdTable(['File', 'Size', 'Bytes', 'Likely cached after state page?'], detailRouteRows))
   lines.push('')
@@ -623,8 +623,8 @@ async function main() {
     .sort()
     .map((e) => [
       e === '(none)' ? '`(none)`' : `\`${e}\``,
-      formatMiB(dist.byExt[e]),
-      String(dist.byExt[e]),
+      formatMiB(dist.byExt[e] ?? 0),
+      String(dist.byExt[e] ?? 0),
     ])
   lines.push(mdTable(['Extension', 'Size', 'Bytes'], extRows))
   lines.push('')

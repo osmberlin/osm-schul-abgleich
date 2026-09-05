@@ -72,7 +72,9 @@ function polygonCentroidLikeLonLat(geom: Polygon | MultiPolygon): [number, numbe
   try {
     const c = centroid(feature(geom))
     const [lon, lat] = c.geometry.coordinates
-    if (Number.isFinite(lon) && Number.isFinite(lat)) return [lon, lat]
+    if (lon !== undefined && lat !== undefined && Number.isFinite(lon) && Number.isFinite(lat)) {
+      return [lon, lat]
+    }
   } catch {
     /* fall through */
   }
@@ -88,8 +90,12 @@ function polygonCentroidLikeLonLat(geom: Polygon | MultiPolygon): [number, numbe
 export function centroidFromOsmGeometry(geom: Geometry | null): [number, number] {
   if (!geom) return GEOMETRY_CENTROID_FALLBACK_LON_LAT
   switch (geom.type) {
-    case 'Point':
-      return [geom.coordinates[0], geom.coordinates[1]]
+    case 'Point': {
+      const lon = geom.coordinates[0]
+      const lat = geom.coordinates[1]
+      if (lon === undefined || lat === undefined) return GEOMETRY_CENTROID_FALLBACK_LON_LAT
+      return [lon, lat]
+    }
     case 'LineString':
       return meanOfPositions(geom.coordinates) ?? GEOMETRY_CENTROID_FALLBACK_LON_LAT
     case 'MultiLineString':

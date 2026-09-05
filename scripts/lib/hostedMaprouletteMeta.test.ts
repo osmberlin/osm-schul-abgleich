@@ -1,6 +1,6 @@
+import { describe, expect, it } from 'vitest'
 import { schoolsMatchesDetailEnvelopeSchema } from '../../src/lib/schemas'
 import { hostedMaprouletteMetaSchema } from './hostedMaprouletteMeta'
-import { describe, expect, it } from 'vitest'
 
 describe('schoolsMatchesDetailEnvelopeSchema', () => {
   it('accepts an object map and rejects arrays', () => {

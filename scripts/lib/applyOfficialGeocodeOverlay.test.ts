@@ -1,12 +1,12 @@
+import { mkdir, mkdtemp, rm, writeFile } from 'node:fs/promises'
+import os from 'node:os'
+import path from 'node:path'
+import type { Feature, FeatureCollection } from 'geojson'
+import { afterEach, describe, expect, it } from 'vitest'
 import {
   applyOfficialGeocodeOverlay,
   loadOfficialGeocodeOverlay,
 } from './applyOfficialGeocodeOverlay'
-import type { Feature, FeatureCollection } from 'geojson'
-import { mkdir, mkdtemp, rm, writeFile } from 'node:fs/promises'
-import os from 'node:os'
-import path from 'node:path'
-import { afterEach, describe, expect, it } from 'vitest'
 
 const dirs: string[] = []
 
@@ -26,7 +26,7 @@ function nullFeature(id: string, extraProps: Record<string, unknown> = {}): Feat
     id,
     properties: { id, name: 'Test', ...extraProps },
     geometry: null,
-  }
+  } as unknown as Feature
 }
 
 function pointFeature(id: string, lon: number, lat: number): Feature {
@@ -46,8 +46,8 @@ describe('applyOfficialGeocodeOverlay', () => {
   it('fills null geometry and sets coord_source', () => {
     const overlay = new Map<string, [number, number]>([['NI-1', [9.7, 52.4]]])
     const out = applyOfficialGeocodeOverlay(fc([nullFeature('NI-1')]), overlay)
-    expect(out.features[0].geometry).toEqual({ type: 'Point', coordinates: [9.7, 52.4] })
-    expect(out.features[0].properties).toMatchObject({
+    expect(out.features[0]!.geometry).toEqual({ type: 'Point', coordinates: [9.7, 52.4] })
+    expect(out.features[0]!.properties).toMatchObject({
       id: 'NI-1',
       coord_source: 'nominatim',
     })
@@ -57,8 +57,8 @@ describe('applyOfficialGeocodeOverlay', () => {
     const overlay = new Map<string, [number, number]>([['BE-1', [13.0, 52.0]]])
     const input = pointFeature('BE-1', 13.405, 52.52)
     const out = applyOfficialGeocodeOverlay(fc([input]), overlay)
-    expect(out.features[0].geometry).toEqual({ type: 'Point', coordinates: [13.405, 52.52] })
-    expect(out.features[0].properties).not.toHaveProperty('coord_source')
+    expect(out.features[0]!.geometry).toEqual({ type: 'Point', coordinates: [13.405, 52.52] })
+    expect(out.features[0]!.properties).not.toHaveProperty('coord_source')
     expect(out.features[0]).toBe(input)
   })
 
@@ -69,7 +69,7 @@ describe('applyOfficialGeocodeOverlay', () => {
     ])
     const out = applyOfficialGeocodeOverlay(fc([nullFeature('NI-1')]), overlay)
     expect(out.features).toHaveLength(1)
-    expect(out.features[0].geometry).toEqual({ type: 'Point', coordinates: [9.8, 52.5] })
+    expect(out.features[0]!.geometry).toEqual({ type: 'Point', coordinates: [9.8, 52.5] })
   })
 })
 

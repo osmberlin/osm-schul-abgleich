@@ -1,7 +1,7 @@
-import { officialRefCandidateFromSchoolId } from './officialRefCandidate'
-import { schoolsMatchRowSchema } from './schemas'
 import itemsjs from 'itemsjs'
 import type { z } from 'zod'
+import { officialRefCandidateFromSchoolId } from './officialRefCandidate'
+import { schoolsMatchRowSchema } from './schemas'
 
 export const STATE_MATCH_FACET_SCHOOL_KIND_NONE = '(keine)'
 export const STATE_MATCH_FACET_MATCH_MODE_NONE = '(none)'

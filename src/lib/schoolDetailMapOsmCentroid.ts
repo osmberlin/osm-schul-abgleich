@@ -24,7 +24,9 @@ export function resolveSchoolMapOsmCentroid(
   const officialFeature = findOfficialSchoolFeature(data.official, matchRow.officialId)
   if (!officialFeature?.geometry) return null
   if (officialFeature.geometry.type === 'Point') {
-    const [lon, lat] = officialFeature.geometry.coordinates
+    const lon = officialFeature.geometry.coordinates[0]
+    const lat = officialFeature.geometry.coordinates[1]
+    if (lon === undefined || lat === undefined) return null
     return [lon, lat] as const
   }
   return centroidFromOsmGeometry(officialFeature.geometry)

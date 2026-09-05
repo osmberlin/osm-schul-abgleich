@@ -1,3 +1,5 @@
+import { queryOptions } from '@tanstack/react-query'
+import { changelogFileSchema } from '@tordans/changelog-kit/schemas'
 import { DATASET_FETCH_INIT, DATASET_QUERY_GC_MS, DATASET_QUERY_STALE_MS } from './cachePolicy'
 import {
   changelogJsonUrl,
@@ -13,8 +15,6 @@ import {
   runRecordSchema,
   summaryFileSchema,
 } from './schemas'
-import { queryOptions } from '@tanstack/react-query'
-import { changelogFileSchema } from '@tordans/changelog-kit/schemas'
 
 /** Shared TanStack query options for datasets/summary.json */
 export function summaryQueryOptions() {

@@ -5,9 +5,9 @@
   "type": "module",
   "scripts": {
     "prepare": "husky",
-    "dev": "vite",
-    "build": "bun run check && rm -rf dist && vite build",
-    "preview": "vite preview",
+    "dev": "FORCE_COLOR=1 bun --bun vite",
+    "build": "bun run check && rm -rf dist && FORCE_COLOR=1 bun --bun vite build",
+    "preview": "FORCE_COLOR=1 bun --bun vite preview",
     "pipeline:download:jedeschule": "bun run scripts/pipeline-download-jedeschule.ts",
     "pipeline:download:osm": "bun run scripts/pipeline-download-osm.ts",
     "pipeline:download": "bun run scripts/pipeline-download.ts",
@@ -38,17 +38,24 @@
     "changelog": "changelog --output-json-path public/changelog.gen.json --ignore-commit-term \"chore(data): persist run history\" --ignore-commit-term \"update changelog\" && bun run format",
     "changelog:husky": "changelog --non-interactive --ci --validate --generate --output-json-path public/changelog.gen.json --ignore-commit-term \"chore(data): persist run history\" --ignore-commit-term \"update changelog\"",
     "changelog:remap": "changelog --non-interactive --ci --remap-refs",
+    "update": "bun run --sequential update:*",
     "update:deps": "bunx taze latest --include-locked --maturity-period 5 --interactive --write",
     "update:gitdeps": "bun update @tordans/changelog-kit",
     "update:app": "bun install && bun run check && bun run changelog",
-    "update": "bun run update:deps && bun run update:gitdeps && bun run update:app",
-    "check": "bun run format && bun run lint && bun run typecheck",
-    "lint": "oxlint -c oxlint.config.mjs .",
-    "typecheck": "tsc -b",
-    "format": "oxfmt -c oxfmt.config.mjs --write .",
-    "format:check": "oxfmt -c oxfmt.config.mjs --check .",
-    "test": "vitest run",
-    "knip": "knip"
+    "type-check": "bun run --parallel type-check:*",
+    "type-check:app": "tsc --noEmit -p tsconfig.app.json",
+    "type-check:scripts": "tsc --noEmit -p tsconfig.scripts.json",
+    "lint": "oxlint --fix --fix-dangerously --deny-warnings -c oxlint.config.mjs .",
+    "lint-check": "oxlint --deny-warnings -c oxlint.config.mjs .",
+    "format": "oxfmt --write -c oxfmt.config.mjs .",
+    "format-check": "oxfmt --check -c oxfmt.config.mjs .",
+    "test": "bun run test-run",
+    "test-run": "vitest run --passWithNoTests",
+    "check": "bun run --parallel type-check lint format test-run knip-warn",
+    "check-ci": "bun run --parallel type-check lint-check format-check test-run",
+    "check-pre-push": "bun run --parallel type-check lint format test-run knip-warn",
+    "knip": "KNIP_STRICT=1 knip --config knip.config.mjs",
+    "knip-warn": "knip --config knip.config.mjs || true"
   },
   "dependencies": {
     "@date-fns/tz": "^1.4.1",
@@ -88,7 +95,6 @@
   "devDependencies": {
     "@clack/prompts": "^1.7.0",
     "@maplibre/maplibre-gl-style-spec": "^24.8.5",
-    "@rolldown/plugin-babel": "^0.2.3",
     "@tailwindcss/vite": "^4.3.0",
     "@types/bun": "^1.3.13",
     "@types/geojson": "^7946.0.16",
@@ -97,15 +103,32 @@
     "@types/react": "^19.2.14",
     "@types/react-dom": "^19.2.3",
     "@vitejs/plugin-react": "^6.1.1",
-    "babel-plugin-react-compiler": "^1.0.0",
-    "bun-types": "^1.4.0",
+    "browserslist": "^4.28.8",
+    "browserslist-to-esbuild": "^2.1.1",
+    "eslint-plugin-compat": "^7.0.2",
     "husky": "^9.1.7",
     "knip": "^6.33.0",
+    "oxc-transform-react": "^0.145.0",
     "oxfmt": "^0.65.0",
     "oxlint": "^1.80.0",
+    "oxlint-tsgolint": "7.0.2001",
     "tailwindcss": "^4.3.0",
-    "typescript": "~6.0.3",
+    "typescript": "^7.0.2",
     "vite": "^8.2.2",
     "vitest": "^4.1.11"
-  }
+  },
+  "optionalDependencies": {
+    "@typescript/typescript-darwin-arm64": "7.0.2",
+    "@typescript/typescript-linux-x64": "7.0.2"
+  },
+  "browserslist": [
+    "> 1%",
+    "last 2 versions",
+    "not dead",
+    "not op_mini all",
+    "not kaios > 0"
+  ],
+  "trustedDependencies": [
+    "eslint-plugin-compat"
+  ]
 }

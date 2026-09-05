@@ -1,5 +1,5 @@
-import { validateStateRouteSearch } from './stateRouteSearch'
 import { describe, expect, it } from 'vitest'
+import { validateStateRouteSearch } from './stateRouteSearch'
 
 describe('validateStateRouteSearch ref facet parsing', () => {
   it('accepts lref=missing_possible_ref', () => {

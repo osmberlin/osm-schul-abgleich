@@ -1,5 +1,5 @@
-import { centroidFromOsmGeometry } from './osmGeometryCentroid'
 import { describe, expect, it } from 'vitest'
+import { centroidFromOsmGeometry } from './osmGeometryCentroid'
 
 describe('centroidFromOsmGeometry', () => {
   it('returns a point for any valid closed polygon (centroid-like, never null)', () => {

@@ -1,5 +1,8 @@
-/** @type {import('oxfmt').Oxfmtrc} */
-export default {
+import { defineConfig } from 'oxfmt'
+
+// FMC default — aligned with tilda-geo (single quotes) and trassenscout (ignore/build paths).
+// ignorePatterns: keep in sync with oxlint.config.mjs.
+export default defineConfig({
   useTabs: false,
   tabWidth: 2,
   printWidth: 100,
@@ -12,16 +15,21 @@ export default {
   bracketSameLine: false,
   bracketSpacing: true,
   endOfLine: 'lf',
-  // Biome only formatted source + config; never `public/`. Pipeline artifacts use minified
-  // `JSON.stringify` only — see `writeJson` in `scripts/lib/pipelineCommon.ts`.
-  ignorePatterns: ['public/**', 'dist/**', 'node_modules/**'],
-  sortPackageJson: true,
   sortImports: {
-    groups: ['import'],
     newlinesBetween: false,
   },
   sortTailwindcss: {
     stylesheet: 'src/index.css',
     functions: ['cn', 'clsx', 'twMerge', 'twJoin'],
   },
-}
+  sortPackageJson: true,
+  ignorePatterns: [
+    '.agents/**',
+    '.cursor/**',
+    '.output/**',
+    'dist/**',
+    'public/**',
+    'playwright-report/**',
+    'test-results/**',
+  ],
+})

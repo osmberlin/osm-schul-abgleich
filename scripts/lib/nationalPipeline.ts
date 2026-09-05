@@ -1,3 +1,9 @@
+import { createHash } from 'node:crypto'
+import { mkdir, rm } from 'node:fs/promises'
+import path from 'node:path'
+import { feature, featureCollection, point } from '@turf/helpers'
+import simplify from '@turf/simplify'
+import type { Feature, FeatureCollection, Geometry } from 'geojson'
 import { berlinCalendarDateKey } from '../../src/lib/berlinCalendarDateKey'
 import { promoteClosedLineStringsToPolygons } from '../../src/lib/osmClosedRingsToPolygons'
 import { centroidFromOsmGeometry } from '../../src/lib/osmGeometryCentroid'
@@ -48,12 +54,6 @@ import {
 import { jedeschuleUpstreamDatasetChanged } from './pipelineFreshness'
 import type { PipelineSourceMeta } from './pipelineMeta'
 import { writeGermanySchoolsMatchCsv } from './writeGermanySchoolsMatchCsv'
-import { feature, featureCollection, point } from '@turf/helpers'
-import simplify from '@turf/simplify'
-import type { Feature, FeatureCollection, Geometry } from 'geojson'
-import { createHash } from 'node:crypto'
-import { mkdir, rm } from 'node:fs/promises'
-import path from 'node:path'
 
 function envScopedJsonFileName(fileName: string): string {
   if (process.env.GITHUB_ACTIONS === 'true') return fileName
@@ -128,9 +128,12 @@ function roundFeatureGeometry(
 }
 
 function optimizeOfficialFeatureForUserOutput(f: Feature): Feature {
+  if (!f.geometry) return f
+  const geometry = roundFeatureGeometry(f.geometry, USER_FACING_COORD_DECIMALS)
+  if (!geometry) return f
   return {
     ...f,
-    geometry: roundFeatureGeometry(f.geometry, USER_FACING_COORD_DECIMALS),
+    geometry,
   }
 }
 
@@ -773,8 +776,14 @@ export async function runStateFirstPipeline(
       const id = String(f.id ?? (f.properties as { id?: unknown })?.id ?? '')
       if (!id) continue
       if (f.geometry?.type === 'Point') {
-        const [lon, lat] = f.geometry.coordinates
-        if (Number.isFinite(lon) && Number.isFinite(lat)) {
+        const lon = f.geometry.coordinates[0]
+        const lat = f.geometry.coordinates[1]
+        if (
+          lon !== undefined &&
+          lat !== undefined &&
+          Number.isFinite(lon) &&
+          Number.isFinite(lat)
+        ) {
           officialPointsById[id] = [
             roundToDecimals(lon, USER_FACING_COORD_DECIMALS),
             roundToDecimals(lat, USER_FACING_COORD_DECIMALS),

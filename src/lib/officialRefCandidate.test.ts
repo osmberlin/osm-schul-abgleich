@@ -1,5 +1,5 @@
-import { officialRefCandidateFromSchoolId } from './officialRefCandidate'
 import { describe, expect, it } from 'vitest'
+import { officialRefCandidateFromSchoolId } from './officialRefCandidate'
 
 describe('officialRefCandidateFromSchoolId', () => {
   it('extracts ref candidate from regular two-part ids', () => {

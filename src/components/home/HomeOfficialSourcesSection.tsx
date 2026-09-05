@@ -1,3 +1,7 @@
+import { ScaleIcon } from '@heroicons/react/20/solid'
+import { Link } from '@tanstack/react-router'
+import { format, isValid, parseISO } from 'date-fns'
+import { de as deLocale } from 'date-fns/locale/de'
 import { de } from '../../i18n/de'
 import {
   BUNDESLAND_OFFICIAL_SOURCES,
@@ -10,10 +14,6 @@ import {
 } from '../../lib/githubRepo'
 import { InlineMarkdown } from '../../lib/InlineMarkdown'
 import { STATE_LABEL_DE, STATE_ORDER } from '../../lib/stateConfig'
-import { ScaleIcon } from '@heroicons/react/20/solid'
-import { Link } from '@tanstack/react-router'
-import { format, isValid, parseISO } from 'date-fns'
-import { de as deLocale } from 'date-fns/locale/de'
 
 const OSM_COMPAT_LEGEND_BASE_ORDER = ['unknown', 'no'] as const
 

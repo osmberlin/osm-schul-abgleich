@@ -1,6 +1,6 @@
+import { describe, expect, it } from 'vitest'
 import { germanyHistoryFromRuns } from './matchHistoryFromRuns'
 import { STATE_ORDER } from './stateConfig'
-import { describe, expect, it } from 'vitest'
 
 function fullNationalRun(finishedAt: string, matchedPerState: number) {
   const states = STATE_ORDER.map((code) => ({

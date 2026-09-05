@@ -1,10 +1,10 @@
+import { readFileSync } from 'node:fs'
+import path from 'node:path'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import {
   resetBundeslandBoundariesClientCache,
   resolveStateCodeForLonLat,
 } from '../../src/lib/stateCodeForLonLatFromBoundaries'
-import { readFileSync } from 'node:fs'
-import path from 'node:path'
-import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
 const PROJECT_ROOT = path.join(import.meta.dirname, '../..')
 

@@ -1,6 +1,6 @@
+import { describe, expect, it } from 'vitest'
 import { parseIndexRouteMapSearch, validateIndexRouteSearch } from './indexRouteSearch'
 import { serializeOsmStyleMapSearchParam } from './osmStyleMapQueryParam'
-import { describe, expect, it } from 'vitest'
 
 describe('parseIndexRouteMapSearch', () => {
   it('matches triple implied by validateIndexRouteSearch', () => {

@@ -1,3 +1,5 @@
+import { mkdir } from 'node:fs/promises'
+import path from 'node:path'
 import { osmCompatibleStateCodes } from '../../src/lib/maprouletteAvailability'
 import { maprouletteSchoolCreatesPublicUrl } from '../../src/lib/maprouletteIds.const'
 import { buildMaprouletteCreateSchoolTaskMarkdown } from '../../src/lib/maprouletteTaskMarkdown'
@@ -7,8 +9,6 @@ import type { StateCode } from '../../src/lib/stateConfig'
 import { parseJedeschuleLonLatFromRecord } from '../../src/lib/zodGeo'
 import { officialPointsMapSchema } from './applyOfficialGeocodeOverlay'
 import { datasetsDir, writeJson } from './pipelineCommon'
-import { mkdir } from 'node:fs/promises'
-import path from 'node:path'
 
 const RS = String.fromCharCode(0x1e)
 

@@ -1,4 +1,6 @@
 #!/usr/bin/env bun
+import { writeFile } from 'node:fs/promises'
+import path from 'node:path'
 import {
   filterJedeschuleSchoolsByRecency,
   parseSchoolsFromCsvText,
@@ -13,8 +15,6 @@ import {
   type StateCode,
 } from '../../src/lib/stateConfig'
 import { hasHouseNumber } from './nominatimResultFilter'
-import { writeFile } from 'node:fs/promises'
-import path from 'node:path'
 
 const ROOT = path.join(import.meta.dirname, '../..')
 const OUT_PATH = path.join(import.meta.dirname, 'address-audit.md')
@@ -120,9 +120,9 @@ async function main() {
       ? `Schleswig-Holstein: ${sh.streetWithoutDigit} of ${sh.noGeo} no-geo rows (${pct(sh.streetWithoutDigit, sh.noGeo)}) have a street without a house number. Structured Nominatim \`street=\` is a poor query for those rows.`
       : 'Schleswig-Holstein: most no-geo street lines include a digit (house number).'
 
-  const ready: string[] = []
-  const notReady: string[] = []
-  const alreadyGeocoded: string[] = []
+  const ready: StateCode[] = []
+  const notReady: StateCode[] = []
+  const alreadyGeocoded: StateCode[] = []
   for (const code of STATE_ORDER) {
     const row = perState.get(code)!
     if (row.noGeo === 0) {

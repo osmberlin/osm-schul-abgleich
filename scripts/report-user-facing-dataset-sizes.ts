@@ -1,9 +1,9 @@
+import path from 'node:path'
 import {
   collectPerLandUserFacingDatasets,
   formatMiB,
   type DatasetTotals,
 } from './lib/userFacingDatasetSizes'
-import path from 'node:path'
 
 type TotalsCompat = DatasetTotals & {
   total_bytes?: number
@@ -57,12 +57,12 @@ async function main() {
   console.log('')
   console.log('By file type:')
   for (const k of Object.keys(current.byFile).sort()) {
-    console.log(`- ${k}: ${formatMiB(current.byFile[k])}`)
+    console.log(`- ${k}: ${formatMiB(current.byFile[k] ?? 0)}`)
   }
   console.log('')
   console.log('By extension:')
   for (const k of Object.keys(current.byExt).sort()) {
-    console.log(`- ${k}: ${formatMiB(current.byExt[k])}`)
+    console.log(`- ${k}: ${formatMiB(current.byExt[k] ?? 0)}`)
   }
 
   if (baseline) {
@@ -71,7 +71,7 @@ async function main() {
     console.log(deltaLine('total', current.totalBytes, baseline.totalBytes))
     for (const k of Object.keys(current.byFile).sort()) {
       const base = baseline.byFile[k] ?? 0
-      console.log(deltaLine(k, current.byFile[k], base))
+      console.log(deltaLine(k, current.byFile[k] ?? 0, base))
     }
   }
 

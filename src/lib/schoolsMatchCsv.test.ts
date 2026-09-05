@@ -1,3 +1,6 @@
+import { parse } from 'csv-parse/sync'
+import { describe, expect, it } from 'vitest'
+import { z } from 'zod'
 import { GITHUB_PAGES_SITE_ROOT } from './githubRepo'
 import type { SchoolsMatchRow } from './schemas'
 import { schoolsMatchRowSchema } from './schemas'
@@ -7,9 +10,6 @@ import {
   stringifySchoolsMatchCsv,
   stringifySchoolsMatchCsvBatches,
 } from './schoolsMatchCsv'
-import { parse } from 'csv-parse/sync'
-import { describe, expect, it } from 'vitest'
-import { z } from 'zod'
 
 function parseRow(overrides: Record<string, unknown>): SchoolsMatchRow {
   return schoolsMatchRowSchema.parse({

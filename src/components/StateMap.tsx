@@ -1,3 +1,16 @@
+import type { CircleLayerSpecification } from '@maplibre/maplibre-gl-style-spec'
+import bbox from '@turf/bbox'
+import type { Feature, FeatureCollection, MultiPolygon, Polygon } from 'geojson'
+import type { FilterSpecification } from 'maplibre-gl'
+import { useState } from 'react'
+import 'maplibre-gl/dist/maplibre-gl.css'
+import MapGL, {
+  Layer,
+  type MapEvent,
+  type MapLayerMouseEvent,
+  type ViewStateChangeEvent,
+  Source,
+} from 'react-map-gl/maplibre'
 import { de } from '../i18n/de'
 import { boundsToBboxParam } from '../lib/mapBounds'
 import {
@@ -16,25 +29,12 @@ import {
   flatMapGlProps,
   OPENFREEMAP_STYLE,
 } from '../lib/openFreeMapStyle'
-import 'maplibre-gl/dist/maplibre-gl.css'
 import type { OsmStyleMapTriple } from '../lib/osmStyleMapQueryParam'
 import { type StateCode, STATE_BOUNDS, STATE_MAP_CENTER } from '../lib/stateConfig'
 import { STATE_MATCH_CATEGORIES, type StateMatchCategory } from '../lib/stateMatchCategories'
 import type { StateMapBbox } from '../lib/useStateMapBbox'
 import { MapPointHoverPanel } from './MapPointHoverPanel'
 import { StateMapBboxToolbar } from './StateMapBboxToolbar'
-import type { CircleLayerSpecification } from '@maplibre/maplibre-gl-style-spec'
-import bbox from '@turf/bbox'
-import type { Feature, FeatureCollection, MultiPolygon, Polygon } from 'geojson'
-import type { FilterSpecification } from 'maplibre-gl'
-import { useState } from 'react'
-import MapGL, {
-  Layer,
-  type MapEvent,
-  type MapLayerMouseEvent,
-  type ViewStateChangeEvent,
-  Source,
-} from 'react-map-gl/maplibre'
 
 const FIT_PADDING = 48
 const FIT_MAX_ZOOM = 16

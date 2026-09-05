@@ -1,13 +1,15 @@
-# FMC-style Dependabot config — see FixMyBerlin/fixmyskills skills/tech-stack/references/dependabot.md
+# FMC Dependabot defaults — https://github.com/FixMyBerlin/fixmyskills (skills/tech-stack)
+# Schedule: first Friday of each month at 07:00 Europe/Berlin (cron FRI#1).
+# Private-OSS / osmberlin cadence (same as osm-boundary-checker-germany), not FixMyCity weekly Monday.
+# Keep groups, cooldown, and open-pull-requests-limit: 1 from the template.
 version: 2
 updates:
   - package-ecosystem: bun
     directories:
       - /
     schedule:
-      interval: weekly
-      day: monday
-      time: '07:00'
+      interval: cron
+      cronjob: '0 7 * * FRI#1'
       timezone: Europe/Berlin
     cooldown:
       default-days: 5
@@ -29,6 +31,7 @@ updates:
           - '@types/*'
           - 'typescript'
           - '@typescript/typescript-*'
+          - 'eslint*'
 
       shared-monorepo-tools:
         applies-to: version-updates
@@ -46,6 +49,7 @@ updates:
           - '@total-typescript/*'
           - '@vitejs/*'
           - 'babel-plugin-*'
+          - 'eslint-*'
           - 'husky'
           - 'knip'
           - 'oxfmt'
@@ -55,6 +59,9 @@ updates:
           - '@types/*'
           - 'typescript'
           - '@typescript/typescript-*'
+          - 'browserslist'
+          - 'browserslist-to-esbuild'
+          - 'eslint-plugin-compat'
         update-types:
           - minor
           - patch
@@ -96,9 +103,8 @@ updates:
   - package-ecosystem: github-actions
     directory: /
     schedule:
-      interval: weekly
-      day: monday
-      time: '07:00'
+      interval: cron
+      cronjob: '0 7 * * FRI#1'
       timezone: Europe/Berlin
     cooldown:
       default-days: 5

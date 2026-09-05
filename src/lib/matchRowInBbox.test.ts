@@ -1,3 +1,5 @@
+import type { FeatureCollection } from 'geojson'
+import { describe, expect, it } from 'vitest'
 import {
   buildOfficialSchoolLonLatIndex,
   filterOtherSchoolPointsForDetailMap,
@@ -7,8 +9,6 @@ import {
   spreadOtherSchoolPointsAvoidingDetailPoints,
 } from './matchRowInBbox'
 import { schoolsMatchRowSchema } from './schemas'
-import type { FeatureCollection } from 'geojson'
-import { describe, expect, it } from 'vitest'
 
 describe('matchRowMapLonLat', () => {
   it('uses official GeoJSON when match row has no OSM centroid and no lat/lon on officialProperties', () => {
@@ -89,7 +89,7 @@ describe('spreadCoincidentMapPointFeatures', () => {
     }
     const out = spreadCoincidentMapPointFeatures([f])
     expect(out).toHaveLength(1)
-    expect(out[0].geometry).toMatchObject({ type: 'Point', coordinates: [10, 50] })
+    expect(out[0]!.geometry).toMatchObject({ type: 'Point', coordinates: [10, 50] })
   })
 })
 
@@ -107,7 +107,7 @@ describe('spreadOtherSchoolPointsAvoidingDetailPoints', () => {
     }
     const out = spreadOtherSchoolPointsAvoidingDetailPoints([detail], [other])
     expect(out).toHaveLength(1)
-    const c = (out[0].geometry as { type: 'Point'; coordinates: [number, number] }).coordinates
+    const c = (out[0]!.geometry as { type: 'Point'; coordinates: [number, number] }).coordinates
     const moved = c[0] !== 7 || c[1] !== 51
     expect(moved).toBe(true)
   })
@@ -125,7 +125,7 @@ describe('spreadOtherSchoolPointsAvoidingDetailPoints', () => {
     }
     const out = spreadOtherSchoolPointsAvoidingDetailPoints([detailCentroid], [other])
     expect(out).toHaveLength(1)
-    const c = (out[0].geometry as { type: 'Point'; coordinates: [number, number] }).coordinates
+    const c = (out[0]!.geometry as { type: 'Point'; coordinates: [number, number] }).coordinates
     expect(c).toEqual([7, 51])
   })
 })

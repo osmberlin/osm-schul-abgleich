@@ -1,3 +1,6 @@
+import { existsSync, readFileSync } from 'node:fs'
+import path from 'node:path'
+import { describe, expect, it } from 'vitest'
 import { BUNDESLAND_OFFICIAL_SOURCES } from '../../src/lib/bundeslandOfficialSources'
 import { isOsmLicenceCompatibleForTagFix } from '../../src/lib/maprouletteAvailability'
 import {
@@ -6,9 +9,6 @@ import {
 } from '../../src/lib/osmHeuristicOfficialAgreement'
 import { schoolsMatchRowSchema } from '../../src/lib/schemas'
 import { STATE_ORDER } from '../../src/lib/stateConfig'
-import { existsSync, readFileSync } from 'node:fs'
-import path from 'node:path'
-import { describe, expect, it } from 'vitest'
 
 const ROOT = path.join(import.meta.dirname, '../..')
 

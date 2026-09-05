@@ -1,7 +1,7 @@
-import { cn } from './cn'
 import { TZDate } from '@date-fns/tz'
 import { format, formatDistanceToNow, isValid } from 'date-fns'
 import { de as deLocale } from 'date-fns/locale/de'
+import { cn } from './cn'
 
 const BERLIN = 'Europe/Berlin'
 

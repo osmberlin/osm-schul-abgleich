@@ -1,6 +1,6 @@
+import type { Feature, FeatureCollection, Point } from 'geojson'
 import { officialStateCode } from '../../src/lib/stateConfig'
 import { stateCodeForPoint } from './bundeslandBoundaries'
-import type { Feature, FeatureCollection, Point } from 'geojson'
 
 export type ErrorOutsideBoundary = {
   latitude: number
@@ -41,7 +41,7 @@ export function voidOfficialPointOutsideDeclaredState(f: Feature): Feature {
       ...baseProps,
       _error_outside_boundary: err,
     },
-  }
+  } as unknown as Feature
 }
 
 export function gateOfficialFeatureCollection(fc: FeatureCollection): FeatureCollection {

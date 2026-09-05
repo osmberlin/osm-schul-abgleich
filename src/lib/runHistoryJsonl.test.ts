@@ -1,3 +1,4 @@
+import { describe, expect, it } from 'vitest'
 import {
   compareRunRecordsStable,
   parseRunHistoryFileText,
@@ -7,7 +8,6 @@ import {
   sortRunRecordsStable,
   stringifyRunHistoryJsonl,
 } from './runHistoryJsonl'
-import { describe, expect, it } from 'vitest'
 
 function run(startedAt: string, finishedAt: string, tag: string) {
   return { startedAt, finishedAt, durationMs: 1, tag }

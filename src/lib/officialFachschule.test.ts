@@ -1,8 +1,8 @@
+import { describe, expect, it } from 'vitest'
 import {
   officialEligibleForCollegeOsmMatch,
   schoolTypeStringIndicatesFachschule,
 } from './officialFachschule'
-import { describe, expect, it } from 'vitest'
 
 describe('schoolTypeStringIndicatesFachschule', () => {
   it('matches Fachschule as a substring of school_type', () => {

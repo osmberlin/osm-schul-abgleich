@@ -1,8 +1,8 @@
+import type { ReactNode } from 'react'
 import { de } from '../../i18n/de'
 import { JEDESCHULE_DUPLICATE_GROUP_SIZE_KEY } from '../../lib/jedeschuleDuplicateGroup'
 import { comparePropertySections } from '../../lib/propertyCompare'
 import type { PropertyCompareGroup } from '../../lib/propertyCompare'
-import type { ReactNode } from 'react'
 
 type TechnicalAttributes = {
   lat?: unknown

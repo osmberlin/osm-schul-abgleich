@@ -1,6 +1,6 @@
-import { cn } from '../lib/cn'
 import { Dialog, DialogBackdrop, DialogPanel } from '@headlessui/react'
 import type { MutableRefObject, ReactNode } from 'react'
+import { cn } from '../lib/cn'
 
 const backdropClass =
   'fixed inset-0 bg-zinc-950/80 transition-opacity data-closed:opacity-0 data-enter:duration-200 data-enter:ease-out data-leave:duration-150 data-leave:ease-in'

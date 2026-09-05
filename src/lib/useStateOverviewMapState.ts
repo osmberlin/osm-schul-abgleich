@@ -1,3 +1,4 @@
+import { useNavigate } from '@tanstack/react-router'
 import type { OsmStyleMapTriple } from './osmStyleMapQueryParam'
 import {
   parseOsmStyleMapSearchParam,
@@ -9,7 +10,6 @@ import {
   serializeStateMapBboxSearchParam,
   type StateMapBbox,
 } from './useStateMapBbox'
-import { useNavigate } from '@tanstack/react-router'
 
 /**
  * Bundesland map URL state:

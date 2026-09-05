@@ -1,3 +1,4 @@
+import { describe, expect, it } from 'vitest'
 import {
   normalizeAddressMatchKey,
   normalizeForFachschuleCollegeMatch,
@@ -15,7 +16,6 @@ import {
   type MatchSchoolsOptions,
   type OsmSchoolInput,
 } from './match'
-import { describe, expect, it } from 'vitest'
 
 function landOpts(osm: OsmSchoolInput, land: StateCode): { osmStateByKey: Map<string, StateCode> } {
   return { osmStateByKey: new Map([[`${osm.osmType}/${osm.osmId}`, land]]) }
@@ -84,11 +84,11 @@ describe('matchSchools', () => {
     )
     const m = rows.filter((r) => r.category === 'matched')
     expect(m).toHaveLength(1)
-    expect(m[0].officialId).toBe('BE-a')
-    expect(m[0].matchMode).toBe('distance')
-    expect(m[0].matchedByOsmNameNormalized).toBeUndefined()
-    expect(m[0].osmCentroidLon).toBe(13.4)
-    expect(m[0].osmCentroidLat).toBe(52.52)
+    expect(m[0]!.officialId).toBe('BE-a')
+    expect(m[0]!.matchMode).toBe('distance')
+    expect(m[0]!.matchedByOsmNameNormalized).toBeUndefined()
+    expect(m[0]!.osmCentroidLon).toBe(13.4)
+    expect(m[0]!.osmCentroidLat).toBe(52.52)
     expect(rows.some((r) => r.category === 'official_only' && r.officialId === 'BE-b')).toBe(true)
     expect(officialNoCoordCount).toBe(0)
   })
@@ -117,11 +117,11 @@ describe('matchSchools', () => {
     const { rows } = matchSchools([off], [osmRel], landOpts(osmRel, 'BE'))
     const m = rows.filter((r) => r.category === 'matched')
     expect(m).toHaveLength(1)
-    expect(m[0].officialId).toBe('BE-07K12')
-    expect(m[0].matchMode).toBe('ref')
-    expect(m[0].osmType).toBe('relation')
-    expect(m[0].osmId).toBe('17475927')
-    expect(m[0].matchedByRefNormalized).toBe('07K12')
+    expect(m[0]!.officialId).toBe('BE-07K12')
+    expect(m[0]!.matchMode).toBe('ref')
+    expect(m[0]!.osmType).toBe('relation')
+    expect(m[0]!.osmId).toBe('17475927')
+    expect(m[0]!.matchedByRefNormalized).toBe('07K12')
   })
 
   it('matches OSM ref against the last segment of multi-dash official ids', () => {
@@ -147,8 +147,8 @@ describe('matchSchools', () => {
     const { rows } = matchSchools([off], [osmRel], landOpts(osmRel, 'BE'))
     const m = rows.filter((r) => r.category === 'matched')
     expect(m).toHaveLength(1)
-    expect(m[0].officialId).toBe('BE-XX-03P11')
-    expect(m[0].matchMode).toBe('ref')
+    expect(m[0]!.officialId).toBe('BE-XX-03P11')
+    expect(m[0]!.matchMode).toBe('ref')
   })
 
   it('keeps ref matching priority before distance+name matches', () => {
@@ -181,8 +181,8 @@ describe('matchSchools', () => {
     const { rows } = matchSchools([byRef, byName], [osm], landOpts(osm, 'BE'))
     const matched = rows.filter((r) => r.category === 'matched')
     expect(matched).toHaveLength(1)
-    expect(matched[0].officialId).toBe('BE-XX-03P11')
-    expect(matched[0].matchMode).toBe('ref')
+    expect(matched[0]!.officialId).toBe('BE-XX-03P11')
+    expect(matched[0]!.matchMode).toBe('ref')
   })
 
   it('keeps radius at 150m but allows later statewide fallback', () => {
@@ -194,9 +194,9 @@ describe('matchSchools', () => {
     const { rows } = matchSchools(officials, [far], landOpts(far, 'BE'))
     const m = rows.filter((r) => r.category === 'matched')
     expect(m).toHaveLength(1)
-    expect(m[0].officialId).toBe('BE-a')
-    expect(m[0].matchMode).toBe('name')
-    expect(m[0].distanceMeters).toBeNull()
+    expect(m[0]!.officialId).toBe('BE-a')
+    expect(m[0]!.matchMode).toBe('name')
+    expect(m[0]!.distanceMeters).toBeNull()
     expect(MATCH_RADIUS_KM).toBe(0.15)
   })
 
@@ -209,7 +209,7 @@ describe('matchSchools', () => {
     const { rows } = matchSchools(mixed, [osmNear], { osmStateByKey })
     const m = rows.filter((r) => r.category === 'matched')
     expect(m).toHaveLength(1)
-    expect(m[0].officialId).toBe('BE-x')
+    expect(m[0]!.officialId).toBe('BE-x')
     expect(rows.some((r) => r.category === 'match_ambiguous')).toBe(false)
   })
 
@@ -234,12 +234,12 @@ describe('matchSchools', () => {
     const { rows } = matchSchools(twoNear, [osmNear], landOpts(osmNear, 'BE'))
     const amb = rows.filter((r) => r.category === 'match_ambiguous')
     expect(amb).toHaveLength(1)
-    expect(amb[0].officialId).toBeNull()
-    expect(amb[0].ambiguousOfficialIds?.sort()).toEqual(['BE-x', 'BE-y'].sort())
-    const snaps = amb[0].ambiguousOfficialSnapshots
+    expect(amb[0]!.officialId).toBeNull()
+    expect(amb[0]!.ambiguousOfficialIds?.sort()).toEqual(['BE-x', 'BE-y'].sort())
+    const snaps = amb[0]!.ambiguousOfficialSnapshots
     expect(snaps?.map((s) => s.id).sort()).toEqual(['BE-x', 'BE-y'].sort())
     expect(snaps?.find((s) => s.id === 'BE-x')?.name).toBe('Alpha Schule')
-    expect(amb[0].osmId).toBe('1')
+    expect(amb[0]!.osmId).toBe('1')
   })
 
   it('resolves by unique normalized name when several officials are in radius', () => {
@@ -275,10 +275,10 @@ describe('matchSchools', () => {
     expect(rows.filter((r) => r.category === 'match_ambiguous')).toHaveLength(0)
     const m = rows.filter((r) => r.category === 'matched')
     expect(m).toHaveLength(1)
-    expect(m[0].officialId).toBe('BE-x')
-    expect(m[0].matchMode).toBe('distance_and_name')
-    expect(m[0].matchedByOsmNameNormalized).toBe('alpha schule')
-    expect(m[0].matchedByOsmNameTag).toBe('name')
+    expect(m[0]!.officialId).toBe('BE-x')
+    expect(m[0]!.matchMode).toBe('distance_and_name')
+    expect(m[0]!.matchedByOsmNameNormalized).toBe('alpha schule')
+    expect(m[0]!.matchedByOsmNameTag).toBe('name')
     expect(rows.some((r) => r.category === 'official_only' && r.officialId === 'BE-y')).toBe(true)
   })
 
@@ -410,8 +410,8 @@ describe('matchSchools', () => {
     const { rows } = matchSchools(twoSameName, [osm], landOpts(osm, 'BE'))
     const amb = rows.filter((r) => r.category === 'match_ambiguous')
     expect(amb).toHaveLength(1)
-    expect(amb[0].ambiguousOfficialIds?.sort()).toEqual(['BE-x', 'BE-y'].sort())
-    expect(amb[0].ambiguousOfficialSnapshots?.map((s) => s.id).sort()).toEqual(
+    expect(amb[0]!.ambiguousOfficialIds?.sort()).toEqual(['BE-x', 'BE-y'].sort())
+    expect(amb[0]!.ambiguousOfficialSnapshots?.map((s) => s.id).sort()).toEqual(
       ['BE-x', 'BE-y'].sort(),
     )
   })
@@ -442,12 +442,12 @@ describe('matchSchools', () => {
     const { rows } = matchSchools(twoNear, [osm], landOpts(osm, 'BE'))
     const m = rows.filter((r) => r.category === 'matched')
     expect(m).toHaveLength(1)
-    expect(m[0].officialId).toBe('DE-x')
-    expect(m[0].matchMode).toBe('distance_and_name')
-    expect(m[0].matchedByOsmNameNormalized).toBe(
+    expect(m[0]!.officialId).toBe('DE-x')
+    expect(m[0]!.matchMode).toBe('distance_and_name')
+    expect(m[0]!.matchedByOsmNameNormalized).toBe(
       normalizeSchoolNameForMatch('Grundschule Grün (Standort Nord)'),
     )
-    expect(m[0].matchedByOsmNameTag).toBe('name')
+    expect(m[0]!.matchedByOsmNameTag).toBe('name')
     expect(rows.some((r) => r.category === 'official_only' && r.officialId === 'DE-y')).toBe(true)
   })
 
@@ -480,9 +480,9 @@ describe('matchSchools', () => {
     const { rows } = matchSchools(twoNear, [osm], landOpts(osm, 'BE'))
     const m = rows.filter((r) => r.category === 'matched')
     expect(m).toHaveLength(1)
-    expect(m[0].officialId).toBe('BE-x')
-    expect(m[0].matchMode).toBe('distance_and_name')
-    expect(m[0].matchedByOsmNameTag).toBe('official_name')
+    expect(m[0]!.officialId).toBe('BE-x')
+    expect(m[0]!.matchMode).toBe('distance_and_name')
+    expect(m[0]!.matchedByOsmNameTag).toBe('official_name')
   })
 
   it('prefers official_name over name when both normalize the same', () => {
@@ -514,7 +514,7 @@ describe('matchSchools', () => {
     }
     const { rows } = matchSchools(twoNear, [osm], landOpts(osm, 'BE'))
     const m = rows.filter((r) => r.category === 'matched')
-    expect(m[0].matchedByOsmNameTag).toBe('official_name')
+    expect(m[0]!.matchedByOsmNameTag).toBe('official_name')
   })
 
   it('matches no-coord official by unique normalized name against osm_only', () => {
@@ -541,11 +541,11 @@ describe('matchSchools', () => {
     )
     const m = rows.filter((r) => r.category === 'matched')
     expect(m).toHaveLength(1)
-    expect(m[0].officialId).toBe('NI-no-1')
-    expect(m[0].matchMode).toBe('name')
-    expect(m[0].distanceMeters).toBeNull()
-    expect(m[0].matchedByOsmNameNormalized).toBe(normalizeSchoolNameForMatch('Neue Schule Mitte'))
-    expect(m[0].matchedByOsmNameTag).toBe('name')
+    expect(m[0]!.officialId).toBe('NI-no-1')
+    expect(m[0]!.matchMode).toBe('name')
+    expect(m[0]!.distanceMeters).toBeNull()
+    expect(m[0]!.matchedByOsmNameNormalized).toBe(normalizeSchoolNameForMatch('Neue Schule Mitte'))
+    expect(m[0]!.matchedByOsmNameTag).toBe('name')
     expect(rows.some((r) => r.category === 'osm_only')).toBe(false)
     expect(officialNoCoordCount).toBe(0)
   })
@@ -574,8 +574,8 @@ describe('matchSchools', () => {
     )
     const m = rows.filter((r) => r.category === 'matched')
     expect(m).toHaveLength(1)
-    expect(m[0].matchMode).toBe('name')
-    expect(m[0].matchedByOsmNameTag).toBe('official_name')
+    expect(m[0]!.matchMode).toBe('name')
+    expect(m[0]!.matchedByOsmNameTag).toBe('official_name')
     expect(officialNoCoordCount).toBe(0)
   })
 
@@ -599,8 +599,8 @@ describe('matchSchools', () => {
     const { rows } = matchSchools(withCoordOfficial, [osmOnly], landOpts(osmOnly, 'BW'))
     const m = rows.filter((r) => r.category === 'matched')
     expect(m).toHaveLength(1)
-    expect(m[0].officialId).toBe('BW-04105752')
-    expect(m[0].matchMode).toBe('name')
+    expect(m[0]!.officialId).toBe('BW-04105752')
+    expect(m[0]!.matchMode).toBe('name')
     expect(rows.some((r) => r.category === 'official_only' && r.officialId === 'BW-04105752')).toBe(
       false,
     )
@@ -637,7 +637,7 @@ describe('matchSchools', () => {
     })
     const m = rows.filter((r) => r.category === 'matched')
     expect(m).toHaveLength(1)
-    expect(m[0].officialId).toBe('BE-no-1')
+    expect(m[0]!.officialId).toBe('BE-no-1')
     expect(officialNoCoordCount).toBe(1)
   })
 
@@ -762,9 +762,9 @@ describe('matchSchools', () => {
     const { rows } = matchSchools(officialsNoCoord, [osmOnly], landOpts(osmOnly, 'NI'))
     const m = rows.filter((r) => r.category === 'matched')
     expect(m).toHaveLength(1)
-    expect(m[0].matchMode).toBe('website')
-    expect(m[0].officialId).toBe('NI-web-1')
-    expect(m[0].matchedByWebsiteNormalized).toBe(normalizeWebsiteMatchKey('schule.example.org/'))
+    expect(m[0]!.matchMode).toBe('website')
+    expect(m[0]!.officialId).toBe('NI-web-1')
+    expect(m[0]!.matchedByWebsiteNormalized).toBe(normalizeWebsiteMatchKey('schule.example.org/'))
   })
 
   it('keeps website fallback land-local and leaves osm_only otherwise', () => {
@@ -841,9 +841,9 @@ describe('matchSchools', () => {
     const { rows } = matchSchools(officialsNoCoord, [osmOnly], landOpts(osmOnly, 'NI'))
     const m = rows.filter((r) => r.category === 'matched')
     expect(m).toHaveLength(1)
-    expect(m[0].officialId).toBe('NI-addr-1')
-    expect(m[0].matchMode).toBe('address')
-    expect(m[0].matchedByAddressNormalized).toBe(normalizeAddressMatchKey('Hauptstr. 7'))
+    expect(m[0]!.officialId).toBe('NI-addr-1')
+    expect(m[0]!.matchMode).toBe('address')
+    expect(m[0]!.matchedByAddressNormalized).toBe(normalizeAddressMatchKey('Hauptstr. 7'))
   })
 
   it('marks address fallback ambiguous when multiple no-coord officials share normalized address', () => {

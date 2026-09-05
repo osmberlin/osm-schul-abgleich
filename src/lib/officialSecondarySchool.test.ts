@@ -1,8 +1,8 @@
+import { describe, expect, it } from 'vitest'
 import {
   isOfficialSecondarySchoolKind,
   resolveSecondarySchoolKindFromSchoolType,
 } from './officialSecondarySchool'
-import { describe, expect, it } from 'vitest'
 
 describe('resolveSecondarySchoolKindFromSchoolType', () => {
   it('resolves gymnasium by substring', () => {

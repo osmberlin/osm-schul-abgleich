@@ -1,5 +1,5 @@
-import { stateSchuleRouteApi } from './stateRouteApi'
 import { useNavigate } from '@tanstack/react-router'
+import { stateSchuleRouteApi } from './stateRouteApi'
 
 /** URL-synced toggle for Bundesland mask on detail map (`?mask=0` to hide). */
 export function useDetailMapMask() {

@@ -1,8 +1,8 @@
+import { describe, expect, it } from 'vitest'
 import {
   buildMaprouletteCreateSchoolTask,
   maprouletteCreateTaskPointLonLat,
 } from '../../scripts/lib/maprouletteSchoolCreates'
-import { describe, expect, it } from 'vitest'
 
 describe('maprouletteCreateTaskPointLonLat', () => {
   it('prefers official points map over property lat/lon', () => {
@@ -57,13 +57,13 @@ describe('buildMaprouletteCreateSchoolTask', () => {
     expect(task).not.toBeNull()
     if (!task) return
 
-    expect(task.features[0].id).toBe('official-BE-03P11')
-    expect(task.features[0].properties.id).toBe('official-BE-03P11')
-    expect(task.features[0].properties.priority).toBe('prio1')
-    expect(task.features[0].geometry.coordinates).toEqual([13.4, 52.5])
-    expect(task.features[0].properties.task_markdown).toContain('amenity=school')
-    expect(task.features[0].properties.task_markdown).toContain('school=primary')
-    expect(task.features[0].properties.task_markdown).toContain(' \n')
+    expect(task.features[0]!.id).toBe('official-BE-03P11')
+    expect(task.features[0]!.properties.id).toBe('official-BE-03P11')
+    expect(task.features[0]!.properties.priority).toBe('prio1')
+    expect(task.features[0]!.geometry.coordinates).toEqual([13.4, 52.5])
+    expect(task.features[0]!.properties.task_markdown).toContain('amenity=school')
+    expect(task.features[0]!.properties.task_markdown).toContain('school=primary')
+    expect(task.features[0]!.properties.task_markdown).toContain(' \n')
     expect(task).not.toHaveProperty('cooperativeWork')
   })
 

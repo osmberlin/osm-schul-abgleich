@@ -1,5 +1,5 @@
-import { de } from '../i18n/de'
 import { Link } from '@tanstack/react-router'
+import { de } from '../i18n/de'
 
 export function NotFoundPage() {
   return (

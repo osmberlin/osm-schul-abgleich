@@ -1,5 +1,5 @@
-import { pickMaprouletteTagFixTaskFromRow } from './maprouletteTagFixFeed'
 import { describe, expect, it } from 'vitest'
+import { pickMaprouletteTagFixTaskFromRow } from './maprouletteTagFixFeed'
 
 describe('pickMaprouletteTagFixTaskFromRow', () => {
   const base = {
@@ -24,8 +24,8 @@ describe('pickMaprouletteTagFixTaskFromRow', () => {
       osmTags: { amenity: 'school', name: 'Peter-Pan-Grundschule' },
     })
     expect(task).not.toBeNull()
-    expect(task?.features[0].properties.task_markdown).toContain('amtlichen Daten')
-    expect(task?.cooperativeWork.operations[0].data.operations[0].data.ref).toBe('03P11')
+    expect(task?.features[0]!.properties.task_markdown).toContain('amtlichen Daten')
+    expect(task?.cooperativeWork.operations[0]!.data.operations[0]!.data.ref).toBe('03P11')
   })
 
   it('uses OSM-only for osm_only rows even in a licence-OK Land', () => {
@@ -40,8 +40,8 @@ describe('pickMaprouletteTagFixTaskFromRow', () => {
       osmTags: { amenity: 'school', name: 'Peter-Pan-Grundschule' },
     })
     expect(task).not.toBeNull()
-    expect(task?.features[0].properties.task_markdown).toContain('nicht aus amtlichen')
-    expect(task?.cooperativeWork.operations[0].data.operations[0].data.ref).toBeUndefined()
+    expect(task?.features[0]!.properties.task_markdown).toContain('nicht aus amtlichen')
+    expect(task?.cooperativeWork.operations[0]!.data.operations[0]!.data.ref).toBeUndefined()
   })
 
   it('returns null when neither source has pending tags', () => {
@@ -73,7 +73,7 @@ describe('pickMaprouletteTagFixTaskFromRow', () => {
       osmTags: { amenity: 'school', name: 'Peter-Pan-Grundschule' },
     })
     expect(task).not.toBeNull()
-    expect(task?.features[0].properties.task_markdown).toContain('nicht aus amtlichen')
-    expect(task?.cooperativeWork.operations[0].data.operations[0].data.ref).toBeUndefined()
+    expect(task?.features[0]!.properties.task_markdown).toContain('nicht aus amtlichen')
+    expect(task?.cooperativeWork.operations[0]!.data.operations[0]!.data.ref).toBeUndefined()
   })
 })

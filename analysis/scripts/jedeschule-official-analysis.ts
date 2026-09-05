@@ -1,8 +1,4 @@
 #!/usr/bin/env bun
-import { parseSchoolsFromCsvText } from '../../scripts/lib/jedeschuleCsv'
-import { jedeschuleDumpAbsolutePath } from '../../scripts/lib/jedeschuleDumpConfig'
-import { officialGeojsonNational } from '../../scripts/lib/pipelineCommon'
-import { officialStateCode, STATE_ORDER } from '../../src/lib/stateConfig'
 /**
  * Reads `public/datasets/jedeschule-latest.csv` (or `JEDESCHULE_CSV`) and writes
  * markdown reports under `analysis/out/`.
@@ -11,6 +7,10 @@ import { officialStateCode, STATE_ORDER } from '../../src/lib/stateConfig'
  */
 import { mkdir, writeFile } from 'node:fs/promises'
 import path from 'node:path'
+import { parseSchoolsFromCsvText } from '../../scripts/lib/jedeschuleCsv'
+import { jedeschuleDumpAbsolutePath } from '../../scripts/lib/jedeschuleDumpConfig'
+import { officialGeojsonNational } from '../../scripts/lib/pipelineCommon'
+import { officialStateCode, STATE_ORDER } from '../../src/lib/stateConfig'
 
 const ROOT = path.join(import.meta.dirname, '../..')
 const OUT_DIR = path.join(ROOT, 'analysis', 'out')

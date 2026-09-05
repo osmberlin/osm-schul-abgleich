@@ -1,5 +1,5 @@
-import { comparePropertySections } from './propertyCompare'
 import { describe, expect, it } from 'vitest'
+import { comparePropertySections } from './propertyCompare'
 
 describe('comparePropertySections address group', () => {
   it('creates address compare group and consumes address/street/housenumber keys', () => {
@@ -9,7 +9,7 @@ describe('comparePropertySections address group', () => {
     )
 
     expect(res.compareGroups).toHaveLength(1)
-    const g = res.compareGroups[0]
+    const g = res.compareGroups[0]!
     expect(g.kind).toBe('address')
     if (g.kind !== 'address') throw new Error('expected address')
     expect(g.officialValue).toBe('Hauptstr. 1')
@@ -82,7 +82,7 @@ describe('comparePropertySections grundschule group', () => {
     )
 
     expect(res.compareGroups).toHaveLength(1)
-    const g = res.compareGroups[0]
+    const g = res.compareGroups[0]!
     expect(g.kind).toBe('grundschule')
     if (g.kind !== 'grundschule') throw new Error('expected grundschule')
     expect(g.officialValue).toBe('Grundschule')
@@ -98,7 +98,7 @@ describe('comparePropertySections grundschule group', () => {
 
   it('matches on school=primary', () => {
     const res = comparePropertySections({ school_type: 'Grundschule' }, { school: 'primary' })
-    const g = res.compareGroups[0]
+    const g = res.compareGroups[0]!
     expect(g.kind).toBe('grundschule')
     if (g.kind !== 'grundschule') throw new Error('expected grundschule')
     expect(g.isEquivalentMatch).toBe(true)
@@ -111,7 +111,7 @@ describe('comparePropertySections grundschule group', () => {
       { 'isced:level': '3', school: 'secondary' },
     )
     expect(res.compareGroups).toHaveLength(1)
-    expect(res.compareGroups[0].kind).toBe('secondarySchool')
+    expect(res.compareGroups[0]!.kind).toBe('secondarySchool')
     expect(res.onlyO).toEqual([])
     expect(res.onlyS).toEqual([])
   })
@@ -121,7 +121,7 @@ describe('comparePropertySections grundschule group', () => {
       { school_type: 'Grundschule' },
       { 'isced:level': '2', school: 'secondary' },
     )
-    const g = res.compareGroups[0]
+    const g = res.compareGroups[0]!
     expect(g.kind).toBe('grundschule')
     if (g.kind !== 'grundschule') throw new Error('expected grundschule')
     expect(g.isEquivalentMatch).toBe(false)
@@ -141,7 +141,7 @@ describe('comparePropertySections grundschule group', () => {
       { name: 'Staatliche Grundschule Nord', school: 'primary', 'isced:level': '1' },
     )
     expect(res.compareGroups).toHaveLength(1)
-    const g = res.compareGroups[0]
+    const g = res.compareGroups[0]!
     expect(g.kind).toBe('grundschule')
     if (g.kind !== 'grundschule') throw new Error('expected grundschule')
     expect(g.officialKey).toBe('name')
@@ -164,8 +164,8 @@ describe('comparePropertySections grundschule group', () => {
       },
     )
     expect(res.compareGroups).toHaveLength(2)
-    expect(res.compareGroups[0].kind).toBe('address')
-    expect(res.compareGroups[1].kind).toBe('grundschule')
+    expect(res.compareGroups[0]!.kind).toBe('address')
+    expect(res.compareGroups[1]!.kind).toBe('grundschule')
   })
 })
 
@@ -176,7 +176,7 @@ describe('comparePropertySections secondary school group', () => {
       { name: 'G1', 'isced:level': '2;3' },
     )
     expect(res.compareGroups).toHaveLength(1)
-    const g = res.compareGroups[0]
+    const g = res.compareGroups[0]!
     expect(g.kind).toBe('secondarySchool')
     if (g.kind !== 'secondarySchool') throw new Error('expected secondarySchool')
     expect(g.variant).toBe('gymnasium')
@@ -189,7 +189,7 @@ describe('comparePropertySections secondary school group', () => {
 
   it('matches gymnasium on school=secondary', () => {
     const res = comparePropertySections({ school_type: 'Gymnasien' }, { school: 'secondary' })
-    const g = res.compareGroups[0]
+    const g = res.compareGroups[0]!
     expect(g.kind).toBe('secondarySchool')
     if (g.kind !== 'secondarySchool') throw new Error('expected secondarySchool')
     expect(g.variant).toBe('gymnasium')
@@ -202,7 +202,7 @@ describe('comparePropertySections secondary school group', () => {
       { name: 'ISS', 'isced:level': '2;3' },
     )
     expect(res.compareGroups).toHaveLength(1)
-    const g = res.compareGroups[0]
+    const g = res.compareGroups[0]!
     expect(g.kind).toBe('secondarySchool')
     if (g.kind !== 'secondarySchool') throw new Error('expected secondarySchool')
     expect(g.variant).toBe('gymnasium')
@@ -217,7 +217,7 @@ describe('comparePropertySections secondary school group', () => {
       { school_type: 'Integrierte Gesamtschule' },
       { 'isced:level': '2' },
     )
-    const g = res.compareGroups[0]
+    const g = res.compareGroups[0]!
     expect(g.kind).toBe('secondarySchool')
     if (g.kind !== 'secondarySchool') throw new Error('expected secondarySchool')
     expect(g.variant).toBe('gesamtschule')
@@ -231,7 +231,7 @@ describe('comparePropertySections secondary school group', () => {
       { school_type: 'Haupt- und Realschule' },
       { 'isced:level': '2' },
     )
-    const g = res.compareGroups[0]
+    const g = res.compareGroups[0]!
     expect(g.kind).toBe('secondarySchool')
     if (g.kind !== 'secondarySchool') throw new Error('expected secondarySchool')
     expect(g.variant).toBe('hauptReal')
@@ -245,7 +245,7 @@ describe('comparePropertySections secondary school group', () => {
       { school_type: 'Realschule' },
       { school: 'primary', 'isced:level': '1' },
     )
-    const g = res.compareGroups[0]
+    const g = res.compareGroups[0]!
     expect(g.kind).toBe('secondarySchool')
     if (g.kind !== 'secondarySchool') throw new Error('expected secondarySchool')
     expect(g.variant).toBe('hauptReal')
@@ -266,7 +266,7 @@ describe('comparePropertySections secondary school group', () => {
       { name: 'Wilhelmi-Gymnasium', school: 'secondary', 'isced:level': '2;3' },
     )
     expect(res.compareGroups).toHaveLength(1)
-    const g = res.compareGroups[0]
+    const g = res.compareGroups[0]!
     expect(g.kind).toBe('secondarySchool')
     if (g.kind !== 'secondarySchool') throw new Error('expected secondarySchool')
     expect(g.variant).toBe('gymnasium')
@@ -280,7 +280,7 @@ describe('comparePropertySections secondary school group', () => {
       { school_type: 'Gesamtschule mit gymnasialer Oberstufe' },
       { school: 'secondary' },
     )
-    const g = res.compareGroups[0]
+    const g = res.compareGroups[0]!
     expect(g.kind).toBe('secondarySchool')
     if (g.kind !== 'secondarySchool') throw new Error('expected secondarySchool')
     expect(g.variant).toBe('gesamtschule')
@@ -295,7 +295,7 @@ describe('comparePropertySections fachschule group', () => {
     )
 
     expect(res.compareGroups).toHaveLength(1)
-    const g = res.compareGroups[0]
+    const g = res.compareGroups[0]!
     expect(g.kind).toBe('fachschule')
     if (g.kind !== 'fachschule') throw new Error('expected fachschule')
     expect(g.officialValue).toBe('Landwirtschaftliche Fachschulen')
@@ -319,7 +319,7 @@ describe('comparePropertySections fachschule group', () => {
 
   it('creates fachschule group with isEquivalentMatch false when amenity is not college', () => {
     const res = comparePropertySections({ school_type: 'Berufsfachschule' }, { amenity: 'school' })
-    const g = res.compareGroups[0]
+    const g = res.compareGroups[0]!
     expect(g.kind).toBe('fachschule')
     if (g.kind !== 'fachschule') throw new Error('expected fachschule')
     expect(g.osmValues.education).toBeNull()
@@ -334,7 +334,7 @@ describe('comparePropertySections fachschule group', () => {
       { name: 'X', education: 'college' },
     )
     expect(res.compareGroups).toHaveLength(1)
-    const g = res.compareGroups[0]
+    const g = res.compareGroups[0]!
     expect(g.kind).toBe('fachschule')
     if (g.kind !== 'fachschule') throw new Error('expected fachschule')
     expect(g.osmValues.amenity).toBeNull()
@@ -348,7 +348,7 @@ describe('comparePropertySections fachschule group', () => {
       { school_type: 'Berufsfachschule', name: 'X' },
       { name: 'X', amenity: 'college', education: 'college' },
     )
-    const g = res.compareGroups[0]
+    const g = res.compareGroups[0]!
     expect(g.kind).toBe('fachschule')
     if (g.kind !== 'fachschule') throw new Error('expected fachschule')
     expect(g.osmValues.amenity).toBe('college')
@@ -361,7 +361,7 @@ describe('comparePropertySections fachschule group', () => {
       { school_type: 'Berufsfachschule', name: 'X' },
       { name: 'X', amenity: 'school', education: 'college' },
     )
-    const g = res.compareGroups[0]
+    const g = res.compareGroups[0]!
     expect(g.kind).toBe('fachschule')
     if (g.kind !== 'fachschule') throw new Error('expected fachschule')
     expect(g.isEquivalentMatch).toBe(true)
@@ -395,11 +395,11 @@ describe('comparePropertySections fachschule group', () => {
     )
     // Compound school_type resolves to a single Schulform rule (Gymnasium), not both Grundschule + secondary.
     expect(res.compareGroups).toHaveLength(5)
-    expect(res.compareGroups[0].kind).toBe('address')
-    expect(res.compareGroups[1].kind).toBe('secondarySchool')
-    expect(res.compareGroups[2].kind).toBe('fachschule')
-    expect(res.compareGroups[3].kind).toBe('providerOperator')
-    expect(res.compareGroups[4].kind).toBe('legalStatusOperatorType')
+    expect(res.compareGroups[0]!.kind).toBe('address')
+    expect(res.compareGroups[1]!.kind).toBe('secondarySchool')
+    expect(res.compareGroups[2]!.kind).toBe('fachschule')
+    expect(res.compareGroups[3]!.kind).toBe('providerOperator')
+    expect(res.compareGroups[4]!.kind).toBe('legalStatusOperatorType')
   })
 
   it('places address before fachschule when grundschule does not apply', () => {
@@ -413,8 +413,8 @@ describe('comparePropertySections fachschule group', () => {
       },
     )
     expect(res.compareGroups).toHaveLength(2)
-    expect(res.compareGroups[0].kind).toBe('address')
-    expect(res.compareGroups[1].kind).toBe('fachschule')
+    expect(res.compareGroups[0]!.kind).toBe('address')
+    expect(res.compareGroups[1]!.kind).toBe('fachschule')
   })
 })
 
@@ -425,7 +425,7 @@ describe('comparePropertySections provider/operator group', () => {
       { operator: 'gemeinde langerwehe' },
     )
     expect(res.compareGroups).toHaveLength(1)
-    const g = res.compareGroups[0]
+    const g = res.compareGroups[0]!
     expect(g.kind).toBe('providerOperator')
     if (g.kind !== 'providerOperator') throw new Error('expected providerOperator')
     expect(g.isEquivalentMatch).toBe(true)
@@ -448,7 +448,7 @@ describe('comparePropertySections provider/operator group', () => {
       { operator: 'Stadt Düren' },
     )
     expect(res.compareGroups).toHaveLength(1)
-    const g = res.compareGroups[0]
+    const g = res.compareGroups[0]!
     expect(g.kind).toBe('providerOperator')
     if (g.kind !== 'providerOperator') throw new Error('expected providerOperator')
     expect(g.isEquivalentMatch).toBe(false)
@@ -466,7 +466,7 @@ describe('comparePropertySections legal_status/operator:type group', () => {
       { 'operator:type': 'public' },
     )
     expect(res.compareGroups).toHaveLength(1)
-    const g = res.compareGroups[0]
+    const g = res.compareGroups[0]!
     expect(g.kind).toBe('legalStatusOperatorType')
     if (g.kind !== 'legalStatusOperatorType') throw new Error('expected legalStatusOperatorType')
     expect(g.isEquivalentMatch).toBe(true)
@@ -480,7 +480,7 @@ describe('comparePropertySections legal_status/operator:type group', () => {
       { 'operator:type': 'public' },
     )
     expect(res.compareGroups).toHaveLength(1)
-    const g = res.compareGroups[0]
+    const g = res.compareGroups[0]!
     expect(g.kind).toBe('legalStatusOperatorType')
     if (g.kind !== 'legalStatusOperatorType') throw new Error('expected legalStatusOperatorType')
     expect(g.isEquivalentMatch).toBe(true)
@@ -491,7 +491,7 @@ describe('comparePropertySections legal_status/operator:type group', () => {
   it('maps legal_status "Privat" to operator:type=private', () => {
     const res = comparePropertySections({ legal_status: 'Privat' }, { 'operator:type': 'private' })
     expect(res.compareGroups).toHaveLength(1)
-    const g = res.compareGroups[0]
+    const g = res.compareGroups[0]!
     expect(g.kind).toBe('legalStatusOperatorType')
     if (g.kind !== 'legalStatusOperatorType') throw new Error('expected legalStatusOperatorType')
     expect(g.isEquivalentMatch).toBe(true)
@@ -502,7 +502,7 @@ describe('comparePropertySections legal_status/operator:type group', () => {
   it('maps legal_status "private" to operator:type=private', () => {
     const res = comparePropertySections({ legal_status: 'private' }, { 'operator:type': 'private' })
     expect(res.compareGroups).toHaveLength(1)
-    const g = res.compareGroups[0]
+    const g = res.compareGroups[0]!
     expect(g.kind).toBe('legalStatusOperatorType')
     if (g.kind !== 'legalStatusOperatorType') throw new Error('expected legalStatusOperatorType')
     expect(g.isEquivalentMatch).toBe(true)
@@ -516,7 +516,7 @@ describe('comparePropertySections legal_status/operator:type group', () => {
       { 'operator:type': 'government' },
     )
     expect(res.compareGroups).toHaveLength(1)
-    const g = res.compareGroups[0]
+    const g = res.compareGroups[0]!
     expect(g.kind).toBe('legalStatusOperatorType')
     if (g.kind !== 'legalStatusOperatorType') throw new Error('expected legalStatusOperatorType')
     expect(g.isEquivalentMatch).toBe(false)
@@ -527,7 +527,7 @@ describe('comparePropertySections legal_status/operator:type group', () => {
   it('marks legal_status private group as mismatch when operator:type is not private', () => {
     const res = comparePropertySections({ legal_status: 'Privat' }, { 'operator:type': 'public' })
     expect(res.compareGroups).toHaveLength(1)
-    const g = res.compareGroups[0]
+    const g = res.compareGroups[0]!
     expect(g.kind).toBe('legalStatusOperatorType')
     if (g.kind !== 'legalStatusOperatorType') throw new Error('expected legalStatusOperatorType')
     expect(g.isEquivalentMatch).toBe(false)
@@ -541,7 +541,7 @@ describe('comparePropertySections legal_status/operator:type group', () => {
       { 'operator:type': 'public' },
     )
     expect(res.compareGroups.map((g) => g.kind)).toEqual(['legalStatusOperatorType'])
-    const g = res.compareGroups[0]
+    const g = res.compareGroups[0]!
     expect(g.kind).toBe('legalStatusOperatorType')
     if (g.kind !== 'legalStatusOperatorType') throw new Error('expected legalStatusOperatorType')
     expect(g.isEquivalentMatch).toBe(true)
@@ -574,7 +574,7 @@ describe('comparePropertySections id/ref group', () => {
   it('treats official id with prefix as equal to OSM ref', () => {
     const res = comparePropertySections({ id: 'BE-03P11' }, { ref: '03P11' })
     expect(res.compareGroups).toHaveLength(1)
-    const g = res.compareGroups[0]
+    const g = res.compareGroups[0]!
     expect(g.kind).toBe('idRef')
     if (g.kind !== 'idRef') throw new Error('expected idRef')
     expect(g.isEquivalentMatch).toBe(true)
@@ -587,7 +587,7 @@ describe('comparePropertySections id/ref group', () => {
   it('uses the last id segment and strips optional state prefix from ref', () => {
     const res = comparePropertySections({ id: 'BE-XX-03P11' }, { ref: 'be-03p11' })
     expect(res.compareGroups).toHaveLength(1)
-    const g = res.compareGroups[0]
+    const g = res.compareGroups[0]!
     expect(g.kind).toBe('idRef')
     if (g.kind !== 'idRef') throw new Error('expected idRef')
     expect(g.isEquivalentMatch).toBe(true)
@@ -596,7 +596,7 @@ describe('comparePropertySections id/ref group', () => {
   it('shows id/ref as different when both are present but do not match', () => {
     const res = comparePropertySections({ id: 'BE-03P11' }, { ref: '03P12' })
     expect(res.compareGroups).toHaveLength(1)
-    const g = res.compareGroups[0]
+    const g = res.compareGroups[0]!
     expect(g.kind).toBe('idRef')
     if (g.kind !== 'idRef') throw new Error('expected idRef')
     expect(g.isEquivalentMatch).toBe(false)

@@ -1,8 +1,8 @@
 #!/usr/bin/env bun
+import path from 'node:path'
+import { cancel, intro, isCancel, outro, select } from '@clack/prompts'
 import { type StateCode, STATE_LABEL_DE, STATE_ORDER } from '../src/lib/stateConfig'
 import { type RunSplitStatesOptions, runStateFirstPipeline } from './lib/nationalPipeline'
-import { cancel, intro, isCancel, outro, select } from '@clack/prompts'
-import path from 'node:path'
 
 const ALL_STATES = '__all__' as const
 

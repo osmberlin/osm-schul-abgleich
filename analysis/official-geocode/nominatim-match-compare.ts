@@ -1,4 +1,9 @@
 #!/usr/bin/env bun
+import { writeFile } from 'node:fs/promises'
+import path from 'node:path'
+import distance from '@turf/distance'
+import { point } from '@turf/helpers'
+import type { Feature, FeatureCollection } from 'geojson'
 import { parseOfficialPointsMap } from '../../scripts/lib/applyOfficialGeocodeOverlay'
 import { initBundeslandBoundaries } from '../../scripts/lib/bundeslandBoundaries'
 import { dedupeOfficialInputs } from '../../scripts/lib/dedupeOfficialInputs'
@@ -20,11 +25,6 @@ import {
   STATE_ORDER,
   type StateCode,
 } from '../../src/lib/stateConfig'
-import distance from '@turf/distance'
-import { point } from '@turf/helpers'
-import type { Feature, FeatureCollection } from 'geojson'
-import { writeFile } from 'node:fs/promises'
-import path from 'node:path'
 
 const ROOT = path.join(import.meta.dirname, '../..')
 const POINTS_PATH = path.join(ROOT, 'data', 'official-geocode', 'points.json')
@@ -132,7 +132,7 @@ function applyOverlay(fc: FeatureCollection, points: PointsMap) {
       if (!ll) return f
       return {
         ...f,
-        geometry: { type: 'Point', coordinates: [ll[0], ll[1]] },
+        geometry: { type: 'Point' as const, coordinates: [ll[0], ll[1]] as [number, number] },
       }
     }),
   }

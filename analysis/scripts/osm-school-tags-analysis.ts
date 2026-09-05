@@ -1,4 +1,6 @@
 #!/usr/bin/env bun
+import { mkdir, writeFile } from 'node:fs/promises'
+import path from 'node:path'
 /**
  * Reads pipeline OSM schools GeoJSON (`public/datasets/.pipeline/schools_osm_de.geojson`) and writes
  * `analysis/out/05-osm-school-schoolde.md` plus optional Taginfo reference tables.
@@ -12,8 +14,6 @@ import {
   splitOsmSchoolRaw,
 } from '../../src/lib/osmSchoolKindDe'
 import { STATE_ORDER } from '../../src/lib/stateConfig'
-import { mkdir, writeFile } from 'node:fs/promises'
-import path from 'node:path'
 
 const ROOT = path.join(import.meta.dirname, '../..')
 const OUT_DIR = path.join(ROOT, 'analysis', 'out')
@@ -174,7 +174,7 @@ async function main() {
       norm.source === 'excluded' ? 'excluded' : norm.source,
     ])
   }
-  mappingPreviewRows.sort((a, b) => a[0].localeCompare(b[0]))
+  mappingPreviewRows.sort((a, b) => String(a[0]).localeCompare(String(b[0])))
 
   const stateRows = STATE_ORDER.map((code) => {
     const pl = perState.get(code) ?? { total: 0, withCanonical: 0 }
@@ -249,7 +249,9 @@ async function main() {
     '\n\n## Rows by `canonicalSchoolKindDe` source\n\n' +
     mdTable(
       ['source', 'features'],
-      [...sourceCounts.entries()].sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0])),
+      [...sourceCounts.entries()]
+        .sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0]))
+        .map(([k, c]) => [k, String(c)]),
     ) +
     '\n\n## Canonical Schulart (count ≥ ' +
     String(MIN_CANON) +

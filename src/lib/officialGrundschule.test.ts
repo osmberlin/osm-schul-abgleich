@@ -1,5 +1,5 @@
-import { isOfficialGrundschule, tagValueEqualsProposed } from './officialGrundschule'
 import { describe, expect, it } from 'vitest'
+import { isOfficialGrundschule, tagValueEqualsProposed } from './officialGrundschule'
 
 describe('isOfficialGrundschule', () => {
   it('detects Grundschule in name', () => {

@@ -1,4 +1,6 @@
 #!/usr/bin/env bun
+import { mkdir, writeFile } from 'node:fs/promises'
+import path from 'node:path'
 import { BUNDESLAND_OFFICIAL_SOURCES } from '../../src/lib/bundeslandOfficialSources'
 /**
  * Compare OSM name/URL Schulform heuristics vs official rules on licence-compatible matched rows.
@@ -13,8 +15,6 @@ import {
 } from '../../src/lib/osmHeuristicOfficialAgreement'
 import { schoolsMatchRowSchema } from '../../src/lib/schemas'
 import { STATE_ORDER, type StateCode } from '../../src/lib/stateConfig'
-import { mkdir, writeFile } from 'node:fs/promises'
-import path from 'node:path'
 
 const ROOT = path.join(import.meta.dirname, '../..')
 const OUT_DIR = path.join(ROOT, 'analysis', 'out')

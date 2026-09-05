@@ -1,3 +1,5 @@
+import { ExclamationTriangleIcon, InformationCircleIcon } from '@heroicons/react/20/solid'
+import type { ReactNode } from 'react'
 import { de } from '../../i18n/de'
 import {
   buildMaprouletteCreatesBrowseUrl,
@@ -10,8 +12,6 @@ import { JEDESCHULE_DUPLICATE_GROUP_SIZE_KEY } from '../../lib/jedeschuleDuplica
 import { schoolInMaprouletteCreates } from '../../lib/maprouletteAvailability'
 import { isNominatimCoordSource } from '../../lib/officialCoordSource'
 import type { StateMatchCategory } from '../../lib/stateMatchCategories'
-import { ExclamationTriangleIcon, InformationCircleIcon } from '@heroicons/react/20/solid'
-import type { ReactNode } from 'react'
 
 function SchoolDetailAlertCard({
   toneClassName,

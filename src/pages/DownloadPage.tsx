@@ -1,3 +1,6 @@
+import { ExclamationTriangleIcon } from '@heroicons/react/20/solid'
+import { useQuery } from '@tanstack/react-query'
+import { Link } from '@tanstack/react-router'
 import { CategoryLegendSwatch } from '../components/CategoryLegendSwatch'
 import { HomeOfficialSourcesSection } from '../components/home/HomeOfficialSourcesSection'
 import { de } from '../i18n/de'
@@ -11,9 +14,6 @@ import {
 import { summaryQueryOptions } from '../lib/sharedDatasetQueries'
 import { STATE_MATCH_CATEGORIES } from '../lib/stateMatchCategories'
 import { StatusDateTime } from '../lib/statusDateTime'
-import { ExclamationTriangleIcon } from '@heroicons/react/20/solid'
-import { useQuery } from '@tanstack/react-query'
-import { Link } from '@tanstack/react-router'
 
 const sectionLeadClass = 'mt-2 text-sm leading-relaxed text-zinc-400'
 const headingClass = 'text-lg font-semibold text-zinc-100'

@@ -1,5 +1,5 @@
-import { detailMapReferenceName } from './schoolDetailMapReference'
 import { describe, expect, it } from 'vitest'
+import { detailMapReferenceName } from './schoolDetailMapReference'
 
 describe('detailMapReferenceName', () => {
   it('uses official display name for official_only rows', () => {

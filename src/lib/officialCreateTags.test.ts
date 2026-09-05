@@ -1,5 +1,5 @@
-import { collectOfficialCreateTags, parseGermanStreetHousenumber } from './officialCreateTags'
 import { describe, expect, it } from 'vitest'
+import { collectOfficialCreateTags, parseGermanStreetHousenumber } from './officialCreateTags'
 
 describe('parseGermanStreetHousenumber', () => {
   it('splits street and housenumber', () => {

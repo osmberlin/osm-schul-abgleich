@@ -1,3 +1,4 @@
+import { useQuery } from '@tanstack/react-query'
 import { HomeGermanyStats } from '../components/home/HomeGermanyStats'
 import { HomeHeader } from '../components/home/HomeHeader'
 import { HomeHistorySection } from '../components/home/HomeHistorySection'
@@ -8,7 +9,6 @@ import { de } from '../i18n/de'
 import { germanyHistoryFromRuns } from '../lib/matchHistoryFromRuns'
 import { runsQueryOptions, summaryQueryOptions } from '../lib/sharedDatasetQueries'
 import { STATE_ORDER } from '../lib/stateConfig'
-import { useQuery } from '@tanstack/react-query'
 
 export function HomePage() {
   const q = useQuery({

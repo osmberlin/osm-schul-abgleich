@@ -1,3 +1,5 @@
+import { useQuery } from '@tanstack/react-query'
+import { Link } from '@tanstack/react-router'
 import { SchoolDetailActionLinks } from '../components/school/SchoolDetailActionLinks'
 import {
   SchoolDetailAmbiguousAlert,
@@ -30,8 +32,6 @@ import {
   parseErrorOutsideBoundaryFromOfficialProps,
   parseJedeschuleLonLatFromRecord,
 } from '../lib/zodGeo'
-import { useQuery } from '@tanstack/react-query'
-import { Link } from '@tanstack/react-router'
 
 function recordValue(
   record: Record<string, unknown> | null | undefined,
@@ -115,10 +115,12 @@ export function SchoolDetail() {
       : null
   const officialLonLat: readonly [number, number] | null =
     officialFeature?.geometry?.type === 'Point'
-      ? ([
-          officialFeature.geometry.coordinates[0],
-          officialFeature.geometry.coordinates[1],
-        ] as const)
+      ? (() => {
+          const lon = officialFeature.geometry.coordinates[0]
+          const lat = officialFeature.geometry.coordinates[1]
+          if (lon === undefined || lat === undefined) return null
+          return [lon, lat] as const
+        })()
       : parseJedeschuleLonLatFromRecord(officialProps)
 
   return (

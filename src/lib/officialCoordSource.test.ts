@@ -1,5 +1,5 @@
-import { isNominatimCoordSource } from './officialCoordSource'
 import { describe, expect, it } from 'vitest'
+import { isNominatimCoordSource } from './officialCoordSource'
 
 describe('isNominatimCoordSource', () => {
   it('is true only for coord_source nominatim', () => {

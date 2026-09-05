@@ -1,9 +1,9 @@
+import { InformationCircleIcon } from '@heroicons/react/20/solid'
 import { de } from '../../i18n/de'
 import { formatDeInteger } from '../../lib/formatNumber'
 import { STATE_MATCH_CATEGORIES, type StateMatchCategory } from '../../lib/stateMatchCategories'
 import { CategoryLegendSwatch } from '../CategoryLegendSwatch'
 import { LayerToggleStatBlock, StatBlocksRow } from '../StatBlocks'
-import { InformationCircleIcon } from '@heroicons/react/20/solid'
 
 type CategoryCounts = Record<StateMatchCategory, number>
 

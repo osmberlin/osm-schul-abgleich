@@ -1,10 +1,10 @@
-import { de } from '../i18n/de'
-import { parseOsmIdInput } from '../lib/parseOsmIdInput'
-import { AppModal } from './AppModal'
 import { DialogTitle } from '@headlessui/react'
 import { MagnifyingGlassIcon } from '@heroicons/react/20/solid'
 import { useNavigate } from '@tanstack/react-router'
 import { useEffect, useId, useRef, useState } from 'react'
+import { de } from '../i18n/de'
+import { parseOsmIdInput } from '../lib/parseOsmIdInput'
+import { AppModal } from './AppModal'
 
 export function OsmLocateSearchDialog({ open, onClose }: { open: boolean; onClose: () => void }) {
   const navigate = useNavigate()

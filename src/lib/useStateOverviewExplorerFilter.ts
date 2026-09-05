@@ -1,3 +1,4 @@
+import { useNavigate } from '@tanstack/react-router'
 import {
   STATE_FACET_MATCH_MODES,
   STATE_FACET_OSM_AMENITY,
@@ -7,7 +8,6 @@ import {
   type SchoolFormSignalScope,
 } from './stateOverviewItemsSearch'
 import { stateRouteApi } from './stateRouteApi'
-import { useNavigate } from '@tanstack/react-router'
 
 /**
  * URL-backed explorer filters for Bundesland overview (itemsjs facets + name scope + full-text).

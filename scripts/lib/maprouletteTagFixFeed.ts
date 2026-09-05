@@ -1,3 +1,5 @@
+import { mkdir } from 'node:fs/promises'
+import path from 'node:path'
 import { BUNDESLAND_OFFICIAL_SOURCES } from '../../src/lib/bundeslandOfficialSources'
 import { isOsmLicenceCompatibleForTagFix } from '../../src/lib/maprouletteAvailability'
 import { maprouletteTagFixesPublicUrl } from '../../src/lib/maprouletteIds.const'
@@ -17,8 +19,6 @@ import {
   maprouletteOsmHeuristicTaskPointLonLat,
 } from './maprouletteSchoolTagFixesOsmHeuristic'
 import { datasetsDir, writeJson } from './pipelineCommon'
-import { mkdir } from 'node:fs/promises'
-import path from 'node:path'
 
 const RS = String.fromCharCode(0x1e)
 const OSM_TAGFIX_CATEGORIES = new Set(['matched', 'osm_only'])

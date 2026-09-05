@@ -1,6 +1,6 @@
-import { stateCodeForPointWithRoot, resetBundeslandBoundariesCache } from './bundeslandBoundaries'
 import path from 'node:path'
 import { afterEach, describe, expect, it } from 'vitest'
+import { stateCodeForPointWithRoot, resetBundeslandBoundariesCache } from './bundeslandBoundaries'
 
 const PROJECT_ROOT = path.join(import.meta.dirname, '../..')
 

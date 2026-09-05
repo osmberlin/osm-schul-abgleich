@@ -1,7 +1,7 @@
 #!/usr/bin/env bun
-import { NATIONAL, nationalPath } from './lib/nationalDatasetPaths'
 import { access, copyFile, mkdir } from 'node:fs/promises'
 import path from 'node:path'
+import { NATIONAL, nationalPath } from './lib/nationalDatasetPaths'
 
 const ROOT = path.join(import.meta.dirname, '..')
 const ARTIFACT_RESTORE_DIR = path.join(ROOT, '.artifact-restore')

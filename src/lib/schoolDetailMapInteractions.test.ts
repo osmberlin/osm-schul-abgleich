@@ -1,10 +1,10 @@
+import { describe, expect, it } from 'vitest'
 import {
   detailMapHoverEntries,
   parseDetailMapPointHits,
   primaryHoveredHit,
   resolveDetailMapClickTarget,
 } from './schoolDetailMapInteractions'
-import { describe, expect, it } from 'vitest'
 
 describe('parseDetailMapPointHits + hover', () => {
   it('collects multiple overlapping hits and prefers osm-other as primary', () => {

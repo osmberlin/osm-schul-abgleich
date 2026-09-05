@@ -1,11 +1,18 @@
-import { findOfficialSchoolFeature } from './findOfficialSchoolFeature'
-import { schoolsMatchRowSchema } from './schemas'
-import { parseJedeschuleLonLatFromRecord } from './zodGeo'
 import { lineString } from '@turf/helpers'
 import type { Feature, FeatureCollection } from 'geojson'
 import type { z } from 'zod'
+import { findOfficialSchoolFeature } from './findOfficialSchoolFeature'
+import { schoolsMatchRowSchema } from './schemas'
+import { parseJedeschuleLonLatFromRecord } from './zodGeo'
 
 export type SchoolsMatchRow = z.infer<typeof schoolsMatchRowSchema>
+
+function lonLatPair(coords: number[]): readonly [number, number] | null {
+  const lon = coords[0]
+  const lat = coords[1]
+  if (lon === undefined || lat === undefined) return null
+  return [lon, lat]
+}
 
 /**
  * LineStrings from an OSM Schwerpunkt to each amtliche Koordinate for a match row
@@ -46,7 +53,7 @@ export function detailMapConnectorLines(args: {
       const props = (fLocal?.properties ?? snap?.properties ?? {}) as Record<string, unknown>
       const officialLonLat: readonly [number, number] | null =
         fLocal?.geometry?.type === 'Point'
-          ? ([fLocal.geometry.coordinates[0], fLocal.geometry.coordinates[1]] as const)
+          ? lonLatPair(fLocal.geometry.coordinates)
           : parseJedeschuleLonLatFromRecord(props)
       if (officialLonLat) add(oid, officialLonLat[0], officialLonLat[1])
     }
@@ -57,7 +64,7 @@ export function detailMapConnectorLines(args: {
     const f = findOfficialSchoolFeature(officialFc, matchRow.officialId)
     let ll: readonly [number, number] | null = null
     if (f?.geometry?.type === 'Point') {
-      ll = [f.geometry.coordinates[0], f.geometry.coordinates[1]]
+      ll = lonLatPair(f.geometry.coordinates)
     } else if (f?.properties) {
       ll = parseJedeschuleLonLatFromRecord(f.properties as Record<string, unknown>)
     }

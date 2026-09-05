@@ -1,8 +1,8 @@
+import { describe, expect, it } from 'vitest'
 import {
   parseOsmStyleMapSearchParam,
   serializeOsmStyleMapSearchParam,
 } from './osmStyleMapQueryParam'
-import { describe, expect, it } from 'vitest'
 
 describe('parseOsmStyleMapSearchParam', () => {
   it('parses valid z/lat/lon', () => {

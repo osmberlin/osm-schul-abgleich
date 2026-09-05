@@ -1,5 +1,5 @@
-import { filterJedeschuleSchoolsByRecency, type JedeschuleSchool } from './jedeschuleCsv'
 import { afterEach, describe, expect, it } from 'vitest'
+import { filterJedeschuleSchoolsByRecency, type JedeschuleSchool } from './jedeschuleCsv'
 
 function school(
   partial: Partial<JedeschuleSchool> & Pick<JedeschuleSchool, 'id' | 'name'>,

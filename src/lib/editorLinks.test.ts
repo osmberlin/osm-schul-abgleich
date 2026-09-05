@@ -1,3 +1,4 @@
+import { describe, expect, it } from 'vitest'
 import {
   buildIdUrl,
   buildJosmLoadObject,
@@ -10,7 +11,6 @@ import {
   mapViewFromBbox,
 } from './editorLinks'
 import { schoolCreatesChallengeId, schoolTagFixesChallengeId } from './maprouletteIds.const'
-import { describe, expect, it } from 'vitest'
 
 describe('buildIdUrl', () => {
   const bbox: [number, number, number, number] = [13.4, 52.49, 13.44, 52.51]

@@ -1,4 +1,4 @@
-const base = () => import.meta.env.BASE_URL.replace(/\/$/, '')
+const base = () => String(import.meta.env.BASE_URL ?? '').replace(/\/$/, '')
 
 const datasetsUrl = (path: string) => `${base()}${path.startsWith('/') ? path : `/${path}`}`
 function envScopedJsonFileName(fileName: string): string {

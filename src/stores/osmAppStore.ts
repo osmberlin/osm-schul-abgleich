@@ -1,9 +1,4 @@
 import {
-  getOsmOAuthClientId,
-  getOsmOAuthRedirectUrl,
-  OSM_API_USER_AGENT,
-} from '../lib/osmOAuthConfig'
-import {
   authReady,
   configure,
   getAuthToken,
@@ -13,6 +8,11 @@ import {
   logout as osmLogout,
 } from 'osm-api'
 import { create } from 'zustand'
+import {
+  getOsmOAuthClientId,
+  getOsmOAuthRedirectUrl,
+  OSM_API_USER_AGENT,
+} from '../lib/osmOAuthConfig'
 
 configure({ userAgent: OSM_API_USER_AGENT })
 

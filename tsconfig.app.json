@@ -1,24 +1,39 @@
 {
+  // Soft-aligned to total-typescript bundler/dom (no extends): https://github.com/total-typescript/tsconfig
+  // Intentionally NOT adopted:
+  //   verbatimModuleSyntax: true  — type-only imports can become empty runtime imports
+  //   module: "preserve"            — total-typescript bundler default; Vite + TanStack recommend ESNext
+  //   noUnusedLocals / noUnusedParameters — delegated to oxlint; avoid duplicate signal with tsc
+  // Never install or extend @total-typescript/tsconfig — keep settings inlined with these comments.
+  "include": ["src/**/*.ts", "src/**/*.tsx", "vite.config.ts", "vitest.config.ts"],
+  "exclude": ["node_modules", "dist", "scripts", "analysis"],
   "compilerOptions": {
-    "tsBuildInfoFile": "./node_modules/.tmp/tsconfig.app.tsbuildinfo",
-    "target": "ES2024",
-    "useDefineForClassFields": true,
-    "lib": ["ES2024", "DOM", "DOM.Iterable"],
-    "module": "ESNext",
-    "types": ["vite/client", "bun-types"],
-    "skipLibCheck": true,
-    "moduleResolution": "bundler",
-    "resolveJsonModule": true,
-    "allowImportingTsExtensions": true,
-    "verbatimModuleSyntax": true,
-    "moduleDetection": "force",
-    "noEmit": true,
+    "target": "ES2025",
+    "lib": ["ES2025", "DOM", "DOM.Iterable"],
     "jsx": "react-jsx",
+    "module": "ESNext",
+    "types": ["vite/client", "bun"],
+
+    "moduleResolution": "bundler",
+    "moduleDetection": "force",
+    "verbatimModuleSyntax": false,
+    "noEmit": true,
+    "allowImportingTsExtensions": true,
+
     "strict": true,
-    "noUnusedLocals": true,
-    "noUnusedParameters": true,
+    "noImplicitOverride": true,
+    "noUnusedLocals": false,
+    "noUnusedParameters": false,
+    "noUncheckedSideEffectImports": true,
+    "noUncheckedIndexedAccess": true,
     "noFallthroughCasesInSwitch": true,
-    "noUncheckedSideEffectImports": true
-  },
-  "include": ["src", "tests"]
+    "forceConsistentCasingInFileNames": true,
+    "skipLibCheck": true,
+    "esModuleInterop": true,
+    "resolveJsonModule": true,
+    "isolatedModules": true,
+    "incremental": true,
+    "tsBuildInfoFile": ".tsbuildinfo-app",
+    "noErrorTruncation": true
+  }
 }

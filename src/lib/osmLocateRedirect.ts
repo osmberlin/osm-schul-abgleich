@@ -1,9 +1,9 @@
+import { redirect } from '@tanstack/react-router'
 import { fetchOsmCentroidOverpass } from './fetchOsmCentroidOverpass'
 import type { OsmStyleMapTriple } from './osmStyleMapQueryParam'
 import { serializeOsmStyleMapSearchParam } from './osmStyleMapQueryParam'
 import { parseOsmIdInput } from './parseOsmIdInput'
 import { resolveStateCodeForLonLat } from './stateCodeForLonLatFromBoundaries'
-import { redirect } from '@tanstack/react-router'
 
 const OSM_LOCATE_ZOOM = 16
 

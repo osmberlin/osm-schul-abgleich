@@ -1,3 +1,10 @@
+import { XMarkIcon } from '@heroicons/react/20/solid'
+import { Link } from '@tanstack/react-router'
+import bbox from '@turf/bbox'
+import { featureCollection, point } from '@turf/helpers'
+import { getFeature, getAuthToken, configure, uploadChangeset, isLoggedIn } from 'osm-api'
+import { useState } from 'react'
+import MapGL, { Layer, type MapEvent, Source } from 'react-map-gl/maplibre'
 import { OsmTagSnippet } from '../components/OsmTagSnippet'
 import { de } from '../i18n/de'
 import {
@@ -5,16 +12,9 @@ import {
   flatMapGlProps,
   OPENFREEMAP_STYLE,
 } from '../lib/openFreeMapStyle'
+import 'maplibre-gl/dist/maplibre-gl.css'
 import { buildOsmUploadChangesetTags } from '../lib/osmUploadChangeset'
 import { useOsmAppActions, useOsmDisplayName, usePendingEditsByKey } from '../stores/osmAppStore'
-import { XMarkIcon } from '@heroicons/react/20/solid'
-import { Link } from '@tanstack/react-router'
-import bbox from '@turf/bbox'
-import { featureCollection, point } from '@turf/helpers'
-import { getFeature, getAuthToken, configure, uploadChangeset, isLoggedIn } from 'osm-api'
-import 'maplibre-gl/dist/maplibre-gl.css'
-import { useState } from 'react'
-import MapGL, { Layer, type MapEvent, Source } from 'react-map-gl/maplibre'
 
 function syncOsmAuthHeader() {
   const t = getAuthToken()
@@ -51,17 +51,26 @@ export function AenderungenPage() {
 
   let initialViewState = { longitude: 10.45, latitude: 51.16, zoom: 5.2 }
   if (mapFc.features.length === 1) {
-    const c = mapFc.features[0].geometry.coordinates
-    initialViewState = { longitude: c[0], latitude: c[1], zoom: 14 }
+    const c = mapFc.features[0]?.geometry.coordinates
+    const lon = c?.[0]
+    const lat = c?.[1]
+    if (lon !== undefined && lat !== undefined) {
+      initialViewState = { longitude: lon, latitude: lat, zoom: 14 }
+    }
   } else if (mapFc.features.length > 1) {
     const b = bbox(mapFc)
-    const [minX, minY, maxX, maxY] = b
-    const lon = (minX + maxX) / 2
-    const lat = (minY + maxY) / 2
-    const pad = 0.02
-    const maxDelta = Math.max(maxX - minX, maxY - minY) + pad * 2
-    const zoom = maxDelta > 2 ? 7 : maxDelta > 0.5 ? 10 : maxDelta > 0.1 ? 12 : 14
-    initialViewState = { longitude: lon, latitude: lat, zoom }
+    const minX = b[0]
+    const minY = b[1]
+    const maxX = b[2]
+    const maxY = b[3]
+    if (minX !== undefined && minY !== undefined && maxX !== undefined && maxY !== undefined) {
+      const lon = (minX + maxX) / 2
+      const lat = (minY + maxY) / 2
+      const pad = 0.02
+      const maxDelta = Math.max(maxX - minX, maxY - minY) + pad * 2
+      const zoom = maxDelta > 2 ? 7 : maxDelta > 0.5 ? 10 : maxDelta > 0.1 ? 12 : 14
+      initialViewState = { longitude: lon, latitude: lat, zoom }
+    }
   }
 
   async function onUpload() {

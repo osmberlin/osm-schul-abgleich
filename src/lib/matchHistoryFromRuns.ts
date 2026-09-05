@@ -1,8 +1,8 @@
+import type { z } from 'zod'
 import { berlinCalendarDateKey } from './berlinCalendarDateKey'
 import { runRecordSchema } from './schemas'
 import type { StateCode } from './stateConfig'
 import { STATE_MATCH_CATEGORIES, type StateMatchCategory } from './stateMatchCategories'
-import type { z } from 'zod'
 
 type RunRecord = z.infer<typeof runRecordSchema>
 

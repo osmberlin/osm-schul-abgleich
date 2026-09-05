@@ -1,3 +1,4 @@
+import { z } from 'zod'
 import { BUNDESLAND_OFFICIAL_SOURCES } from './bundeslandOfficialSources'
 import { buildOsmBrowseUrl } from './editorLinks'
 import { GITHUB_PAGES_SITE_ROOT } from './githubRepo'
@@ -7,7 +8,6 @@ import {
   type SchoolsMatchRow,
 } from './schemas'
 import { parseStateColumn, STATE_LABEL_DE } from './stateConfig'
-import { z } from 'zod'
 
 /** Stable Germany-wide CSV filename under `public/datasets/`. */
 export const SCHOOLS_MATCH_CSV_FILE_NAME = 'schools_matches.csv' as const

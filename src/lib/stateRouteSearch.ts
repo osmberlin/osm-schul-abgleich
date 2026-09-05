@@ -1,3 +1,4 @@
+import { z } from 'zod'
 import {
   parseOsmStyleMapSearchParam,
   serializeOsmStyleMapSearchParam,
@@ -17,7 +18,6 @@ import {
   type SchoolFormSignalScope,
 } from './stateOverviewItemsSearch'
 import { parseStateMapBboxSearchParam, serializeStateMapBboxSearchParam } from './useStateMapBbox'
-import { z } from 'zod'
 
 type StateNameScope = 'both' | 'official' | 'osm'
 type YesNo = 'yes' | 'no'

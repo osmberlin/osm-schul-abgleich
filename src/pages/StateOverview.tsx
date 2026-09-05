@@ -1,3 +1,7 @@
+import { useQuery } from '@tanstack/react-query'
+import { useNavigate, useParams } from '@tanstack/react-router'
+import { useId, useState } from 'react'
+import { MapProvider } from 'react-map-gl/maplibre'
 import { StateOverviewFiltersDisclosure } from '../components/state/StateOverviewFiltersDisclosure'
 import { StateOverviewHistorySection } from '../components/state/StateOverviewHistorySection'
 import { StateOverviewMatchList } from '../components/state/StateOverviewMatchList'
@@ -25,10 +29,6 @@ import {
 import { useStateCategoryFilter } from '../lib/useStateCategoryFilter'
 import { useStateOverviewExplorerFilter } from '../lib/useStateOverviewExplorerFilter'
 import { useStateOverviewMapState } from '../lib/useStateOverviewMapState'
-import { useQuery } from '@tanstack/react-query'
-import { useNavigate, useParams } from '@tanstack/react-router'
-import { useId, useState } from 'react'
-import { MapProvider } from 'react-map-gl/maplibre'
 
 export function StateOverview() {
   const { stateKey } = useParams({ strict: false }) as { stateKey: string }

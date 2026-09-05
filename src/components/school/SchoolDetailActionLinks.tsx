@@ -1,3 +1,4 @@
+import type { Feature } from 'geojson'
 import { de } from '../../i18n/de'
 import {
   buildIdUrl,
@@ -16,7 +17,6 @@ import {
   getSchoolDetailLicenceInfo,
   SchoolDetailLicenceCompatibleInline,
 } from './SchoolDetailLicence'
-import type { Feature } from 'geojson'
 
 const EDIT_LINK_CLASS_NAME =
   'inline-flex items-center rounded-md bg-brand-800 px-3 py-1.5 text-sm font-medium text-white hover:bg-brand-900'

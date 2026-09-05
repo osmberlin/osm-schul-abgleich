@@ -1,1 +1,5 @@
+#!/usr/bin/env sh
+cd "$(dirname -- "$0")/.." || exit 1
+. "$(dirname -- "$0")/ensure-bun.sh"
+
 bun run format

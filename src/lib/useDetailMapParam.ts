@@ -1,10 +1,10 @@
+import { useNavigate } from '@tanstack/react-router'
 import {
   type OsmStyleMapTriple,
   parseOsmStyleMapSearchParam,
   serializeOsmStyleMapSearchParam,
 } from './osmStyleMapQueryParam'
 import { stateSchuleRouteApi } from './stateRouteApi'
-import { useNavigate } from '@tanstack/react-router'
 
 /** Skip navigate when `?map=` would serialize to the same camera (within float noise). */
 function isRedundantMapParamUpdate(

@@ -1,3 +1,13 @@
+import { featureCollection } from '@turf/helpers'
+import type { Feature } from 'geojson'
+import { Fragment, useState } from 'react'
+import MapGL, {
+  Layer,
+  type MapEvent,
+  type MapLayerMouseEvent,
+  Source,
+  type ViewStateChangeEvent,
+} from 'react-map-gl/maplibre'
 import { de } from '../../i18n/de'
 import { boundsToBboxParam } from '../../lib/mapBounds'
 import { LAND_BOUNDARY_LINE_PAINT, MAP_DIM_MASK_FILL } from '../../lib/mapDimMask'
@@ -25,16 +35,6 @@ import { useDetailMapMask } from '../../lib/useDetailMapMask'
 import type { StateMapBbox } from '../../lib/useStateMapBbox'
 import { DetailMapMaskToggle } from '../DetailMapMaskToggle'
 import { MapPointHoverPanel } from '../MapPointHoverPanel'
-import { featureCollection } from '@turf/helpers'
-import type { Feature } from 'geojson'
-import { Fragment, useState } from 'react'
-import MapGL, {
-  Layer,
-  type MapEvent,
-  type MapLayerMouseEvent,
-  Source,
-  type ViewStateChangeEvent,
-} from 'react-map-gl/maplibre'
 
 export const OTHER_SCHOOLS_LAYER_HALO = 'other-schools-halo'
 /** Stroke-only ring above category halo: matched neighbours with Explorer-flagged tag gaps. */

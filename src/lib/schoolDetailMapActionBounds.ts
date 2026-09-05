@@ -1,7 +1,7 @@
+import type { Feature } from 'geojson'
 import { computeDetailMapFrameState } from './schoolDetailMapFrame'
 import type { StateSchoolsBundle, StateSchoolsMatchRow } from './stateDatasetQueries'
 import { deriveSchoolDetailMapFeatures } from './useSchoolDetailMapFeatures'
-import type { Feature } from 'geojson'
 
 /** Bbox for JOSM / iD links — same geometry as map fit, without hover-only lines. */
 export function computeSchoolDetailMapActionBounds(

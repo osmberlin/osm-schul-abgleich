@@ -1,5 +1,5 @@
-import { inlineMarkdownHtml, unwrapSingleMicromarkParagraph } from './InlineMarkdown'
 import { describe, expect, it } from 'vitest'
+import { inlineMarkdownHtml, unwrapSingleMicromarkParagraph } from './InlineMarkdown'
 
 describe('unwrapSingleMicromarkParagraph', () => {
   it('unwraps one paragraph', () => {

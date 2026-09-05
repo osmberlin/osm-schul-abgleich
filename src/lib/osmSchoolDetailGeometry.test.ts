@@ -1,5 +1,5 @@
-import { resolveOsmSchoolAreaOutline } from './osmSchoolDetailGeometry'
 import { describe, expect, it } from 'vitest'
+import { resolveOsmSchoolAreaOutline } from './osmSchoolDetailGeometry'
 
 describe('resolveOsmSchoolAreaOutline', () => {
   it('returns merged area when hasArea and areas key exists', () => {

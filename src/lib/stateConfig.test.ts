@@ -1,10 +1,10 @@
+import { describe, expect, it } from 'vitest'
 import {
   officialStateCode,
   parseStateColumn,
   stateCodeFromJedeschuleSchool,
   stateCodeFromSchoolId,
 } from './stateConfig'
-import { describe, expect, it } from 'vitest'
 
 describe('parseStateColumn', () => {
   it('accepts known two-letter codes case-insensitively', () => {

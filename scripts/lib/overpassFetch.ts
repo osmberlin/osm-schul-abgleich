@@ -1,8 +1,8 @@
-import { injectSchoolSiteRelationsFromOverpass } from './osmOverpassSchoolSites'
 import { featureCollection } from '@turf/helpers'
 import type { Feature, FeatureCollection } from 'geojson'
 import osm2geojson from 'osm2geojson-ultra'
 import { z } from 'zod'
+import { injectSchoolSiteRelationsFromOverpass } from './osmOverpassSchoolSites'
 
 const INTERPRETERS = [
   'https://overpass-api.de/api/interpreter',

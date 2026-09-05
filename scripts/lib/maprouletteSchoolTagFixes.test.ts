@@ -1,8 +1,8 @@
+import { describe, expect, it } from 'vitest'
 import {
   buildMaprouletteTagFixTask,
   maprouletteTaskPointLonLat,
 } from '../../scripts/lib/maprouletteSchoolTagFixes'
-import { describe, expect, it } from 'vitest'
 
 describe('maprouletteTaskPointLonLat', () => {
   it('prefers official JedeSchule coordinates over OSM centroid', () => {
@@ -49,23 +49,23 @@ describe('buildMaprouletteTagFixTask', () => {
     if (!task) return
 
     const osmId = 'way/12345678'
-    expect(task.features[0].id).toBe(osmId)
-    expect(task.features[0].properties.id).toBe(osmId)
-    expect(task.cooperativeWork.operations[0].data.id).toBe(osmId)
+    expect(task.features[0]!.id).toBe(osmId)
+    expect(task.features[0]!.properties.id).toBe(osmId)
+    expect(task.cooperativeWork.operations[0]!.data.id).toBe(osmId)
     expect(task.cooperativeWork.meta).toEqual({ version: 2, type: 1 })
-    expect(task.features[0].geometry.coordinates).toEqual([13.4, 52.5])
+    expect(task.features[0]!.geometry.coordinates).toEqual([13.4, 52.5])
 
-    const setTags = task.cooperativeWork.operations[0].data.operations[0]
+    const setTags = task.cooperativeWork.operations[0]!.data.operations[0]
     expect(setTags.operation).toBe('setTags')
     expect(setTags.data.school).toBe('primary')
     expect(setTags.data['isced:level']).toBe('1')
     expect(setTags.data.ref).toBe('03P11')
     expect(setTags.data['operator:type']).toBe('government')
 
-    expect(task.features[0].properties.priority).toBe('prio1')
-    expect(task.features[0].properties.task_markdown).toContain('Grundschule')
-    expect(task.features[0].properties.task_markdown).toContain(' \n')
-    expect(task.features[0].properties.task_markdown).not.toContain('Hauptmenü')
+    expect(task.features[0]!.properties.priority).toBe('prio1')
+    expect(task.features[0]!.properties.task_markdown).toContain('Grundschule')
+    expect(task.features[0]!.properties.task_markdown).toContain(' \n')
+    expect(task.features[0]!.properties.task_markdown).not.toContain('Hauptmenü')
   })
 
   it('returns null when nothing is pending', () => {

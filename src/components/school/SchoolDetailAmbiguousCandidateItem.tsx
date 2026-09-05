@@ -1,11 +1,11 @@
+import { ChevronRightIcon, MapPinIcon } from '@heroicons/react/20/solid'
+import { useLayoutEffect, useRef, type ReactNode } from 'react'
 import { de } from '../../i18n/de'
 import { formatDeInteger } from '../../lib/formatNumber'
 import { jedeschuleSchoolJsonUrl } from '../../lib/jedeschuleUrls'
 import { schoolDetailCompareSectionId } from '../../lib/schoolDetailCompareSectionIds'
 import type { SchoolAmbiguousCandidate } from '../../lib/useSchoolAmbiguousCandidates'
 import { SchoolDetailCompareBody } from './SchoolDetailCompareBody'
-import { ChevronRightIcon, MapPinIcon } from '@heroicons/react/20/solid'
-import { useLayoutEffect, useRef, type ReactNode } from 'react'
 
 function recordValue(
   record: Record<string, unknown> | null | undefined,

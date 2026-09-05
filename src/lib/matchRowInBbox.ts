@@ -1,12 +1,19 @@
-import type { schoolsMatchMapRowSchema, schoolsMatchRowSchema } from './schemas'
-import type { StateMapBbox } from './useStateMapBbox'
-import { parseJedeschuleLonLatFromRecord, parseMatchRowOsmCentroidLonLat } from './zodGeo'
 import distance from '@turf/distance'
 import { featureCollection, point } from '@turf/helpers'
 import type { Feature, FeatureCollection, Point } from 'geojson'
 import type { z } from 'zod'
+import type { schoolsMatchMapRowSchema, schoolsMatchRowSchema } from './schemas'
+import type { StateMapBbox } from './useStateMapBbox'
+import { parseJedeschuleLonLatFromRecord, parseMatchRowOsmCentroidLonLat } from './zodGeo'
 
 type Row = z.infer<typeof schoolsMatchRowSchema> | z.infer<typeof schoolsMatchMapRowSchema>
+
+function lonLatFromCoords(coords: number[]): [number, number] | null {
+  const lon = coords[0]
+  const lat = coords[1]
+  if (lon === undefined || lat === undefined) return null
+  return [lon, lat]
+}
 
 function trimNonEmptyString(v: string | null | undefined): string | null {
   if (v == null) return null
@@ -40,8 +47,7 @@ export function matchRowDisplayName(row: {
 /** Point geometry or JedeSchule lat/lon on feature properties (aligned with `detailMapConnectorLines`). */
 export function lonLatFromOfficialFeature(f: Feature): [number, number] | null {
   if (f.geometry?.type === 'Point') {
-    const [lon, lat] = f.geometry.coordinates
-    return [lon, lat]
+    return lonLatFromCoords(f.geometry.coordinates)
   }
   if (f.properties) {
     return parseJedeschuleLonLatFromRecord(f.properties as Record<string, unknown>)
@@ -70,7 +76,9 @@ export function buildOfficialSchoolLonLatIndexFromPoints(
 ): Map<string, [number, number]> {
   const out = new Map<string, [number, number]>()
   for (const id of Object.keys(points)) {
-    const [lon, lat] = points[id]
+    const pair = points[id]
+    if (!pair) continue
+    const [lon, lat] = pair
     if (Number.isFinite(lon) && Number.isFinite(lat)) out.set(id, [lon, lat])
   }
   return out
@@ -127,7 +135,9 @@ export function filterOtherSchoolPointsForDetailMap(
 ): Feature[] {
   return otherPoints.filter((f) => {
     if (f.geometry?.type !== 'Point') return false
-    const [lon, lat] = f.geometry.coordinates
+    const ll = lonLatFromCoords(f.geometry.coordinates)
+    if (!ll) return false
+    const [lon, lat] = ll
     if (mapBbox) {
       const [w, s, e, n] = mapBbox
       if (lon >= w && lon <= e && lat >= s && lat <= n) return true
@@ -165,7 +175,9 @@ export function spreadCoincidentMapPointFeatures(features: Feature[]): Feature[]
 
   const groups = new Map<string, Feature[]>()
   for (const f of points) {
-    const [lon, lat] = (f.geometry as Point).coordinates
+    const ll = lonLatFromCoords((f.geometry as Point).coordinates)
+    if (!ll) continue
+    const [lon, lat] = ll
     const k = mapDisplayCoordGroupKey(lon, lat)
     let bucket = groups.get(k)
     if (!bucket) {
@@ -177,8 +189,9 @@ export function spreadCoincidentMapPointFeatures(features: Feature[]): Feature[]
 
   const spread: Feature[] = []
   for (const group of groups.values()) {
-    if (group.length === 1) {
-      spread.push(group[0])
+    const first = group[0]
+    if (group.length === 1 && first) {
+      spread.push(first)
       continue
     }
     const sorted = [...group].sort((a, b) =>
@@ -189,10 +202,17 @@ export function spreadCoincidentMapPointFeatures(features: Feature[]): Feature[]
     )
     const n = sorted.length
     const ringRadiusM = (n * 6) / (2 * Math.PI)
-    const refLat = (sorted[0].geometry as Point).coordinates[1]
+    const refFeat = sorted[0]
+    if (!refFeat) continue
+    const refLl = lonLatFromCoords((refFeat.geometry as Point).coordinates)
+    if (!refLl) continue
+    const refLat = refLl[1]
     for (let i = 0; i < n; i++) {
       const feat = sorted[i]
-      const [glon, glat] = (feat.geometry as Point).coordinates
+      if (!feat) continue
+      const gl = lonLatFromCoords((feat.geometry as Point).coordinates)
+      if (!gl) continue
+      const [glon, glat] = gl
       const angle = (2 * Math.PI * i) / n
       const eastM = ringRadiusM * Math.cos(angle)
       const northM = ringRadiusM * Math.sin(angle)
@@ -219,7 +239,9 @@ export function spreadOtherSchoolPointsAvoidingDetailPoints(
   for (const f of detailPointFeatures) {
     if (f.geometry?.type !== 'Point') continue
     if (f.properties?._mapDetail === 'osmCentroid') continue
-    const [lon, lat] = (f.geometry as Point).coordinates
+    const ll = lonLatFromCoords((f.geometry as Point).coordinates)
+    if (!ll) continue
+    const [lon, lat] = ll
     const k = mapDisplayCoordGroupKey(lon, lat)
     refCounts.set(k, (refCounts.get(k) ?? 0) + 1)
   }
@@ -234,7 +256,9 @@ export function spreadOtherSchoolPointsAvoidingDetailPoints(
 
   const groups = new Map<string, Feature[]>()
   for (const f of points) {
-    const [lon, lat] = (f.geometry as Point).coordinates
+    const ll = lonLatFromCoords((f.geometry as Point).coordinates)
+    if (!ll) continue
+    const [lon, lat] = ll
     const k = mapDisplayCoordGroupKey(lon, lat)
     let bucket = groups.get(k)
     if (!bucket) {
@@ -246,7 +270,11 @@ export function spreadOtherSchoolPointsAvoidingDetailPoints(
 
   const spread: Feature[] = []
   for (const group of groups.values()) {
-    const [lon0, lat0] = (group[0].geometry as Point).coordinates
+    const g0 = group[0]
+    if (!g0) continue
+    const origin = lonLatFromCoords((g0.geometry as Point).coordinates)
+    if (!origin) continue
+    const [lon0, lat0] = origin
     const k = mapDisplayCoordGroupKey(lon0, lat0)
     const refCount = refCounts.get(k) ?? 0
     const sorted = [...group].sort((a, b) =>
@@ -257,15 +285,22 @@ export function spreadOtherSchoolPointsAvoidingDetailPoints(
     )
     const m = sorted.length
     const total = refCount + m
-    if (total <= 1) {
-      spread.push(sorted[0])
+    const first = sorted[0]
+    if (total <= 1 && first) {
+      spread.push(first)
       continue
     }
+    if (!first) continue
     const ringRadiusM = (total * 6) / (2 * Math.PI)
-    const refLat = (sorted[0].geometry as Point).coordinates[1]
+    const refLl = lonLatFromCoords((first.geometry as Point).coordinates)
+    if (!refLl) continue
+    const refLat = refLl[1]
     for (let i = 0; i < m; i++) {
       const feat = sorted[i]
-      const [glon, glat] = (feat.geometry as Point).coordinates
+      if (!feat) continue
+      const gl = lonLatFromCoords((feat.geometry as Point).coordinates)
+      if (!gl) continue
+      const [glon, glat] = gl
       const slot = refCount + i
       const angle = (2 * Math.PI * slot) / total
       const eastM = ringRadiusM * Math.cos(angle)

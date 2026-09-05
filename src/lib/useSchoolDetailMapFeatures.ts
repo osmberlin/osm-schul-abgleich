@@ -1,3 +1,6 @@
+import circle from '@turf/circle'
+import { lineString, point } from '@turf/helpers'
+import type { Feature, Polygon } from 'geojson'
 import { detailMapConnectorLines } from './detailMapConnectorLines'
 import { findOfficialSchoolFeature } from './findOfficialSchoolFeature'
 import { buildMapDimMaskFeature } from './mapDimMask'
@@ -5,9 +8,6 @@ import { MATCH_RADIUS_KM } from './matchRadius'
 import { resolveOsmSchoolAreaOutline } from './osmSchoolDetailGeometry'
 import type { StateSchoolsBundle, StateSchoolsMatchRow } from './stateDatasetQueries'
 import { parseMatchRowOsmCentroidLonLat } from './zodGeo'
-import circle from '@turf/circle'
-import { lineString, point } from '@turf/helpers'
-import type { Feature, Polygon } from 'geojson'
 
 type HoveredMapLabelLike =
   | { kind: 'osm-reference' }

@@ -1,5 +1,5 @@
-import { JEDESCHULE_WEEKLY_CSV_URL } from '../../src/lib/jedeschuleUrls'
 import path from 'node:path'
+import { JEDESCHULE_WEEKLY_CSV_URL } from '../../src/lib/jedeschuleUrls'
 
 export { JEDESCHULE_WEEKLY_CSV_URL }
 

@@ -1,8 +1,8 @@
-import { appendCacheRecord, loadCache, shouldSkipSchool, type CacheRecord } from './geocodeCache'
 import { mkdtemp, rm } from 'node:fs/promises'
 import os from 'node:os'
 import path from 'node:path'
 import { afterEach, describe, expect, it } from 'vitest'
+import { appendCacheRecord, loadCache, shouldSkipSchool, type CacheRecord } from './geocodeCache'
 
 const dirs: string[] = []
 

@@ -1,5 +1,5 @@
-import { shouldDiscardOverlayPoint } from './overlayOutlierRule'
 import { describe, expect, it } from 'vitest'
+import { shouldDiscardOverlayPoint } from './overlayOutlierRule'
 
 describe('shouldDiscardOverlayPoint', () => {
   it('discards a name match farther than 2 km', () => {

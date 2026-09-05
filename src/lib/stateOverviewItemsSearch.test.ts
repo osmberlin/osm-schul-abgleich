@@ -1,3 +1,4 @@
+import { describe, expect, it } from 'vitest'
 import {
   collectFilteredIdsFromSearchResult,
   createStateMatchItemsJsEngine,
@@ -6,7 +7,6 @@ import {
   searchStateMatchesWithExplorer,
   type StateMatchRow,
 } from './stateOverviewItemsSearch'
-import { describe, expect, it } from 'vitest'
 
 function matchedRow(input: {
   key: string

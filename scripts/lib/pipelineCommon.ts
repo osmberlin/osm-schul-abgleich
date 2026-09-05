@@ -1,8 +1,8 @@
-import { type StateCode, stateCodeFromJedeschuleSchool } from '../../src/lib/stateConfig'
-import type { JedeschuleSchool } from './jedeschuleCsv'
+import path from 'node:path'
 import { feature, featureCollection, point } from '@turf/helpers'
 import type { FeatureCollection } from 'geojson'
-import path from 'node:path'
+import { type StateCode, stateCodeFromJedeschuleSchool } from '../../src/lib/stateConfig'
+import type { JedeschuleSchool } from './jedeschuleCsv'
 
 export const PIPELINE_VERSION = 4 as const
 

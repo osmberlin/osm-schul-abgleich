@@ -1,7 +1,7 @@
+import { useRouterState } from '@tanstack/react-router'
 import { de } from '../i18n/de'
 import { type StateCode, STATE_LABEL_DE } from '../lib/stateConfig'
 import { AppBreadcrumb, type AppBreadcrumbCrumb } from './AppBreadcrumb'
-import { useRouterState } from '@tanstack/react-router'
 
 function normalizePathname(pathname: string) {
   if (!pathname || pathname === '/') return '/'
@@ -38,6 +38,7 @@ export function PageBreadcrumb() {
     const m = pathname.match(/^\/bundesland\/([^/]+)(?:\/schule\/(.+))?$/)
     if (m) {
       const stateKey = m[1]
+      if (!stateKey) return { homeCurrent: true, items: [] }
       const schoolKeyEnc = m[2]
       const label = STATE_LABEL_DE[stateKey as StateCode] ?? stateKey
       const stateShort = stateKey.toUpperCase()

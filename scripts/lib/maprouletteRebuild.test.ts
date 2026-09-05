@@ -1,3 +1,4 @@
+import { describe, expect, it, vi } from 'vitest'
 import {
   classifyRebuildHttp,
   isTaskBuildAlreadyInProgress,
@@ -5,7 +6,6 @@ import {
   retryWaitMsAfterGatewayError,
   type RebuildDeps,
 } from './maprouletteRebuild'
-import { describe, expect, it, vi } from 'vitest'
 
 function jsonResponse(status: number, body: unknown): Response {
   return new Response(JSON.stringify(body), {
@@ -25,9 +25,9 @@ function alreadyInProgress(): Response {
   })
 }
 
-function silentDeps(fetchImpl: typeof fetch): RebuildDeps {
+function silentDeps(fetchImpl: RebuildDeps['fetch'] | ReturnType<typeof vi.fn>): RebuildDeps {
   return {
-    fetch: fetchImpl,
+    fetch: fetchImpl as RebuildDeps['fetch'],
     sleep: vi.fn<(ms: number) => Promise<void>>(async () => undefined),
     log: {
       info: vi.fn<(...args: unknown[]) => void>(),
@@ -84,7 +84,9 @@ describe('retryWaitMsAfterGatewayError', () => {
 
 describe('rebuildChallenge', () => {
   it('returns true on HTTP 2xx', async () => {
-    const fetchImpl = vi.fn<typeof fetch>(async () => new Response(null, { status: 204 }))
+    const fetchImpl = vi.fn<() => Promise<Response>>(
+      async () => new Response(null, { status: 204 }),
+    )
     const deps = silentDeps(fetchImpl)
     await expect(rebuildChallenge(56330, 'tag-fix', 'key', deps)).resolves.toBe(true)
     expect(fetchImpl).toHaveBeenCalledOnce()
@@ -92,7 +94,7 @@ describe('rebuildChallenge', () => {
   })
 
   it('returns true when the first response is already in progress', async () => {
-    const fetchImpl = vi.fn<typeof fetch>(async () => alreadyInProgress())
+    const fetchImpl = vi.fn<() => Promise<Response>>(async () => alreadyInProgress())
     const deps = silentDeps(fetchImpl)
     await expect(rebuildChallenge(56330, 'tag-fix', 'key', deps)).resolves.toBe(true)
     expect(fetchImpl).toHaveBeenCalledOnce()
@@ -101,7 +103,7 @@ describe('rebuildChallenge', () => {
 
   it('waits after 502, then treats already-in-progress as started', async () => {
     const fetchImpl = vi
-      .fn<typeof fetch>()
+      .fn<() => Promise<Response>>()
       .mockResolvedValueOnce(html502())
       .mockResolvedValueOnce(alreadyInProgress())
     const deps = silentDeps(fetchImpl)
@@ -111,7 +113,7 @@ describe('rebuildChallenge', () => {
   })
 
   it('does not retry a non-progress 400', async () => {
-    const fetchImpl = vi.fn<typeof fetch>(async () =>
+    const fetchImpl = vi.fn<() => Promise<Response>>(async () =>
       jsonResponse(400, { message: 'Invalid apiKey' }),
     )
     const deps = silentDeps(fetchImpl)
@@ -121,7 +123,7 @@ describe('rebuildChallenge', () => {
   })
 
   it('gives up after three gateway failures', async () => {
-    const fetchImpl = vi.fn<typeof fetch>(async () => html502())
+    const fetchImpl = vi.fn<() => Promise<Response>>(async () => html502())
     const deps = silentDeps(fetchImpl)
     await expect(rebuildChallenge(56330, 'tag-fix', 'key', deps)).resolves.toBe(false)
     expect(fetchImpl).toHaveBeenCalledTimes(3)

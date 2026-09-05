@@ -1,5 +1,5 @@
-import { stateSchuleRouteApi } from './stateRouteApi'
 import { useNavigate } from '@tanstack/react-router'
+import { stateSchuleRouteApi } from './stateRouteApi'
 
 /**
  * Path params are URI-decoded by TanStack Router. `schoolKey` is the bundle row id

@@ -1,9 +1,9 @@
+import distance from '@turf/distance'
+import { point } from '@turf/helpers'
 import { findOfficialSchoolFeature } from './findOfficialSchoolFeature'
 import { nameFromOfficialProperties } from './matchRowInBbox'
 import type { StateSchoolsBundle, StateSchoolsMatchRow } from './stateDatasetQueries'
 import { parseJedeschuleLonLatFromRecord } from './zodGeo'
-import distance from '@turf/distance'
-import { point } from '@turf/helpers'
 
 export type SchoolAmbiguousCandidate = {
   id: string
@@ -18,6 +18,13 @@ export type SchoolAmbiguousCandidate = {
 export type SchoolAmbiguousCandidatesResult = {
   ambiguousCandidates: SchoolAmbiguousCandidate[]
   ambiguousNoLocalGeoFeature: boolean
+}
+
+function pairOrNull(coords: number[]): readonly [number, number] | null {
+  const lon = coords[0]
+  const lat = coords[1]
+  if (lon === undefined || lat === undefined) return null
+  return [lon, lat]
 }
 
 function resolveSchoolAmbiguousCandidates(
@@ -37,10 +44,7 @@ function resolveSchoolAmbiguousCandidates(
     >
     const officialLonLat: readonly [number, number] | null =
       officialFeature?.geometry?.type === 'Point'
-        ? ([
-            officialFeature.geometry.coordinates[0],
-            officialFeature.geometry.coordinates[1],
-          ] as const)
+        ? pairOrNull(officialFeature.geometry.coordinates)
         : parseJedeschuleLonLatFromRecord(props)
 
     const showDistance =

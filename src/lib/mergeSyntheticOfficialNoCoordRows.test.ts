@@ -1,7 +1,7 @@
-import { mergeSyntheticOfficialNoCoordRows } from './mergeSyntheticOfficialNoCoordRows'
-import { schoolsMatchRowSchema } from './schemas'
 import type { Feature, FeatureCollection } from 'geojson'
 import { describe, expect, it } from 'vitest'
+import { mergeSyntheticOfficialNoCoordRows } from './mergeSyntheticOfficialNoCoordRows'
+import { schoolsMatchRowSchema } from './schemas'
 
 function row(
   partial: Parameters<typeof schoolsMatchRowSchema.parse>[0],

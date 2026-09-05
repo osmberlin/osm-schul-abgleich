@@ -1,4 +1,12 @@
 #!/usr/bin/env bun
+import { existsSync } from 'node:fs'
+import path from 'node:path'
+import process from 'node:process'
+import { fileURLToPath } from 'node:url'
+import distance from '@turf/distance'
+import { point } from '@turf/helpers'
+import type { FeatureCollection } from 'geojson'
+import { z } from 'zod'
 import { parseOfficialPointsMap } from '../../scripts/lib/applyOfficialGeocodeOverlay'
 import { initBundeslandBoundaries } from '../../scripts/lib/bundeslandBoundaries'
 import { dedupeOfficialInputs } from '../../scripts/lib/dedupeOfficialInputs'
@@ -21,14 +29,6 @@ import {
   OVERLAY_OUTLIER_REASON,
   shouldDiscardOverlayPoint,
 } from './overlayOutlierRule'
-import distance from '@turf/distance'
-import { point } from '@turf/helpers'
-import type { FeatureCollection } from 'geojson'
-import { existsSync } from 'node:fs'
-import path from 'node:path'
-import process from 'node:process'
-import { fileURLToPath } from 'node:url'
-import { z } from 'zod'
 
 const SCRIPT_DIR = path.dirname(fileURLToPath(import.meta.url))
 const ROOT = path.join(SCRIPT_DIR, '../..')

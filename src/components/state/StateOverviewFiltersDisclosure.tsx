@@ -1,3 +1,5 @@
+import { ChevronDownIcon } from '@heroicons/react/20/solid'
+import { useEffect, useId, useState } from 'react'
 import { de } from '../../i18n/de'
 import { cn } from '../../lib/cn'
 import { formatDeInteger } from '../../lib/formatNumber'
@@ -18,8 +20,6 @@ import {
 } from '../../lib/stateOverviewItemsSearch'
 import { stateRouteApi } from '../../lib/stateRouteApi'
 import { parseStateMapBboxSearchParam } from '../../lib/useStateMapBbox'
-import { ChevronDownIcon } from '@heroicons/react/20/solid'
-import { useEffect, useId, useState } from 'react'
 
 type Bucket = { key: string | number; doc_count: number }
 

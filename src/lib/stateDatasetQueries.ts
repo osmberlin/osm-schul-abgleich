@@ -1,3 +1,6 @@
+import { queryOptions } from '@tanstack/react-query'
+import type { Feature, FeatureCollection, MultiPolygon, Polygon } from 'geojson'
+import type { z } from 'zod'
 import { DATASET_FETCH_INIT, DATASET_QUERY_GC_MS, DATASET_QUERY_STALE_MS } from './cachePolicy'
 import {
   stateBoundaryUrl,
@@ -14,9 +17,6 @@ import {
   schoolsMatchesMapFileSchema,
   stateOfficialPointsFileSchema,
 } from './schemas'
-import { queryOptions } from '@tanstack/react-query'
-import type { Feature, FeatureCollection, MultiPolygon, Polygon } from 'geojson'
-import type { z } from 'zod'
 
 export type StateOverviewBundle = {
   officialPoints: z.infer<typeof stateOfficialPointsFileSchema>

@@ -1,3 +1,4 @@
+import { describe, expect, it } from 'vitest'
 import {
   classifySchoolFormCombo,
   evaluateOsmRuleMatch,
@@ -11,7 +12,6 @@ import {
   resolveSchoolFormRuleFromSchoolDe,
   suggestTagsForSchoolFormRule,
 } from './schoolFormRules'
-import { describe, expect, it } from 'vitest'
 
 describe('resolveSchoolFormRuleFromOfficial', () => {
   it('detects grundschule from name or school_type', () => {

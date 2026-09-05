@@ -1,6 +1,6 @@
+import { useNavigate } from '@tanstack/react-router'
 import { STATE_MATCH_CATEGORIES, type StateMatchCategory } from './stateMatchCategories'
 import { stateRouteApi } from './stateRouteApi'
-import { useNavigate } from '@tanstack/react-router'
 
 /** Mutable full list + stable reference for default / “all categories” URL value. */
 const DEFAULT_STATE_MATCH_CATEGORIES: StateMatchCategory[] = [...STATE_MATCH_CATEGORIES]

@@ -1,7 +1,7 @@
-import { injectSchoolSiteRelationsFromOverpass } from './osmOverpassSchoolSites'
 import type { FeatureCollection } from 'geojson'
 import osm2geojson from 'osm2geojson-ultra'
 import { describe, expect, it } from 'vitest'
+import { injectSchoolSiteRelationsFromOverpass } from './osmOverpassSchoolSites'
 
 describe('injectSchoolSiteRelationsFromOverpass', () => {
   it('drops amenity=school member ways when relation/{id} exists (osm2geojson-ultra)', () => {

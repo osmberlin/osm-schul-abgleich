@@ -1,7 +1,7 @@
+import { describe, expect, it } from 'vitest'
 import { JEDESCHULE_DUPLICATE_GROUP_SIZE_KEY } from '../../src/lib/jedeschuleDuplicateGroup'
 import { dedupeOfficialInputs } from './dedupeOfficialInputs'
 import type { OfficialInput } from './match'
-import { describe, expect, it } from 'vitest'
 
 function off(id: string, lon: number, lat: number, props: Record<string, unknown>): OfficialInput {
   const name = String(props.name ?? '')

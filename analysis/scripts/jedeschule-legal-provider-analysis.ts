@@ -1,4 +1,6 @@
 #!/usr/bin/env bun
+import { mkdir, writeFile } from 'node:fs/promises'
+import path from 'node:path'
 // Reads the JedeSchule CSV (same input as the official GeoJSON pipeline) and writes
 // analysis/out/06-legal-status-provider.md (see package.json analysis:matches-legal-provider).
 import { parseSchoolsFromCsvText } from '../../scripts/lib/jedeschuleCsv'
@@ -8,8 +10,6 @@ import {
   STATE_ORDER,
   stateCodeFromJedeschuleSchool,
 } from '../../src/lib/stateConfig'
-import { mkdir, writeFile } from 'node:fs/promises'
-import path from 'node:path'
 
 const ROOT = path.join(import.meta.dirname, '../..')
 const OUT_DIR = path.join(ROOT, 'analysis', 'out')

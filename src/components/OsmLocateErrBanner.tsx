@@ -1,6 +1,6 @@
+import { useNavigate, useRouterState } from '@tanstack/react-router'
 import { de } from '../i18n/de'
 import type { OsmLocateErrKey } from '../lib/indexRouteSearch'
-import { useNavigate, useRouterState } from '@tanstack/react-router'
 
 function messageForErr(err: OsmLocateErrKey): string {
   if (err === 'invalid') return de.osmLocate.invalidFormat

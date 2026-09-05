@@ -7,8 +7,11 @@ export function compareRunRecordsStable(a: unknown, b: unknown): number {
   const ka = runSortKey(a)
   const kb = runSortKey(b)
   for (let i = 0; i < ka.length; i++) {
-    if (ka[i] < kb[i]) return -1
-    if (ka[i] > kb[i]) return 1
+    const left = ka[i]
+    const right = kb[i]
+    if (left === undefined || right === undefined) continue
+    if (left < right) return -1
+    if (left > right) return 1
   }
   return 0
 }
@@ -50,7 +53,7 @@ export function parseRunHistoryJsonlWithDiagnostics(text: string): ParsedRunHist
   const out: unknown[] = []
   let parseErrors = 0
   for (let i = 0; i < lines.length; i++) {
-    const line = lines[i].trim()
+    const line = (lines[i] ?? '').trim()
     if (line === '') continue
     try {
       out.push(JSON.parse(line))

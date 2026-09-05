@@ -1,9 +1,9 @@
 #!/usr/bin/env bun
+import { mkdir, writeFile } from 'node:fs/promises'
+import path from 'node:path'
 import { parseSchoolsFromCsvText } from '../../scripts/lib/jedeschuleCsv'
 import { jedeschuleDumpAbsolutePath } from '../../scripts/lib/jedeschuleDumpConfig'
 import { STATE_LABEL_DE, STATE_ORDER, stateCodeFromSchoolId } from '../../src/lib/stateConfig'
-import { mkdir, writeFile } from 'node:fs/promises'
-import path from 'node:path'
 
 const ROOT = path.join(import.meta.dirname, '../..')
 const OUT_DIR = path.join(ROOT, 'analysis', 'out')

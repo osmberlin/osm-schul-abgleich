@@ -1,3 +1,5 @@
+import { rm } from 'node:fs/promises'
+import path from 'node:path'
 import {
   schoolsMatchesDetailByKeyFileSchema,
   stateOfficialPointsFileSchema,
@@ -9,8 +11,6 @@ import {
 } from '../../src/lib/schoolsMatchCsv'
 import { STATE_ORDER } from '../../src/lib/stateConfig'
 import { datasetsDir } from './pipelineCommon'
-import { rm } from 'node:fs/promises'
-import path from 'node:path'
 
 /**
  * Build `public/datasets/schools_matches.csv` from every Land's match JSON.

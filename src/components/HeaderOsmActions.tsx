@@ -1,3 +1,5 @@
+import { Link } from '@tanstack/react-router'
+import { useState } from 'react'
 import { de, formatOsmReviewPendingObjectTooltip } from '../i18n/de'
 import { formatDeInteger } from '../lib/formatNumber'
 import { isOsmOAuthConfigured } from '../lib/osmOAuthConfig'
@@ -8,8 +10,6 @@ import {
   usePendingEditCount,
 } from '../stores/osmAppStore'
 import { OsmLocateSearchTrigger } from './OsmLocateSearchDialog'
-import { Link } from '@tanstack/react-router'
-import { useState } from 'react'
 
 /** Matches SchuleDetail / StateOverview headline total pills (light chip on dark header). */
 const HEADLINE_COUNT_PILL =

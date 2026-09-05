@@ -1,4 +1,9 @@
 import 'maplibre-gl/dist/maplibre-gl.css'
+import { useQuery } from '@tanstack/react-query'
+import { point } from '@turf/helpers'
+import type { Feature, FeatureCollection } from 'geojson'
+import { useState } from 'react'
+import { MapProvider, type ViewStateChangeEvent } from 'react-map-gl/maplibre'
 import { de } from '../../i18n/de'
 import {
   buildOfficialSchoolLonLatIndex,
@@ -34,11 +39,6 @@ import {
   type SchoolDetailMapRenderData,
   SchoolDetailMapLegend,
 } from './SchoolDetailMap'
-import { useQuery } from '@tanstack/react-query'
-import { point } from '@turf/helpers'
-import type { Feature, FeatureCollection } from 'geojson'
-import { useState } from 'react'
-import { MapProvider, type ViewStateChangeEvent } from 'react-map-gl/maplibre'
 
 const MAP_BOX_CLASS = 'relative h-[360px] overflow-hidden rounded-lg border border-zinc-700'
 

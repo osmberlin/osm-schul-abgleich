@@ -1,9 +1,9 @@
+import { describe, expect, it } from 'vitest'
 import {
   schoolInMaprouletteCreates,
   stateHasMaproulette,
   stateHasMaprouletteCreates,
 } from './maprouletteAvailability'
-import { describe, expect, it } from 'vitest'
 
 describe('stateHasMaproulette', () => {
   it('is true for every Land when the Tag Fix challenge id is set', () => {

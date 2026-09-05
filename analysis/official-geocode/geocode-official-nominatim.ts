@@ -1,4 +1,8 @@
 #!/usr/bin/env bun
+import { mkdir } from 'node:fs/promises'
+import path from 'node:path'
+import { point } from '@turf/helpers'
+import { z } from 'zod'
 import { initBundeslandBoundaries } from '../../scripts/lib/bundeslandBoundaries'
 import {
   filterJedeschuleSchoolsByRecency,
@@ -11,10 +15,6 @@ import { officialStateCode, STATE_ORDER, type StateCode } from '../../src/lib/st
 import { appendCacheRecord, loadCache, shouldSkipSchool, type CacheRecord } from './geocodeCache'
 import { roundToDecimals } from './geocodeCoords'
 import { classifyNominatimHit, isRejectedNominatimClassType } from './nominatimResultFilter'
-import { point } from '@turf/helpers'
-import { mkdir } from 'node:fs/promises'
-import path from 'node:path'
-import { z } from 'zod'
 
 const ROOT = path.join(import.meta.dirname, '../..')
 const CACHE_PATH = path.join(import.meta.dirname, 'cache.ndjson')

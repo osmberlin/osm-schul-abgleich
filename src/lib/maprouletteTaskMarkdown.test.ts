@@ -1,3 +1,4 @@
+import { describe, expect, it } from 'vitest'
 import {
   buildMaprouletteCreateSchoolTaskMarkdown,
   buildMaprouletteOsmHeuristicTaskMarkdown,
@@ -6,7 +7,6 @@ import {
   schoolWebsiteHref,
 } from './maprouletteTaskMarkdown'
 import { collectOfficialCreateTags } from './officialCreateTags'
-import { describe, expect, it } from 'vitest'
 
 describe('schoolWebsiteHref', () => {
   it('adds https when scheme is missing', () => {

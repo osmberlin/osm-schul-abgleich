@@ -1,5 +1,5 @@
-import { canonicalSchoolKindDe, mapSchoolSegmentToDe, splitOsmSchoolRaw } from './osmSchoolKindDe'
 import { describe, expect, it } from 'vitest'
+import { canonicalSchoolKindDe, mapSchoolSegmentToDe, splitOsmSchoolRaw } from './osmSchoolKindDe'
 
 describe('splitOsmSchoolRaw', () => {
   it('splits semicolons', () => {

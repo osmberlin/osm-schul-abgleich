@@ -1,3 +1,13 @@
+import { QueryClient } from '@tanstack/react-query'
+import {
+  createRootRoute,
+  createRoute,
+  createRouter,
+  defaultParseSearch,
+  Outlet,
+  redirect,
+} from '@tanstack/react-router'
+import { useEffect } from 'react'
 import { AppFooter } from './components/AppFooter'
 import { AppHeader } from './components/AppHeader'
 import { parseIndexRouteMapSearch, validateIndexRouteSearch } from './lib/indexRouteSearch'
@@ -16,16 +26,6 @@ import { StateLayout } from './pages/StateLayout'
 import { StateOverview } from './pages/StateOverview'
 import { StatusPage } from './pages/StatusPage'
 import { getOsmPendingObjectCount, useOsmAppActions } from './stores/osmAppStore'
-import { QueryClient } from '@tanstack/react-query'
-import {
-  createRootRoute,
-  createRoute,
-  createRouter,
-  defaultParseSearch,
-  Outlet,
-  redirect,
-} from '@tanstack/react-router'
-import { useEffect } from 'react'
 
 function OsmAuthBootstrap() {
   const { initAuth } = useOsmAppActions()

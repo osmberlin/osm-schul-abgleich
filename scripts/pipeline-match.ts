@@ -1,6 +1,6 @@
 #!/usr/bin/env bun
-import { runStateFirstPipeline } from './lib/nationalPipeline'
 import path from 'node:path'
+import { runStateFirstPipeline } from './lib/nationalPipeline'
 
 const ROOT = path.join(import.meta.dirname, '..')
 

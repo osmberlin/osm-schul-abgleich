@@ -1,11 +1,11 @@
+import { CheckIcon, ChevronRightIcon } from '@heroicons/react/20/solid'
+import { Link } from '@tanstack/react-router'
+import { type ReactNode } from 'react'
 import { de } from '../../i18n/de'
 import { formatDeInteger } from '../../lib/formatNumber'
 import { stateHasMaproulette } from '../../lib/maprouletteAvailability'
 import { CATEGORY_INNER_HEX } from '../../lib/matchCategoryTheme'
 import { type StateCode, STATE_LABEL_DE, STATE_ORDER } from '../../lib/stateConfig'
-import { CheckIcon, ChevronRightIcon } from '@heroicons/react/20/solid'
-import { Link } from '@tanstack/react-router'
-import { type ReactNode } from 'react'
 
 const PIE_CX = 20
 const PIE_CY = 20

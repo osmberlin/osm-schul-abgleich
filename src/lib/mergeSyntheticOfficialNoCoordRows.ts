@@ -1,7 +1,7 @@
-import { lonLatFromOfficialFeature } from './matchRowInBbox'
-import { schoolsMatchRowSchema } from './schemas'
 import type { Feature, FeatureCollection } from 'geojson'
 import type { z } from 'zod'
+import { lonLatFromOfficialFeature } from './matchRowInBbox'
+import { schoolsMatchRowSchema } from './schemas'
 
 type Row = z.infer<typeof schoolsMatchRowSchema>
 

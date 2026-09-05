@@ -1,8 +1,8 @@
+import type { ReactNode } from 'react'
 import { de } from '../../i18n/de'
 import { formatDeInteger } from '../../lib/formatNumber'
 import { isNominatimCoordSource } from '../../lib/officialCoordSource'
 import type { StateSchoolsMatchRow } from '../../lib/stateDatasetQueries'
-import type { ReactNode } from 'react'
 
 export type DistanceMatchExplanationKey =
   | 'matchExplanationDistance'

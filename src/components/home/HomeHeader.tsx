@@ -1,7 +1,7 @@
+import { Link } from '@tanstack/react-router'
 import { de } from '../../i18n/de'
 import { APP_LOGO_SRC } from '../../lib/branding'
 import { GITHUB_REPO_ROOT } from '../../lib/githubRepo'
-import { Link } from '@tanstack/react-router'
 
 const headerLinkClass =
   'font-medium text-emerald-300 underline decoration-emerald-300/30 underline-offset-2 hover:decoration-emerald-400'

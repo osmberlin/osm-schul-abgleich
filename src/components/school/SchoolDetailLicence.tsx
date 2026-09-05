@@ -1,3 +1,5 @@
+import { ExclamationTriangleIcon, ShieldCheckIcon } from '@heroicons/react/20/solid'
+import { Link } from '@tanstack/react-router'
 import { de } from '../../i18n/de'
 import {
   BUNDESLAND_OFFICIAL_SOURCES,
@@ -7,8 +9,6 @@ import {
 import { isOsmLicenceCompatibleForTagFix } from '../../lib/maprouletteAvailability'
 import { type StateCode, STATE_ORDER } from '../../lib/stateConfig'
 import { useSchoolDetailRoute } from '../../lib/useSchoolDetailRoute'
-import { ExclamationTriangleIcon, ShieldCheckIcon } from '@heroicons/react/20/solid'
-import { Link } from '@tanstack/react-router'
 
 export type SchoolDetailLicenceInfo = {
   officialLicenceRow: BundeslandOfficialSourceRow | null

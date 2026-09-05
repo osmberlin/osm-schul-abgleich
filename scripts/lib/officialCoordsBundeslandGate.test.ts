@@ -1,11 +1,11 @@
+import path from 'node:path'
+import type { Feature, FeatureCollection } from 'geojson'
+import { afterEach, describe, expect, it } from 'vitest'
 import { initBundeslandBoundaries, resetBundeslandBoundariesCache } from './bundeslandBoundaries'
 import {
   gateOfficialFeatureCollection,
   voidOfficialPointOutsideDeclaredState,
 } from './officialCoordsBundeslandGate'
-import type { Feature } from 'geojson'
-import path from 'node:path'
-import { afterEach, describe, expect, it } from 'vitest'
 
 const PROJECT_ROOT = path.join(import.meta.dirname, '../..')
 
@@ -74,13 +74,13 @@ describe('voidOfficialPointOutsideDeclaredState', () => {
 describe('gateOfficialFeatureCollection', () => {
   it('maps all features', () => {
     initBundeslandBoundaries(PROJECT_ROOT)
-    const fc = {
+    const fc: FeatureCollection = {
       type: 'FeatureCollection',
       features: [pointFeature('HE-a', 13.405, 52.52), pointFeature('BE-b', 13.405, 52.52)],
     }
     const out = gateOfficialFeatureCollection(fc)
     expect(out.features).toHaveLength(2)
-    expect(out.features[0].geometry).toBeNull()
-    expect(out.features[1].geometry?.type).toBe('Point')
+    expect(out.features[0]!.geometry).toBeNull()
+    expect(out.features[1]!.geometry?.type).toBe('Point')
   })
 })

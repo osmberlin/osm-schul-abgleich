@@ -1,8 +1,8 @@
+import { describe, expect, it } from 'vitest'
 import {
   collectOsmHeuristicTagSuggestions,
   maproulettePriorityFromOsmHeuristic,
 } from './osmHeuristicTagSuggestions'
-import { describe, expect, it } from 'vitest'
 
 describe('collectOsmHeuristicTagSuggestions', () => {
   it('suggests primary tags from OSM name without ref/operator', () => {

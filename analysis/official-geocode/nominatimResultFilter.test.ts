@@ -1,10 +1,10 @@
+import { describe, expect, it } from 'vitest'
 import {
   classifyNominatimHit,
   hasHouseNumber,
   isRejectedNominatimClassType,
   postcodeMatches,
 } from './nominatimResultFilter'
-import { describe, expect, it } from 'vitest'
 
 describe('hasHouseNumber', () => {
   it('is true when the address contains a digit', () => {

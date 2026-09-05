@@ -1,5 +1,5 @@
-import { distanceMatchExplanationKey } from './SchoolDetailMatchExplanation'
 import { describe, expect, it } from 'vitest'
+import { distanceMatchExplanationKey } from './SchoolDetailMatchExplanation'
 
 const nominatim = { coord_source: 'nominatim' }
 

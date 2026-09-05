@@ -1,8 +1,8 @@
-import { jedeschuleSchoolSchema, jedeschuleStatSchema } from '../../src/lib/schemas'
-import { stateCodeFromJedeschuleSchool } from '../../src/lib/stateConfig'
 import { parse } from 'csv-parse/sync'
 import { subMonths } from 'date-fns'
 import { z } from 'zod'
+import { jedeschuleSchoolSchema, jedeschuleStatSchema } from '../../src/lib/schemas'
+import { stateCodeFromJedeschuleSchool } from '../../src/lib/stateConfig'
 
 /** `PIPELINE_KEEP_JEDESCHULE_MISSING_TIMESTAMP`: unset/empty/invalid → false; truthy per `z.stringbool()`. */
 const pipelineKeepJedeschuleMissingTimestampEnvSchema = z
@@ -36,7 +36,7 @@ export function parseSchoolsFromCsvText(text: string, labelForErrors = 'CSV'): J
   const schools: JedeschuleSchool[] = []
   for (let i = 0; i < records.length; i++) {
     try {
-      schools.push(rowToSchool(records[i]))
+      schools.push(rowToSchool(records[i] ?? {}))
     } catch (e) {
       throw new Error(`${labelForErrors} row ${i + 2}: ${e}`)
     }

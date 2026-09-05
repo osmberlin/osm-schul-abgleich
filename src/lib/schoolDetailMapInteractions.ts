@@ -1,6 +1,6 @@
+import { z } from 'zod'
 import { de } from '../i18n/de'
 import { STATE_MATCH_CATEGORIES, type StateMatchCategory } from './stateMatchCategories'
-import { z } from 'zod'
 
 export type DetailMapHitKind = 'osm-other' | 'official-current' | 'reference'
 

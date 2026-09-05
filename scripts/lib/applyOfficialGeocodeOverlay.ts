@@ -1,7 +1,7 @@
-import type { Feature, FeatureCollection } from 'geojson'
 import { existsSync } from 'node:fs'
 import { readFile } from 'node:fs/promises'
 import path from 'node:path'
+import type { Feature, FeatureCollection } from 'geojson'
 import { z } from 'zod'
 
 export const officialPointsMapSchema = z.record(

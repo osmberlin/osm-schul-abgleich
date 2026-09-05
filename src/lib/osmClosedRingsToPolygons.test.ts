@@ -1,5 +1,5 @@
-import { promoteClosedLineStringsToPolygons, ringIsClosed } from './osmClosedRingsToPolygons'
 import { describe, expect, it } from 'vitest'
+import { promoteClosedLineStringsToPolygons, ringIsClosed } from './osmClosedRingsToPolygons'
 
 describe('ringIsClosed', () => {
   it('requires at least 4 positions and matching endpoints', () => {

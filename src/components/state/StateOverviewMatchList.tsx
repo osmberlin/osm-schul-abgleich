@@ -1,11 +1,11 @@
+import { ChevronRightIcon } from '@heroicons/react/20/solid'
+import { Link } from '@tanstack/react-router'
 import { de } from '../../i18n/de'
 import { formatDeInteger } from '../../lib/formatNumber'
 import { formatMatchRowListId } from '../../lib/formatOsmRef'
 import { matchRowDisplayName } from '../../lib/matchRowInBbox'
 import type { StateMatchCategory } from '../../lib/stateMatchCategories'
 import { CategoryLegendSwatch } from '../CategoryLegendSwatch'
-import { ChevronRightIcon } from '@heroicons/react/20/solid'
-import { Link } from '@tanstack/react-router'
 
 type ListMatchRow = {
   key: string

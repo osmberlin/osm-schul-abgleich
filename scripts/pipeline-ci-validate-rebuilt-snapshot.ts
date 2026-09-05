@@ -1,8 +1,8 @@
 #!/usr/bin/env bun
-import { NATIONAL, nationalPath } from './lib/nationalDatasetPaths'
-import { datasetsDir, statusDir } from './lib/pipelineCommon'
 import { access } from 'node:fs/promises'
 import path from 'node:path'
+import { NATIONAL, nationalPath } from './lib/nationalDatasetPaths'
+import { datasetsDir, statusDir } from './lib/pipelineCommon'
 
 const ROOT = path.join(import.meta.dirname, '..')
 
