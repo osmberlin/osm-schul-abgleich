@@ -67,6 +67,35 @@ describe('collectOsmTagSuggestions', () => {
     expect(pendingTags.operator).toBe('Stadt Berlin')
   })
 
+  it('keeps operator in the UI group but not pendingTags when OSM already has operator', () => {
+    const { groups, pendingTags } = collectOsmTagSuggestions({
+      officialId: 'NW-1',
+      officialName: 'Schule',
+      officialProperties: {
+        legal_status: 'öffentlich',
+        provider: 'Stadt Düsseldorf',
+      },
+      osmTags: { amenity: 'school', operator: 'Landeshauptstadt Düsseldorf' },
+    })
+    const carrier = groups.find((g) => g.kind === 'oeffentlicheTraegerschaft')
+    expect(carrier?.tags.some((t) => t.key === 'operator' && t.value === 'Stadt Düsseldorf')).toBe(
+      true,
+    )
+    expect(pendingTags.operator).toBeUndefined()
+    expect(pendingTags['operator:type']).toBe('government')
+  })
+
+  it('does not put operator:type in pendingTags when OSM already has one', () => {
+    const { pendingTags } = collectOsmTagSuggestions({
+      officialId: 'NW-1',
+      officialName: 'Schule',
+      officialProperties: { legal_status: 'öffentlich', provider: 'Stadt Düsseldorf' },
+      osmTags: { amenity: 'school', 'operator:type': 'public' },
+    })
+    expect(pendingTags['operator:type']).toBeUndefined()
+    expect(pendingTags.operator).toBe('Stadt Düsseldorf')
+  })
+
   it('for Gesamtschule pendingTags keeps a single isced:level=2;3', () => {
     const { groups, pendingTags } = collectOsmTagSuggestions({
       officialId: 'BE-10K09',

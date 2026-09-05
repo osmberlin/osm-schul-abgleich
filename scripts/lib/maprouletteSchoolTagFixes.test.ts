@@ -68,6 +68,36 @@ describe('buildMaprouletteTagFixTask', () => {
     expect(task.features[0]!.properties.task_markdown).not.toContain('Hauptmenü')
   })
 
+  it('does not setTags operator when OSM already has a different operator', () => {
+    const task = buildMaprouletteTagFixTask({
+      osmType: 'way',
+      osmId: '12345678',
+      lon: 13.4,
+      lat: 52.5,
+      stateKey: 'NW',
+      schoolKey: 'match-NW-1',
+      schoolName: 'Schule Test',
+      officialId: 'NW-1',
+      officialProperties: {
+        school_type: 'Grundschule',
+        legal_status: 'öffentlich',
+        provider: 'Stadt Düsseldorf',
+      },
+      osmTags: {
+        amenity: 'school',
+        school: 'primary',
+        'isced:level': '1',
+        operator: 'Landeshauptstadt Düsseldorf',
+      },
+      taskUpdatedAt: '2026-08-08T06:00:00.000Z',
+    })
+    expect(task).not.toBeNull()
+    if (!task) return
+    const setTags = task.cooperativeWork.operations[0]!.data.operations[0]
+    expect(setTags.data.operator).toBeUndefined()
+    expect(setTags.data['operator:type']).toBe('government')
+  })
+
   it('returns null when nothing is pending', () => {
     const task = buildMaprouletteTagFixTask({
       osmType: 'node',

@@ -28,7 +28,10 @@ export type OsmSuggestGroup = {
 
 export type OsmTagSuggestionsResult = {
   groups: OsmSuggestGroup[]
-  /** Tags still missing or differing on OSM — for MapRoulette Tag Fix / upload staging. */
+  /**
+   * Tags still missing on OSM — MapRoulette Tag Fix `setTags`.
+   * Never replaces an existing `operator` / `operator:type` (school page can still offer a confirm).
+   */
   pendingTags: Record<string, string>
 }
 
@@ -80,9 +83,17 @@ function iscedAlreadyAcceptable(current: string | undefined): boolean {
   return v === '2' || v === '2;3'
 }
 
+function osmHasNonEmptyTag(
+  osmTags: Record<string, string> | null | undefined,
+  key: string,
+): boolean {
+  return (osmTags?.[key]?.trim() ?? '') !== ''
+}
+
 /**
  * Build pending setTags from UI specs. For duplicate keys (Gesamtschule isced alternatives),
  * keep the first pending value only; skip isced when OSM already has 2 or 2;3.
+ * Do not auto-replace an existing `operator` or `operator:type`.
  */
 export function pendingTagsFromSuggestSpecs(
   osmTags: Record<string, string> | null | undefined,
@@ -91,6 +102,12 @@ export function pendingTagsFromSuggestSpecs(
   const pending: Record<string, string> = {}
   for (const spec of specs) {
     if (tagValueEqualsProposed(osmTags?.[spec.key], spec.value)) continue
+    if (
+      (spec.key === 'operator' || spec.key === 'operator:type') &&
+      osmHasNonEmptyTag(osmTags, spec.key)
+    ) {
+      continue
+    }
     if (spec.key === 'isced:level') {
       if (iscedAlreadyAcceptable(osmTags?.[spec.key])) continue
       if (pending[spec.key] != null) continue
