@@ -4,6 +4,11 @@ Automatisch aus `changelog.registry.yaml` erzeugt.
 
 ## 2026-09
 
+### `36b6d75`
+
+MapRoulette Tag-Fix setzt keinen `operator` oder `operator:type` mehr, wenn OSM den Tag schon hat.
+Auf der Schuldetailseite kann man ihn nach Rückfrage weiter ersetzen.
+
 ### `bc8f5d0`
 
 MapRoulette Tag-Fix ist eine Kampagne mit einer GeoJSON-Datei: lizenzfreie amtliche Vorschläge wo möglich, sonst bundesweit nur aus OSM (ohne `ref`/Betreiber).

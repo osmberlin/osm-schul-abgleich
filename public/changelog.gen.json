@@ -1,9 +1,20 @@
 {
-  "generatedAt": "2026-09-04T20:53:16.750Z",
+  "generatedAt": "2026-09-05T05:48:17.777Z",
   "months": [
     {
       "month": "2026-09",
       "entries": [
+        {
+          "refs": [
+            "36b6d75"
+          ],
+          "descriptionMd": "MapRoulette Tag-Fix setzt keinen `operator` oder `operator:type` mehr, wenn OSM den Tag schon hat.\nAuf der Schuldetailseite kann man ihn nach Rückfrage weiter ersetzen.",
+          "committedAtIso": "2026-09-05T07:36:08+02:00",
+          "committedAtShort": "2026-09-05",
+          "refsDisplay": [
+            "36b6d75"
+          ]
+        },
         {
           "refs": [
             "bc8f5d0"

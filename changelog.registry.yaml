@@ -168,6 +168,11 @@ entries:
       MapRoulette Tag-Fix ist eine Kampagne mit einer GeoJSON-Datei: lizenzfreie amtliche Vorschläge wo möglich, sonst bundesweit nur aus OSM (ohne `ref`/Betreiber).
       Länder ohne amtliche Lizenz erscheinen in derselben Kampagne; Übersicht und Schuldetail verlinken MapRoulette überall.
   - refs:
+      - '36b6d75'
+    descriptionMd: |
+      MapRoulette Tag-Fix setzt keinen `operator` oder `operator:type` mehr, wenn OSM den Tag schon hat.
+      Auf der Schuldetailseite kann man ihn nach Rückfrage weiter ersetzen.
+  - refs:
       - 'e2779cb'
     hide: true
   - refs:
