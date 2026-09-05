@@ -12,44 +12,61 @@ import { STATE_ORDER } from '../../src/lib/stateConfig'
 
 const ROOT = path.join(import.meta.dirname, '../..')
 
+const licenceCompatibleDetailPaths = STATE_ORDER.filter((code) =>
+  isOsmLicenceCompatibleForTagFix(BUNDESLAND_OFFICIAL_SOURCES[code].osmCompatible),
+).map((code) => path.join(ROOT, 'public', 'datasets', code, 'schools_matches_detail.json'))
+
+const hasLiveDetailDatasets = licenceCompatibleDetailPaths.some((detailPath) =>
+  existsSync(detailPath),
+)
+
 describe('osm heuristic vs official agreement (licence-compatible matched)', () => {
-  it(`stays at or above ${(OSM_HEURISTIC_MIN_AGREEMENT_RATE * 100).toFixed(0)}%`, () => {
-    const rows: {
-      key: string
-      stateKey: string
-      officialName: string | null | undefined
-      officialProperties: Record<string, unknown> | null | undefined
-      osmTags: Record<string, string> | null | undefined
-    }[] = []
+  it.skipIf(!hasLiveDetailDatasets)(
+    `stays at or above ${(OSM_HEURISTIC_MIN_AGREEMENT_RATE * 100).toFixed(0)}%`,
+    () => {
+      const rows: {
+        key: string
+        stateKey: string
+        officialName: string | null | undefined
+        officialProperties: Record<string, unknown> | null | undefined
+        osmTags: Record<string, string> | null | undefined
+      }[] = []
 
-    for (const code of STATE_ORDER) {
-      if (!isOsmLicenceCompatibleForTagFix(BUNDESLAND_OFFICIAL_SOURCES[code].osmCompatible)) {
-        continue
+      for (const code of STATE_ORDER) {
+        if (!isOsmLicenceCompatibleForTagFix(BUNDESLAND_OFFICIAL_SOURCES[code].osmCompatible)) {
+          continue
+        }
+        const detailPath = path.join(
+          ROOT,
+          'public',
+          'datasets',
+          code,
+          'schools_matches_detail.json',
+        )
+        if (!existsSync(detailPath)) continue
+        const raw = JSON.parse(readFileSync(detailPath, 'utf8')) as unknown
+        if (typeof raw !== 'object' || raw === null || Array.isArray(raw)) continue
+        for (const value of Object.values(raw as Record<string, unknown>)) {
+          const parsed = schoolsMatchRowSchema.safeParse(value)
+          if (!parsed.success) continue
+          const row = parsed.data
+          if ((row.category ?? row.matchCategory) !== 'matched') continue
+          rows.push({
+            key: row.key,
+            stateKey: code,
+            officialName: row.officialName,
+            officialProperties: row.officialProperties ?? null,
+            osmTags: row.osmTags ?? null,
+          })
+        }
       }
-      const detailPath = path.join(ROOT, 'public', 'datasets', code, 'schools_matches_detail.json')
-      if (!existsSync(detailPath)) continue
-      const raw = JSON.parse(readFileSync(detailPath, 'utf8')) as unknown
-      if (typeof raw !== 'object' || raw === null || Array.isArray(raw)) continue
-      for (const value of Object.values(raw as Record<string, unknown>)) {
-        const parsed = schoolsMatchRowSchema.safeParse(value)
-        if (!parsed.success) continue
-        const row = parsed.data
-        if ((row.category ?? row.matchCategory) !== 'matched') continue
-        rows.push({
-          key: row.key,
-          stateKey: code,
-          officialName: row.officialName,
-          officialProperties: row.officialProperties ?? null,
-          osmTags: row.osmTags ?? null,
-        })
-      }
-    }
 
-    expect(rows.length).toBeGreaterThan(100)
-    const summary = summarizeOsmHeuristicOfficialAgreement(rows)
-    expect(summary.compared).toBeGreaterThan(50)
-    expect(summary.agreementRate).toBeGreaterThanOrEqual(OSM_HEURISTIC_MIN_AGREEMENT_RATE)
-  })
+      expect(rows.length).toBeGreaterThan(100)
+      const summary = summarizeOsmHeuristicOfficialAgreement(rows)
+      expect(summary.compared).toBeGreaterThan(50)
+      expect(summary.agreementRate).toBeGreaterThanOrEqual(OSM_HEURISTIC_MIN_AGREEMENT_RATE)
+    },
+  )
 })
 
 describe('summarizeOsmHeuristicOfficialAgreement', () => {
