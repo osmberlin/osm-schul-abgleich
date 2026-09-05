@@ -2,7 +2,10 @@ name: Rebuild MapRoulette Tasks
 
 on:
   workflow_dispatch:
-  # After Pages publishes public/maproulette/*.json (nightly data refresh or code deploy).
+  # Pages must have published the new public/maproulette/*.json first.
+  # We still listen to Deploy GitHub Pages, but only rebuild after a full
+  # Refresh Datasets run (Pages triggered by workflow_run). Code-push and
+  # manual Pages deploys skip — see skip-unless-full-refresh.
   workflow_run:
     workflows: ['Deploy GitHub Pages']
     types: [completed]
@@ -19,10 +22,33 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
+  skip-unless-full-refresh:
+    name: Skip unless full dataset refresh
+    if: |
+      github.event_name == 'workflow_run' &&
+      github.event.workflow_run.conclusion == 'success' &&
+      github.event.workflow_run.event != 'workflow_run'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Explain why MapRoulette is not rebuilt
+        env:
+          PAGES_TRIGGER: ${{ github.event.workflow_run.event }}
+        run: |
+          {
+            echo "Skipping MapRoulette challenge rebuild."
+            echo
+            echo "This GitHub Pages deploy was triggered by '${PAGES_TRIGGER}' (code push or manual), not by Refresh Datasets."
+            echo "MapRoulette tasks rebuild only after the nightly/manual full dataset refresh, once the new GeoJSON feeds are live on Pages."
+            echo
+            echo "To rebuild MapRoulette anyway, run this workflow manually (workflow_dispatch)."
+          } | tee "$GITHUB_STEP_SUMMARY"
+          echo "::notice::Skipping MapRoulette rebuild: Pages trigger was '${PAGES_TRIGGER}', not Refresh Datasets. Use workflow_dispatch to rebuild anyway."
+
   rebuild:
     if: |
       github.event_name == 'workflow_dispatch' ||
-      github.event.workflow_run.conclusion == 'success'
+      (github.event.workflow_run.conclusion == 'success' &&
+        github.event.workflow_run.event == 'workflow_run')
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v6

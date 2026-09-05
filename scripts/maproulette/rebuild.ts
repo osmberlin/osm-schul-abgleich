@@ -1,19 +1,18 @@
 #!/usr/bin/env bun
-/**
- * Trigger MapRoulette rebuild from remoteGeoJson for the Tag Fix and Creates challenges.
- * Requires MAPROULETTE_API_KEY. Skips challenges whose id is still null.
- *
- * Transient MapRoulette/Cloudflare errors (502/503/504) are retried. Failure here
- * does not mean the published GeoJSON feeds are broken — only that MR did not
- * accept the rebuild request after retries.
- */
 import {
   schoolCreatesChallengeId,
   schoolTagFixesChallengeId,
 } from '../../src/lib/maprouletteIds.const'
-
-const MAX_ATTEMPTS = 3
-const RETRYABLE_STATUSES = new Set([502, 503, 504])
+/**
+ * Trigger MapRoulette rebuild from remoteGeoJson for the Tag Fix and Creates challenges.
+ * Requires MAPROULETTE_API_KEY. Skips challenges whose id is still null.
+ *
+ * Transient MapRoulette/Cloudflare errors (502/503/504) wait, then retry.
+ * "Already in progress" after a timeout is treated as started — the rebuild
+ * is running even if the gateway never returned 2xx.
+ * Failure here does not mean the published GeoJSON feeds are broken.
+ */
+import { rebuildChallenge } from '../lib/maprouletteRebuild'
 
 function requireApiKey(): string {
   const key = process.env.MAPROULETTE_API_KEY?.trim()
@@ -22,73 +21,6 @@ function requireApiKey(): string {
     process.exit(1)
   }
   return key
-}
-
-function sleep(ms: number): Promise<void> {
-  return new Promise((resolve) => setTimeout(resolve, ms))
-}
-
-function isRetryableStatus(status: number): boolean {
-  return RETRYABLE_STATUSES.has(status)
-}
-
-function logMaprouletteNotCritical(label: string, id: number): void {
-  console.error(
-    [
-      `Not critical for the published site: hosted MapRoulette GeoJSON/meta feeds were already probed and are fine.`,
-      `Only maproulette.org failed to accept the rebuild for "${label}" (challenge ${id}).`,
-      `Re-run this workflow later, or trigger a rebuild manually in MapRoulette.`,
-    ].join('\n'),
-  )
-}
-
-async function rebuildChallenge(id: number, label: string, apiKey: string): Promise<boolean> {
-  const apiUrl = `https://maproulette.org/api/v2/challenge/${id}/rebuild?removeUnmatched=true&skipSnapshot=true`
-
-  for (let attempt = 1; attempt <= MAX_ATTEMPTS; attempt++) {
-    try {
-      const response = await fetch(apiUrl, {
-        method: 'PUT',
-        headers: { apiKey, accept: '*/*' },
-      })
-
-      if (response.ok) {
-        console.info(`Rebuild triggered for ${label} challenge`, id)
-        return true
-      }
-
-      const body = await response.text()
-      const retryable = isRetryableStatus(response.status)
-      const willRetry = retryable && attempt < MAX_ATTEMPTS
-
-      console.error(
-        `MapRoulette rebuild API failed for ${label} challenge ${id} ` +
-          `(HTTP ${response.status}, attempt ${attempt}/${MAX_ATTEMPTS})` +
-          (willRetry ? ' — retrying…' : ''),
-      )
-      console.error(body.slice(0, 500))
-
-      if (willRetry) {
-        await sleep(2_000 * attempt)
-        continue
-      }
-    } catch (error) {
-      const willRetry = attempt < MAX_ATTEMPTS
-      console.error(
-        `MapRoulette rebuild request error for ${label} challenge ${id} ` +
-          `(attempt ${attempt}/${MAX_ATTEMPTS})` +
-          (willRetry ? ' — retrying…' : ''),
-        error,
-      )
-      if (willRetry) {
-        await sleep(2_000 * attempt)
-        continue
-      }
-    }
-  }
-
-  logMaprouletteNotCritical(label, id)
-  return false
 }
 
 async function main() {

@@ -74,6 +74,7 @@ GitHub Actions:
 
 - `.github/workflows/data-refresh.yml`: geplanter/manueller Daten-Refresh, schreibt `datasets-last-good` (Artifact).
 - `.github/workflows/pages-deploy.yml`: Push-Deploy aus `datasets-last-good` + `pipeline:rebuild` + Pages-Deploy.
+- `.github/workflows/maproulette-rebuild.yml`: MapRoulette-Aufgaben neu aufbauen **nur** nach einem vollen Refresh Datasets (sobald Pages die neuen Feeds veröffentlicht hat). Code-Push- oder manuelle Pages-Deploys werden übersprungen (klare Skip-Meldung im Action-Log); `workflow_dispatch` bleibt für einen manuellen Rebuild.
 
 ## See also
 
